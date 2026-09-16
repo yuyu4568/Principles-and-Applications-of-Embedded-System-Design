@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b6e4f">
+<title>嵌入式系统设计原理与应用 · 第 1 课笔记</title>
+<style>
+:root {
+  --bg: #f6f8f7;
+  --card: #ffffff;
+  --ink: #1f2933;
+  --muted: #5b6b7b;
+  --line: #e3e9e7;
+  --accent: #0b6e4f;
+  --accent-soft: #e7f3ee;
+  --code-bg: #f0f3f5;
+  --warn: #8a5b00;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.65;
+  font-size: 16px;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 20px 14px 60px; }
+header.hero {
+  background: linear-gradient(135deg, #0b6e4f, #12805f);
+  color: #fff;
+  border-radius: 18px;
+  padding: 22px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 24px rgba(11,110,79,.18);
+}
+header.hero h1 { margin: 0 0 8px; font-size: 24px; line-height: 1.35; }
+header.hero p { margin: 4px 0 0; font-size: 14px; color: #dff3ea; }
+.toc, .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 16px;
+  margin-bottom: 16px;
+}
+.toc h2, .card h2 {
+  margin: 0 0 12px;
+  font-size: 19px;
+  border-left: 4px solid var(--accent);
+  padding-left: 9px;
+}
+.toc ol { margin: 0; padding-left: 22px; }
+.toc a { color: var(--accent); text-decoration: none; }
+.toc a:active { background: var(--accent-soft); }
+h3 { font-size: 17px; margin: 18px 0 8px; }
+p { margin: 8px 0; }
+ul, ol { margin: 8px 0; padding-left: 22px; }
+li { margin: 3px 0; }
+strong { color: #0a4f3a; }
+code {
+  background: var(--code-bg);
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: .92em;
+}
+.table-wrap { overflow-x: auto; margin: 10px 0; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 520px;
+  font-size: 14.5px;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: var(--accent-soft); color: #0a4f3a; }
+.note {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: 15px;
+}
+.warn {
+  background: #fff6e6;
+  border-left: 4px solid #e0a100;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 20px; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>嵌入式系统设计原理与应用 · 第 1 课笔记</h1>
+  <p>课程录音转写整理 · 已归纳重点并适当补充 · 适配手机阅读</p>
+  <p>范围：第一章概述 / ARM 微处理器 / 开发流程 / VMware + Ubuntu / Linux 基础指令</p>
+</header>
+
+<div class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#quick">本课重点速览</a></li>
+    <li><a href="#def">嵌入式系统的定义</a></li>
+    <li><a href="#compose">嵌入式系统的组成</a></li>
+    <li><a href="#arm">ARM 与嵌入式微处理器</a></li>
+    <li><a href="#series">ARM 系列与架构对比</a></li>
+    <li><a href="#flow">嵌入式系统开发流程</a></li>
+    <li><a href="#design">自顶向下 vs 自底向上</a></li>
+    <li><a href="#cross">交叉编译</a></li>
+    <li><a href="#vm">VMware + Ubuntu 环境</a></li>
+    <li><a href="#linux">Linux 基本认知</a></li>
+    <li><a href="#cmd">Linux 指令基础</a></li>
+    <li><a href="#pitfall">易错点复盘</a></li>
+    <li><a href="#quiz">复习自测题</a></li>
+  </ol>
+</div>
+
+<div class="card" id="quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>核心内容</th><th>记忆关键词</th></tr>
+    <tr><td>嵌入式系统定义</td><td>专用计算机系统</td><td>应用为中心、软硬件可裁剪</td></tr>
+    <tr><td>系统组成</td><td>三大部分</td><td>硬件 + 嵌入式操作系统 + 嵌入式软件</td></tr>
+    <tr><td>ARM</td><td>三种含义、卖 IP 核</td><td>公司 / 微处理器 / 技术</td></tr>
+    <tr><td>架构对比</td><td>冯·诺依曼 vs 哈佛</td><td>总线合一 vs 总线分离</td></tr>
+    <tr><td>开发流程</td><td>定义需求 → 硬件/软件并行 → 验收闭环</td><td>产品经理、流程图</td></tr>
+    <tr><td>设计方法</td><td>自顶向下为主、自底向上为辅</td><td>模块化拆解</td></tr>
+    <tr><td>环境准备</td><td>VMware + Ubuntu 24</td><td>打开虚拟机、密码 123456</td></tr>
+    <tr><td>Linux 指令</td><td>ls、cd、clear、useradd</td><td>命令 空格 对象、大小写敏感</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="def">
+  <h2>二、嵌入式系统的定义</h2>
+  <p><strong>标准定义：</strong>嵌入式系统是<strong>以应用为中心、以计算机技术为基础、软硬件可裁剪</strong>，适用于应用系统对<strong>功能、可靠性、成本、功耗</strong>等有严格要求的<strong>专用计算机系统</strong>。</p>
+  <h3>关键词拆解</h3>
+  <ul>
+    <li><strong>以应用为中心</strong>：针对具体应用场景定制，不是万能设备。</li>
+    <li><strong>以计算机技术为基础</strong>：本质仍是计算机系统。</li>
+    <li><strong>软硬件可裁剪</strong>：按需选择硬件资源和软件模块。</li>
+    <li><strong>专用计算机系统</strong>：区别于通用 PC。</li>
+  </ul>
+  <div class="note"><strong>补充：</strong>嵌入式系统与通用计算机对比见下表。</div>
+  <div class="table-wrap">
+  <table>
+    <tr><th>维度</th><th>嵌入式系统</th><th>通用计算机</th></tr>
+    <tr><td>定位</td><td>专用功能</td><td>通用任务</td></tr>
+    <tr><td>软硬件</td><td>可裁剪、资源受限</td><td>资源丰富、可扩展</td></tr>
+    <tr><td>功耗/体积</td><td>通常低功耗、小体积</td><td>功耗和体积较大</td></tr>
+    <tr><td>操作系统</td><td>裁剪定制（Linux、RTOS 等）</td><td>Windows、macOS 等</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="compose">
+  <h2>三、嵌入式系统的组成</h2>
+  <p>课上强调为<strong>三大部分</strong>：</p>
+  <ul>
+    <li><strong>硬件层</strong>：核心是<strong>处理器（芯片）</strong>，如 ARM、8051 内核的 MCU；外围硬件包括内存、硬盘/U 盘、VGA/HDMI、投影等。</li>
+    <li><strong>嵌入式操作系统</strong>：运行在硬件之上，与 PC 通用 OS 不同，通常更精简、可裁剪。</li>
+    <li><strong>嵌入式软件</strong>：面向具体应用的用户程序，最终运行在目标硬件上。</li>
+  </ul>
+  <div class="note"><strong>补充：</strong>教材中也常见“硬件层 / 中间层（BSP）/ 操作系统层 / 应用层”四层说法。三部分是<strong>大分类</strong>，中间层属于对硬件的抽象与适配，不要混淆。</div>
+</div>
+
+<div class="card" id="arm">
+  <h2>四、ARM 与嵌入式微处理器</h2>
+  <h3>4.1 两大主流架构</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>架构</th><th>典型设备</th></tr>
+    <tr><td>x86</td><td>PC、笔记本</td></tr>
+    <tr><td>ARM</td><td>手机、平板、手持设备</td></tr>
+  </table>
+  </div>
+  <h3>4.2 ARM 的三种含义</h3>
+  <ol>
+    <li><strong>公司名称</strong>：ARM 公司。</li>
+    <li><strong>微处理器的统称/架构</strong>：基于 ARM 内核的处理器。</li>
+    <li><strong>技术名称</strong>：ARM 架构技术。</li>
+  </ol>
+  <h3>4.3 商业模式与芯片产业链</h3>
+  <ul>
+    <li>ARM 公司<strong>不直接造芯片</strong>，主要<strong>研发并授权 IP 核（知识产权核）</strong>。</li>
+    <li>IP 核是“芯片的主要架构与核心设计”，不是网络 IP 地址。</li>
+    <li>产业链：<strong>IP 授权 → 芯片设计（合作伙伴）→ 晶圆代工（如台积电）→ 渠道销售 → 终端用户</strong>。</li>
+    <li>芯片/电路模块使用<strong>防静电袋</strong>包装：人体静电瞬间放电可达上万伏，可能击穿芯片。</li>
+  </ul>
+  <div class="note"><strong>补充：</strong>IP 核常分为<strong>软核、固核、硬核</strong>。软核灵活但需综合实现；硬核性能确定、不可修改；固核介于二者之间。</div>
+  <h3>4.4 RISC 与 CISC</h3>
+  <ul>
+    <li><strong>RISC</strong>：精简指令集计算机（Reduced Instruction Set Computer）。</li>
+    <li><strong>CISC</strong>：复杂指令集计算机（Complex Instruction Set Computer）。</li>
+    <li>ARM 采用 <strong>RISC</strong>；传统 PC 的 x86 更偏向 <strong>CISC</strong>。</li>
+  </ul>
+</div>
+
+<div class="card" id="series">
+  <h2>五、ARM 系列与架构对比</h2>
+  <h3>5.1 ARM 系列</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>系列</th><th>架构</th><th>特点</th></tr>
+    <tr><td>ARM7</td><td>冯·诺依曼架构</td><td>成熟、批量大、3 级流水线、RISC、低功耗</td></tr>
+    <tr><td>ARM9 / ARM10 / ARM11</td><td>哈佛架构</td><td>程序与数据总线分离，流水线级数更高，效率更高</td></tr>
+    <tr><td>Cortex 系列</td><td>面向不同应用</td><td>STM32 基于 Cortex-M 内核</td></tr>
+  </table>
+  </div>
+  <h3>5.2 冯·诺依曼 vs 哈佛架构</h3>
+  <p><strong>冯·诺依曼架构：</strong></p>
+  <ul>
+    <li>组成：运算器、控制器、存储器、输入设备、输出设备。</li>
+    <li>CPU = 运算器 + 控制器。</li>
+    <li>特点：程序指令与数据<strong>共用同一总线</strong>，可能出现“拥堵”。</li>
+  </ul>
+  <p><strong>哈佛架构：</strong></p>
+  <ul>
+    <li>程序存储器与数据存储器的<strong>总线相互独立</strong>。</li>
+    <li>指令与数据可并行访问，处理效率更高。</li>
+    <li>类比：教室两个门，一个进、一个出，比单门同时进出更快。</li>
+  </ul>
+</div>
+
+<div class="card" id="flow">
+  <h2>六、嵌入式系统开发流程</h2>
+  <p>开发包括三部分：<strong>总体开发、硬件开发、软件开发</strong>。</p>
+  <ol>
+    <li><strong>系统定义与需求分析（可行性分析）</strong>：岗位对应<strong>产品经理</strong>，立项前与甲方对接、调研需求，明确功能、性能、规格，避免后期反复改动。</li>
+    <li><strong>硬件开发 / 软件开发并行</strong>：明确各自功能与约束，形成方案与合同，再执行。</li>
+    <li><strong>验收与闭环</strong>：软硬件联调适配；不满足需求则返回修改，形成<strong>大循环</strong>。</li>
+  </ol>
+  <div class="warn"><strong>重点：</strong>流程图很关键。顺序步骤用流程框，条件分支用判断框，对应代码中的 <code>if</code>、<code>if-else</code>、<code>switch-case</code>。</div>
+</div>
+
+<div class="card" id="design">
+  <h2>七、自顶向下 vs 自底向上设计</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>方法</th><th>思路</th><th>类比</th><th>优缺点</th></tr>
+    <tr><td>自顶向下（Top-Down）</td><td>把大系统按模块拆分，先总体后细化</td><td>装修教室：先分讲台、桌椅、照明、投影模块</td><td>单模块修改不影响其他模块，易维护</td></tr>
+    <tr><td>自底向上（Bottom-Up）</td><td>从底层一步步向上搭建</td><td>盖房子：先打地基再砌墙</td><td>底层出问题需要层层拆除，修改成本高</td></tr>
+  </table>
+  </div>
+  <p><strong>结论：</strong>实际设计中二者<strong>交替结合</strong>，但以<strong>自顶向下</strong>为主体。</p>
+</div>
+
+<div class="card" id="cross">
+  <h2>八、交叉编译</h2>
+  <ul>
+    <li><strong>普通编译</strong>：在电脑（x86）上写代码、编译，并下载/烧录到目标板。</li>
+    <li><strong>交叉编译</strong>：在<strong>宿主机</strong>（如 x86 的 PC）上，借助<strong>交叉编译器</strong>，生成能在<strong>目标机</strong>（如 ARM）上运行的目标代码。</li>
+    <li>原因：x86 平台编译出的程序不能直接运行在 ARM 架构上。</li>
+  </ul>
+  <div class="note"><strong>补充：</strong>常见交叉编译链如 <code>arm-linux-gnueabihf-gcc</code>，用于生成 ARM Linux 可执行文件。</div>
+</div>
+
+<div class="card" id="vm">
+  <h2>九、VMware + Ubuntu 环境</h2>
+  <h3>9.1 文件与安装</h3>
+  <ul>
+    <li>提供的文件夹通常包含：<strong>Ubuntu 24 完整系统（非 ISO 镜像）</strong>、<strong>VMware 安装程序</strong>、<strong>激活码</strong>。</li>
+    <li>VMware 安装：常规“下一步”，最后输入激活码即可。</li>
+  </ul>
+  <h3>9.2 VMware 三个主要选项</h3>
+  <ol>
+    <li><strong>创建虚拟机</strong>：从 ISO 镜像文件安装全新系统。</li>
+    <li><strong>打开虚拟机</strong>：打开现成的完整系统（本课程使用）。</li>
+    <li><strong>远程连接服务器</strong>：本课程暂不涉及。</li>
+  </ol>
+  <h3>9.3 资源分配</h3>
+  <ul>
+    <li>示例配置：内存 4 GB、CPU 2 核、硬盘 20 GB。</li>
+    <li>原则：虚拟机占用本机资源，<strong>不要分配过多</strong>，否则本机会卡顿。</li>
+  </ul>
+  <h3>9.4 开关机状态</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作</th><th>含义</th></tr>
+    <tr><td>关机</td><td>关闭虚拟机操作系统</td></tr>
+    <tr><td>挂起</td><td>锁定当前状态，不丢失运行现场，下次可直接继续</td></tr>
+    <tr><td>重启</td><td>重启虚拟机</td></tr>
+  </table>
+  </div>
+  <h3>9.5 登录与网络</h3>
+  <ul>
+    <li>账户密码：<strong>123456</strong>（学习阶段使用）。</li>
+    <li>网络模式：<strong>桥接（Bridged）</strong>、<strong>NAT（网络地址转换）</strong>、<strong>仅主机（Host-Only）</strong>。</li>
+  </ul>
+</div>
+
+<div class="card" id="linux">
+  <h2>十、Linux/Ubuntu 基本认知</h2>
+  <ul>
+    <li><strong>一切皆文件</strong>：普通文件、文件夹、设备驱动等在 Linux 中都视为文件。</li>
+    <li><strong>根目录 <code>/</code></strong>：所有文件的起点。</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+    <tr><th>目录</th><th>作用</th></tr>
+    <tr><td><code>/bin</code></td><td>可执行二进制文件</td></tr>
+    <tr><td><code>/boot</code></td><td>启动相关文件</td></tr>
+    <tr><td><code>/dev</code></td><td>设备文件</td></tr>
+    <tr><td><code>/etc</code></td><td>配置文件</td></tr>
+    <tr><td><code>/home</code></td><td>用户主目录（日常操作主要在这里）</td></tr>
+    <tr><td><code>/mnt</code></td><td>挂载目录</td></tr>
+    <tr><td><code>/tmp</code></td><td>临时文件</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>Windows 用盘符（C、D、E…），Linux 用<strong>单一根目录 + 目录树</strong>。</li>
+    <li>终端操作：右键“在终端打开”；放大字体 <code>Ctrl+Shift+=</code>，缩小 <code>Ctrl+-</code>。</li>
+    <li>实验截图建议把终端背景调成<strong>白色</strong>，避免打印时漆黑一片。</li>
+  </ul>
+</div>
+
+<div class="card" id="cmd">
+  <h2>十一、Linux 指令基础</h2>
+  <ul>
+    <li>指令格式：<code>命令 + 空格 + 操作对象</code>，两者之间<strong>必须有空格</strong>。</li>
+    <li><strong>区分大小写</strong>：<code>ls</code> 有效，<code>LS</code> 无效。</li>
+    <li><strong>Shell</strong>：既是<strong>命令解释器</strong>，也是一门<strong>脚本编程语言</strong>。</li>
+    <li>常用分类：文件管理、用户管理、打包压缩、磁盘管理、网络管理、进程管理等。</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+    <tr><th>指令</th><th>作用</th></tr>
+    <tr><td><code>ls</code></td><td>列出当前目录内容</td></tr>
+    <tr><td><code>cd /home</code></td><td>切换到 /home 目录</td></tr>
+    <tr><td><code>clear</code></td><td>清屏</td></tr>
+    <tr><td><code>sudo useradd 用户名</code></td><td>以管理员权限添加用户</td></tr>
+  </table>
+  </div>
+  <h3>useradd 实操要点</h3>
+  <ul>
+    <li>添加用户需要 <strong>root/管理员权限</strong>，普通用户需用 <code>sudo</code>。</li>
+    <li>输入密码时<strong>不回显</strong>（安全机制），并非没输入进去。</li>
+    <li>创建成功后会在 <code>/home</code> 下生成对应用户目录，并分配 <strong>UID（用户 ID）</strong>、<strong>GID（组 ID）</strong>。</li>
+    <li>密码过短（如 123456）系统会提示，但学习阶段仍可继续。</li>
+  </ul>
+  <div class="note"><strong>补充——常用指令速查：</strong><code>pwd</code> 显示当前路径；<code>mkdir</code> 新建目录；<code>rm</code> 删除文件；<code>cp</code> 复制；<code>mv</code> 移动/重命名；<code>passwd</code> 修改用户密码。</div>
+</div>
+
+<div class="card" id="pitfall">
+  <h2>十二、易错点复盘</h2>
+  <ul>
+    <li>命令与对象之间忘加空格，系统无法识别。</li>
+    <li>Linux 大小写敏感，<code>LS</code> ≠ <code>ls</code>。</li>
+    <li>普通用户直接 <code>useradd</code> 会因权限不足失败，需加 <code>sudo</code>。</li>
+    <li>输入密码不显示星号是正常现象，不代表没输入。</li>
+    <li>虚拟机资源不要分配过高，避免拖慢宿主机。</li>
+    <li>桥接模式下网络图标为问号表示未联网，联网后会变化为已连接图标。</li>
+  </ul>
+</div>
+
+<div class="card" id="quiz">
+  <h2>十三、复习自测题</h2>
+  <ol>
+    <li>写出嵌入式系统的定义及四个关键词。</li>
+    <li>嵌入式系统由哪三大部分组成？</li>
+    <li>ARM 有哪三种含义？ARM 公司的盈利模式是什么？</li>
+    <li>比较冯·诺依曼架构与哈佛架构的差异。</li>
+    <li>RISC 与 CISC 分别指什么？ARM 采用哪种？</li>
+    <li>简述嵌入式系统开发的整体流程。</li>
+    <li>比较自顶向下与自底向上设计方法的优缺点。</li>
+    <li>什么是交叉编译？为什么嵌入式开发需要它？</li>
+    <li>VMware 中“创建虚拟机”与“打开虚拟机”的区别？</li>
+    <li>Linux 根目录下 <code>/bin</code>、<code>/etc</code>、<code>/home</code>、<code>/tmp</code> 的作用分别是什么？</li>
+    <li><code>ls</code>、<code>cd /home</code>、<code>clear</code>、<code>sudo useradd david</code> 分别完成什么功能？</li>
+    <li>Linux 输入密码时为什么不显示任何字符？</li>
+  </ol>
+</div>
+
+<footer>
+  <p>由课堂录音转写自动整理 · 生成日期 2026-09-16</p>
+  <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
+</footer>
+
+</div>
+</body>
+</html>
