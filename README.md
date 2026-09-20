@@ -1,20 +1,16 @@
 # 嵌入式系统设计原理与应用 · 课程笔记
 
-本仓库收录课堂录音转写整理后的学习笔记，已归纳重点并扩充解析，可在手机或电脑上直接阅读。
+本仓库收录课堂录音转写整理后的学习笔记，已归纳重点并扩充解析，可在手机或电脑上直接阅读。**所有课程笔记整合在同一个页面**，无需切换多个链接。
 
-## 在线阅读（GitHub Pages）
+## 在线阅读
 
-- [课程主页（推荐入口）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
-- [第 1 课 · 嵌入式系统概述与开发入门](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/lesson1.html)
-- [第 2 课 · Linux 指令进阶：用户管理与文件管理](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/lesson2.html)
+- [课程笔记（第 1 课 + 第 2 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 课程主页，汇总各课入口 |
-| `lesson1.html` | 第 1 课移动端网页 |
-| `lesson2.html` | 第 2 课移动端网页 |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1 课 + 第 2 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 
