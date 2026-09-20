@@ -1,23 +1,42 @@
-# 嵌入式系统设计原理与应用 · 第 1 课笔记（扩展版）
+# 嵌入式系统设计原理与应用 · 课程笔记
 
-本仓库收录课堂录音转写整理后的学习笔记，已在原版基础上扩充解析，可在手机或电脑上直接阅读。
+本仓库收录课堂录音转写整理后的学习笔记，已归纳重点并扩充解析，可在手机或电脑上直接阅读。
+
+## 在线阅读（GitHub Pages）
+
+- [课程主页（推荐入口）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [第 1 课 · 嵌入式系统概述与开发入门](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/lesson1.html)
+- [第 2 课 · Linux 指令进阶：用户管理与文件管理](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/lesson2.html)
 
 ## 文件说明
 
-- [在线阅读（移动端适配页面，GitHub Pages）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)：手机友好的网页版。
-- [第 1 课笔记（Markdown 扩展版）](./嵌入式系统设计原理与应用-第1课笔记.md)：完整笔记原文，含扩展解析、自测题答案、术语表。
-- `index.html`：GitHub Pages 首页，移动端自适应。
+| 文件 | 说明 |
+| --- | --- |
+| `index.html` | 课程主页，汇总各课入口 |
+| `lesson1.html` | 第 1 课移动端网页 |
+| `lesson2.html` | 第 2 课移动端网页 |
+| `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
+| `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 
 ## 内容概览
+
+### 第 1 课：嵌入式系统概述与开发入门
 
 1. 嵌入式系统的定义、特点与组成
 2. ARM 与嵌入式微处理器（三种含义、IP 核、产业链、8051 背景）
 3. 冯·诺依曼 vs 哈佛架构、RISC vs CISC、Cortex 三系
-4. 嵌入式系统开发流程与设计方法
-5. 交叉编译与工具链
-6. VMware + Ubuntu 环境与三种网络模式
-7. Linux/Ubuntu 目录结构、权限与常用指令
-8. 处理器分类选型、RTOS 与实时性、调试手段（扩充）
-9. 应用领域、学习路线、术语表（扩充）
+4. 开发流程、自顶向下/自底向上设计、交叉编译
+5. VMware + Ubuntu 环境与网络模式
+6. Linux 目录结构、权限与常用指令
+7. 处理器分类选型、RTOS 与实时性、调试手段（扩充）
+8. 应用领域、学习路线、术语表（扩充）
+
+### 第 2 课：Linux 指令进阶
+
+1. 用户管理：useradd / passwd / userdel / 组管理
+2. 文件管理：ls / cd / touch / mkdir / cp / pwd（重中之重）
+3. 绝对路径与相对路径
+4. Tab 自动补齐、history 等效率技巧
+5. 易错点复盘、课堂操作流程、自测题含答案
 
 > 笔记基于课堂录音自动转写整理，已归纳重点并适当补充背景知识；原始转写可能存在口语化或同音字识别误差。
