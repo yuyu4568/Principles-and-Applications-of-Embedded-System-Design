@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1、2 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–3 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：嵌入式系统概述与开发入门 · 第 2 课：Linux 指令进阶（用户管理 + 文件管理）</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接）</p>
 </header>
 
 <div class="toc">
@@ -145,7 +145,7 @@ footer a { color: var(--accent); }
     <li><a href="#rtos">操作系统与实时性</a></li>
     <li><a href="#debug">开发调试与工具链</a></li>
     <li><a href="#fields">应用领域与学习建议</a></li>
-    </ol>
+      </ol>
   <h3>第 2 课：Linux 指令进阶（用户管理 + 文件管理）</h3>
   <ol>
     <li><a href="#l2-quick">本课重点速览</a></li>
@@ -156,6 +156,21 @@ footer a { color: var(--accent); }
     <li><a href="#l2-pitfall">易错点复盘</a></li>
     <li><a href="#l2-practice">课堂操作复盘</a></li>
     <li><a href="#l2-quiz">复习自测题（含答案）</a></li>
+    </ol>
+  <h3>第 3 课：Linux 文件操作进阶（mv / rm / 权限 / 链接 / 网络）</h3>
+  <ol>
+    <li><a href="#l3-quick">本课重点速览</a></li>
+    <li><a href="#l3-review">课前复习</a></li>
+    <li><a href="#l3-mv">mv 移动</a></li>
+    <li><a href="#l3-rm">rm 删除</a></li>
+    <li><a href="#l3-type">文件类型</a></li>
+    <li><a href="#l3-perm">权限 rwx</a></li>
+    <li><a href="#l3-chmod">chmod 修改权限</a></li>
+    <li><a href="#l3-ln">ln 链接</a></li>
+    <li><a href="#l3-net">网络命令</a></li>
+    <li><a href="#l3-pitfall">易错点</a></li>
+    <li><a href="#l3-practice">操作复盘</a></li>
+    <li><a href="#l3-quiz">自测题</a></li>
   </ol>
 </div>
 
@@ -895,12 +910,336 @@ footer a { color: var(--accent); }
   </table>
   </div>
   
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 3 课 · Linux 文件操作进阶（mv / rm / 权限 / 链接 / 网络）</h2><p style="color:#dff3ea;margin:0;">承接第 2 课，本课讲解 mv 移动、rm 删除、文件类型识别、权限 rwx 与 chmod、软硬链接 ln，并简介网络命令。内容更详细，含丰富对比表与例题。</p></div>
+
+<div class="card" id="l3-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>命令</th><th>一句话要点</th></tr>
+    <tr><td>移动</td><td>mv</td><td>移文件和移目录都不用加 -r；保留原时间戳；源文件消失</td></tr>
+    <tr><td>删除</td><td>rm</td><td>删文件不用 -r；删目录必须 -r；-f 强制</td></tr>
+    <tr><td>文件类型</td><td>ll 首字符</td><td>- 普通文件、d 目录、l 链接，还有 c/b/p</td></tr>
+    <tr><td>权限</td><td>r w x</td><td>三组 u/g/o，数字 r=4、w=2、x=1</td></tr>
+    <tr><td>改权限</td><td>chmod</td><td>字符方式（u+x）与数字方式（761）</td></tr>
+    <tr><td>链接</td><td>ln / ln -s</td><td>硬链接（同名文件入口）vs 软链接（快捷方式）</td></tr>
+    <tr><td>网络</td><td>ifconfig / ping</td><td>查看网卡信息、测试网络连通</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l3-review">
+  <h2>二、课前复习（第 2 课回顾）</h2>
+  <ul>
+    <li><strong>cp 复制文件 vs 文件夹：</strong>复制文件 <code>cp 文件 目标</code> 不加 -r；复制文件夹 <code>cp -r 目录 目标</code> 必须加 -r（递归），否则报错。</li>
+    <li><strong>绝对路径与相对路径：</strong>在同一上级目录内操作，目标只是二级目录不同；跨到并列目录是“绝对性变化”，要写完整绝对路径。</li>
+    <li>类比：从主楼到旁边楼 vs 在新楼内部换房间，路径差别完全不同。</li>
+  </ul>
+  <div class="warn"><strong>课堂提问回顾：</strong>cp 复制文件与复制文件夹有没有区别？→ 有。文件夹必须加 <code>-r</code>，把文件夹及内部所有文件全部递归复制；即使是空文件夹也必须要加。</div>
+</div>
+
+<div class="card" id="l3-mv">
+  <h2>三、mv：移动文件或目录 ★</h2>
+  <h3>3.1 含义</h3>
+  <p><code>mv</code> = move（移动），相当于把东西从一个地方搬到另一个地方。类比：教室从西区 0101 整体搬到 ES0304，原教室不再有人。</p>
+  <h3>3.2 格式与示例</h3>
+  <div class="note"><code>mv 源 目标</code></div>
+  <div class="table-wrap">
+  <table>
+    <tr><th>示例</th><th>作用</th></tr>
+    <tr><td>mv file1 /home/DIR2/</td><td>把 file1 移动到 /home/DIR2</td></tr>
+    <tr><td>mv /home/DIR1/dir1 /home/DIR2/</td><td>把目录 dir1 移动到 /home/DIR2</td></tr>
+    <tr><td>mv old.c new.c</td><td>改名（移动 + 重命名）</td></tr>
+  </table>
+  </div>
+  <h3>3.3 课堂验证要点</h3>
+  <ol>
+    <li><strong>移动目录不需要加 -r</strong>：mv 与 cp 的最大区别，直接 <code>mv 目录 目标</code>。</li>
+    <li><strong>保留时间戳</strong>：mv 后目标文件时间戳仍是原文件创建时间；cp 复制后是复制时刻。用 <code>ll</code> 验证。</li>
+    <li><strong>源消失</strong>：移动后原路径下文件/目录不存在，用 <code>ls</code> 双向验证。</li>
+    <li>查看其他目录不用进入：直接 <code>ls /home/DIR2</code>。</li>
+  </ol>
+  <h3>3.4 cp vs mv 对比</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>对比项</th><th>cp 复制</th><th>mv 移动</th></tr>
+    <tr><td>结果</td><td>原文件保留，多一份副本</td><td>原文件消失，只留一份</td></tr>
+    <tr><td>目录是否需要 -r</td><td>需要 cp -r</td><td>不需要，直接 mv</td></tr>
+    <tr><td>新文件时间戳</td><td>复制时刻</td><td>原创建时间（保留）</td></tr>
+    <tr><td>类比</td><td>Ctrl+C / Ctrl+V</td><td>剪切 + 粘贴</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l3-rm">
+  <h2>四、rm：删除文件或目录 ★</h2>
+  <h3>4.1 含义与格式</h3>
+  <p><code>rm</code> = remove（移除、删除）。格式：<code>rm [选项] 目标</code></p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>参数</th><th>作用</th></tr>
+    <tr><td>-r</td><td>recursive 递归删除目录及其内容；有写保护会再确认</td></tr>
+    <tr><td>-f</td><td>force 强制删除，不提示</td></tr>
+    <tr><td>-rf</td><td>递归 + 强制（非常危险，慎用）</td></tr>
+  </table>
+  </div>
+  <h3>4.2 课堂要点</h3>
+  <ul>
+    <li>删文件 <code>rm file1</code>：有写保护会提示“是否删除有写保护的一个普通文件?”，输入 <code>y</code> 确认；权限不够加 <code>sudo</code>。</li>
+    <li>删目录 <code>rm dir2</code> 会失败；须 <code>rm -r dir2</code> 递归删除，删除后 <code>ls</code> 验证目录已消失。</li>
+    <li>Windows 大文件删除会提示“文件过大无法回收站回收”，Linux 的提示类似，都是安全/人性化考虑。</li>
+  </ul>
+  <h3>4.3 文件/目录操作参数总结 ★</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>文件</th><th>目录</th></tr>
+    <tr><td>cp</td><td>不加参数</td><td>加 -r</td></tr>
+    <tr><td>mv</td><td>不加参数</td><td>不加参数</td></tr>
+    <tr><td>rm</td><td>不加参数</td><td>加 -r</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>记忆：</strong>只有 cp 和 rm 在操作目录时加 -r，mv 一律不加。</div>
+</div>
+
+<div class="card" id="l3-type">
+  <h2>五、文件类型：ll 的“第一列” ★</h2>
+  <h3>5.1 为什么要学</h3>
+  <p><code>ll</code>（= <code>ls -l</code>）第一列第一个字符表示文件类型，后 9 位表示权限。看懂第一列是读懂 ll 的基础。</p>
+  <h3>5.2 常见文件类型</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>首字符</th><th>类型</th><th>英文</th><th>说明</th></tr>
+    <tr><td>-</td><td>普通文件</td><td>regular file</td><td>文本、二进制、脚本、C 源码等</td></tr>
+    <tr><td>d</td><td>目录文件</td><td>directory</td><td>即文件夹</td></tr>
+    <tr><td>l</td><td>链接文件</td><td>link</td><td>软链接（快捷方式）</td></tr>
+    <tr><td>c</td><td>字符设备</td><td>character device</td><td>键盘、鼠标、串口</td></tr>
+    <tr><td>b</td><td>块设备</td><td>block device</td><td>硬盘、U 盘</td></tr>
+    <tr><td>p</td><td>管道文件</td><td>pipe</td><td>进程间通信</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>联系“一切皆文件”：</strong>普通文件、文件夹、设备、管道、链接都以文件形式存在，所以 Linux 说“一切皆文件”。</div>
+  <h3>5.3 示例解读</h3>
+  <div class="flow">-rw-r--r--  1 asus asus  123 9月20日 11:39 hello.c
+drwxr-xr-x  2 asus asus 4096 9月20日 11:29 dir1
+lrwxrwxrwx  1 asus asus   10 9月20日 11:49 shello.c -&gt; hello.c</div>
+</div>
+
+<div class="card" id="l3-perm">
+  <h2>六、权限 rwx 详解 ★</h2>
+  <h3>6.1 三个符号</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>符号</th><th>英文</th><th>含义</th></tr>
+    <tr><td>r</td><td>read</td><td>可读：能查看/浏览内容</td></tr>
+    <tr><td>w</td><td>write</td><td>可写：能编辑并保存</td></tr>
+    <tr><td>x</td><td>execute</td><td>可执行：能作为程序运行</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>读 ≠ 写：能看不代表能改，写了才能修改内容。</li>
+    <li>对目录：r=能列出内容，w=能增删文件，x=能进入目录。</li>
+  </ul>
+  <h3>6.2 三组对象 u / g / o</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>组</th><th>英文</th><th>含义</th></tr>
+    <tr><td>u</td><td>user</td><td>文件所有者（owner）</td></tr>
+    <tr><td>g</td><td>group</td><td>所属组的用户</td></tr>
+    <tr><td>o</td><td>others</td><td>其他用户</td></tr>
+  </table>
+  </div>
+  <p>权限共 9 位：u(rwx) + g(rwx) + o(rwx)，顺序固定不可调换。</p>
+  <h3>6.3 数字表示法 ★</h3>
+  <ul>
+    <li>二进制转十进制：rwx 每位对应 4、2、1（2²、2¹、2⁰）。</li>
+    <li>有权限写 1、无权限写 0，然后求和。</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+    <tr><th>权限</th><th>二进制</th><th>十进制</th><th>含义</th></tr>
+    <tr><td>rwx</td><td>111</td><td>7</td><td>读+写+执行</td></tr>
+    <tr><td>rw-</td><td>110</td><td>6</td><td>读+写</td></tr>
+    <tr><td>r-x</td><td>101</td><td>5</td><td>读+执行</td></tr>
+    <tr><td>r--</td><td>100</td><td>4</td><td>只读</td></tr>
+    <tr><td>---</td><td>000</td><td>0</td><td>无权限</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>rw-r--r-- = u(6)+g(4)+o(4) = <strong>644</strong></li>
+    <li>rwxr-xr-x = 7+5+5 = <strong>755</strong></li>
+    <li>rwxrwxrwx = <strong>777</strong>（所有用户最大权限）</li>
+  </ul>
+  <div class="note"><strong>补充：</strong>8421 来自 BCD 码/二进制位权（8、4、2、1）；本课只需掌握 r=4、w=2、x=1 的换算。</div>
+</div>
+
+<div class="card" id="l3-chmod">
+  <h2>七、chmod：修改权限 ★</h2>
+  <h3>7.1 基本要求</h3>
+  <ul>
+    <li>修改权限需要<strong>管理员权限</strong>：<code>sudo chmod ... 文件</code>。</li>
+    <li>语法：<code>sudo chmod [方式] 文件</code>。</li>
+  </ul>
+  <h3>7.2 方式一：字符方式</h3>
+  <div class="note"><code>chmod [u/g/o/a][+/-/=][r/w/x] 文件</code></div>
+  <div class="table-wrap">
+  <table>
+    <tr><th>写法</th><th>含义</th></tr>
+    <tr><td>u+w</td><td>给所有者添加写权限</td></tr>
+    <tr><td>g+w</td><td>给所属组添加写权限</td></tr>
+    <tr><td>u-w</td><td>去掉所有者写权限</td></tr>
+    <tr><td>o+x</td><td>给其他用户添加执行权限</td></tr>
+    <tr><td>a=rwx</td><td>所有用户设为 rwx</td></tr>
+    <tr><td>u+x,o-x</td><td>多个操作逗号分隔</td></tr>
+  </table>
+  </div>
+  <p>课堂演示：大 A 目录原本 rwx r-x r-x（755）；<code>sudo chmod g+w A</code> → rwx rwx r-x；<code>sudo chmod u-w A</code> → r-x rwx r-x；<code>sudo chmod 777 A</code> → 全部 rwx。</p>
+  <h3>7.3 方式二：数字方式</h3>
+  <div class="note"><code>sudo chmod 数字组合 文件</code>（三位数依次表示 u、g、o）</div>
+  <p><strong>教材例题：</strong>将 hello.c 设为：所有者 rwx(7)、同组 rw-(6)、其他 --x(1) → <code>sudo chmod 761 hello.c</code>，之后 <code>ll</code> 验证为 rwx rw- --x。</p>
+  <h3>7.4 补充</h3>
+  <ul>
+    <li>普通文件新建后可读写；<strong>脚本文件</strong>（.sh）创建后需加执行权限才能运行：<code>sudo chmod +x 脚本.sh</code>。</li>
+    <li>教材参考页：135、136、137 页，图/例 5.2.2、5.2.3（约第 22、23 页例题）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l3-ln">
+  <h2>八、ln：链接文件 ★</h2>
+  <h3>8.1 格式</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>类型</th><th>命令</th><th>说明</th></tr>
+    <tr><td>硬链接</td><td>ln 原文件 硬链接名</td><td>基于原文件创建</td></tr>
+    <tr><td>软链接</td><td>ln -s 原文件 软链接名</td><td>-s = soft（software）</td></tr>
+  </table>
+  </div>
+  <h3>8.2 硬链接（Hard Link）</h3>
+  <ul>
+    <li>类似“复制”，本质是同一 <code>inode（磁盘节点）</code> 增加一个入口/文件名。</li>
+    <li>课堂验证：创建后文件类型仍为普通文件 <code>-</code>；<strong>时间戳与原文件一致</strong>；<strong>删除原文件后硬链接不受影响</strong>；权限格式一致。</li>
+  </ul>
+  <h3>8.3 软链接（Soft Link）</h3>
+  <ul>
+    <li>类似 Windows <strong>桌面快捷方式</strong>。</li>
+    <li>命令加 <code>-s</code>；文件类型显示为 <code>l</code> 且有 <code>-&gt; 原文件</code>；<strong>时间戳是创建时刻</strong>；<strong>删除原文件后软链接失效</strong>（红色/黑底显示）。</li>
+  </ul>
+  <h3>8.4 软链接 vs 硬链接对比</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>对比项</th><th>硬链接</th><th>软链接</th></tr>
+    <tr><td>命令</td><td>ln 原 名</td><td>ln -s 原 名</td></tr>
+    <tr><td>ll 首字符</td><td>普通文件 -</td><td>链接文件 l</td></tr>
+    <tr><td>时间戳</td><td>与原文件一致</td><td>创建时刻</td></tr>
+    <tr><td>指向</td><td>同一 inode 的不同入口</td><td>记录原文件路径</td></tr>
+    <tr><td>删除原文件后</td><td>不受影响</td><td>失效（红/黑显示）</td></tr>
+    <tr><td>类比</td><td>同一部电影的两个名字</td><td>Windows 快捷方式</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l3-net">
+  <h2>九、网络命令简介 ★</h2>
+  <div class="warn"><strong>说明：</strong>课堂网络不稳定，本部分为简介，下次课演示。</div>
+  <h3>9.1 ifconfig：查看网络接口</h3>
+  <ul>
+    <li>显示网卡（如 eth0）：网卡名、<strong>IP 地址</strong>、RX（接收）/TX（发送）字节、<strong>丢包率</strong>（联网正常应为 0）。</li>
+    <li><code>lo</code> = loopback 回环接口（127.0.0.1），本机自测用；配置 IP、开关网卡主要操作 eth0 等实际网卡。</li>
+    <li>示例：<code>sudo ifconfig eth0 192.168.1.10</code>；<code>sudo ifconfig eth0 up/down</code>。</li>
+  </ul>
+  <h3>9.2 ping：测试网络连通</h3>
+  <ul>
+    <li>测试某台机器网络是否通畅；前提是先配好 IP。</li>
+    <li>示例：<code>ping 192.168.1.1</code>，<code>Ctrl+C</code> 停止。</li>
+  </ul>
+</div>
+
+<div class="card" id="l3-pitfall">
+  <h2>十、易错点复盘 ★</h2>
+  <ol>
+    <li>cp 目录忘加 -r → 报错；mv 目录不需要参数。</li>
+    <li>rm 目录忘加 -r → 删不掉；rm -rf 危险，务必确认目标。</li>
+    <li>r 读、w 写、x 执行，别把读和写当成一回事。</li>
+    <li>权限顺序固定：u、g、o 三组，每组 rwx 不变。</li>
+    <li>数字换算：r=4、w=2、x=1；761 = u(7) g(6) o(1)，顺序别写反。</li>
+    <li>硬链接删原文件还在；软链接（ln -s）删原文件就失效。</li>
+    <li>改权限要 sudo。</li>
+    <li>脚本要加 x 才能运行。</li>
+    <li>创建链接/文件避免同名冲突。</li>
+  </ol>
+</div>
+
+<div class="card" id="l3-practice">
+  <h2>十一、课堂操作复盘（标准流程）</h2>
+  <ol>
+    <li>移动文件：mv file1 /home/DIR2/ → 源目录 ls 确认没了 → 目标 ls 确认到了 → ll 看时间戳保留。</li>
+    <li>移动目录：mv /home/DIR1 /home/DIR2/（无需 -r）→ 两边验证。</li>
+    <li>删除文件：rm file1（提示输入 y；权限不够加 sudo）。</li>
+    <li>删除目录：sudo rm -r dir2 → ls 验证。</li>
+    <li>查看类型/权限：ll 看首字符和 9 位权限。</li>
+    <li>字符方式改权限：sudo chmod g+w A、sudo chmod u-w A。</li>
+    <li>数字方式改权限：sudo chmod 761 hello.c → ll 验证 rwx rw- --x。</li>
+    <li>硬链接：ln hello.c hhello.c → ll 验证；删原文件后硬链接仍在。</li>
+    <li>软链接：ln -s hello.c shello.c → ll 验证类型 l；删原文件后软链接失效。</li>
+    <li>网络：ifconfig 看网卡/IP/丢包；ping 目标IP 测连通。</li>
+  </ol>
+</div>
+
+<div class="card" id="l3-quiz">
+  <h2>十二、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>mv 与 cp 在操作目录时有什么区别？</li>
+    <li>mv 之后文件的时间戳为什么不变？</li>
+    <li>rm 删除文件和删除目录分别怎么操作？</li>
+    <li>ll 第一列首字符 -、d、l 分别代表什么？</li>
+    <li>r、w、x 分别是什么意思？</li>
+    <li>rw-r--r-- 对应数字多少？755 对应什么？</li>
+    <li>chmod 的两种写法？各举一例。</li>
+    <li>chmod 761 hello.c 的含义？</li>
+    <li>硬链接和软链接的区别？</li>
+    <li>ping 的作用？ifconfig 能查看哪些信息？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>复制目录要 cp -r；移动目录直接 mv，不用加 -r。</li>
+    <li>移动只改变位置，文件本身（inode 和时间戳）没变；复制生成新文件，时间戳为复制时刻。</li>
+    <li>删文件 rm 文件；删目录 rm -r 目录（可加 -f 强制，慎用）。</li>
+    <li>- 普通文件；d 目录文件；l 链接文件。</li>
+    <li>r 可读、w 可写、x 可执行。</li>
+    <li>rw-r--r-- = 644；755 = u(rwx) g(r-x) o(r-x)。</li>
+    <li>字符方式 chmod u+x 文件；数字方式 chmod 755 文件。</li>
+    <li>所有者 rwx(7)、同组 rw-(6)、其他用户 --x(1)。</li>
+    <li>硬链接是同一 inode 的另一个入口，时间戳一致、删原文件不受影响；软链接类似快捷方式、类型为 l、删原文件后失效。</li>
+    <li>ping 测试网络连通性；ifconfig 查看网卡名、IP、收发字节、丢包率等。</li>
+  </ol>
+</div>
+
+<div class="card" id="l3-appendix">
+  <h2>附录：本课命令速查表</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th><th>常用形式</th></tr>
+    <tr><td>mv 源 目标</td><td>移动/改名</td><td>mv file1 /home/DIR2/</td></tr>
+    <tr><td>rm 文件</td><td>删除文件</td><td>rm file1</td></tr>
+    <tr><td>rm -r 目录</td><td>递归删除目录</td><td>sudo rm -r dir2</td></tr>
+    <tr><td>rm -rf 目录</td><td>强制递归删除（危险）</td><td>慎用</td></tr>
+    <tr><td>ln 原 链接名</td><td>创建硬链接</td><td>ln hello.c hhello.c</td></tr>
+    <tr><td>ln -s 原 链接名</td><td>创建软链接</td><td>ln -s hello.c shello.c</td></tr>
+    <tr><td>chmod 字符 文件</td><td>符号方式改权限</td><td>sudo chmod u+x a.sh</td></tr>
+    <tr><td>chmod 数字 文件</td><td>数字方式改权限</td><td>sudo chmod 761 hello.c</td></tr>
+    <tr><td>ifconfig</td><td>查看/配置网卡</td><td>sudo ifconfig eth0</td></tr>
+    <tr><td>ping 地址</td><td>测试网络连通</td><td>ping 192.168.1.1</td></tr>
+    <tr><td>ll / ls -l</td><td>详细信息（类型+权限+时间）</td><td>ll</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>授课信息：</strong>课件已发布到智慧树平台；课后作业截止 <strong>9 月 23 日 0:00</strong>（即 9 月 22 日半夜 12 点），注意按时提交。</div>
+</div>
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1 课 + 第 2 课 · 由课堂录音转写自动整理 · 更新日期 2026-09-20</p>
+  <p>第 1–3 课 · 由课堂录音转写自动整理 · 更新日期 2026-09-21</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
