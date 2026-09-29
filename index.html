@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–3 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–4 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接）</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器</p>
 </header>
 
 <div class="toc">
@@ -171,6 +171,19 @@ footer a { color: var(--accent); }
     <li><a href="#l3-pitfall">易错点</a></li>
     <li><a href="#l3-practice">操作复盘</a></li>
     <li><a href="#l3-quiz">自测题</a></li>
+  </ol>
+  <h3>第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器</h3>
+  <ol>
+    <li><a href="#l4-quick">本课重点速览</a></li>
+    <li><a href="#l4-review">课前复习</a></li>
+    <li><a href="#l4-net">网络配置与测试 ★</a></li>
+    <li><a href="#l4-tar">压缩与打包 ★</a></li>
+    <li><a href="#l4-ps">进程查看：ps ★</a></li>
+    <li><a href="#l4-vi">vi/vim 文本编辑器 ★</a></li>
+    <li><a href="#l4-homework">作业讲评：四道基础题 ★</a></li>
+    <li><a href="#l4-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l4-practice">课堂操作复盘</a></li>
+    <li><a href="#l4-quiz">复习自测题（含答案）</a></li>
   </ol>
 </div>
 
@@ -1234,12 +1247,308 @@ lrwxrwxrwx  1 asus asus   10 9月20日 11:49 shello.c -&gt; hello.c</div>
   </div>
   <div class="note"><strong>授课信息：</strong>课件已发布到智慧树平台；课后作业截止 <strong>9 月 23 日 0:00</strong>（即 9 月 22 日半夜 12 点），注意按时提交。</div>
 </div>
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 4 课 · 网络配置 / 压缩打包 / 进程查看 / vi 编辑器</h2><p style="color:#dff3ea;margin:0;">承接第 3 课，完成 Linux 指令收尾：网络配置（ifconfig/ping）、压缩打包（tar/gzip）、进程查看（ps）、vi/vim 编辑器三种模式，并附老师四道基础题讲评。</p></div>
+
+<div class="card" id="l4-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>命令/工具</th><th>核心要点</th></tr>
+    <tr><td>网络配置</td><td>ifconfig / ping</td><td>查 IP、关开网卡、改 IP、测试连通</td></tr>
+    <tr><td>网络模式</td><td>桥接 / NAT / 仅主机</td><td>桥接下虚拟机与宿主机同处一个局域网</td></tr>
+    <tr><td>压缩打包</td><td>tar / gzip</td><td>打包=合并，压缩=减小体积；.tar.gz</td></tr>
+    <tr><td>进程查看</td><td>ps aux</td><td>查看系统所有进程（PID 不连续）</td></tr>
+    <tr><td>文本编辑</td><td>vi / vim ★</td><td>标准模式、插入模式、底行模式切换</td></tr>
+    <tr><td>基础考点</td><td>四道题讲评</td><td>架构、定义、处理器分类、冯诺依曼 vs 哈佛</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l4-review">
+  <h2>二、课前复习（第 2、3 课回顾）</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>文件</th><th>文件夹</th></tr>
+    <tr><td>cp 复制</td><td>不加参数</td><td>加 -r</td></tr>
+    <tr><td>mv 移动</td><td>不加参数</td><td>不加参数</td></tr>
+    <tr><td>rm 删除</td><td>不加参数</td><td>加 -r</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li><strong>chmod</strong>：权限分 u/g/o 三组，每组 rwx；数字法 r=4、w=2、x=1（8421/BCD 思想，111=7）。单组用字符方式（如 g+w），多组直接用数字（如 777）。</li>
+    <li><strong>ln</strong>：硬链接（同一节点另一入口，删原文件仍有效）；软链接 ln -s（快捷方式，删原文件失效，类型显示 l）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l4-net">
+  <h2>三、网络配置与测试 ★</h2>
+  <h3>3.1 ifconfig：查看网络接口信息</h3>
+  <p>虚拟机网卡名称为 <strong>ens33</strong>（也常见 eth0）。执行 <code>ifconfig</code>（或 <code>ip addr</code>）可看到：</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>信息</th><th>含义</th><th>示例</th></tr>
+    <tr><td>inet</td><td>虚拟机 IP 地址</td><td>192.168.43.26</td></tr>
+    <tr><td>netmask</td><td>子网掩码</td><td>255.255.255.0</td></tr>
+    <tr><td>broadcast</td><td>广播地址</td><td>192.168.43.255</td></tr>
+    <tr><td>RX / TX</td><td>接收 / 发送字节数</td><td>2.3 MiB / 2.6 MiB</td></tr>
+    <tr><td>丢包</td><td>传输丢失的数据包</td><td>联网正常应为 0</td></tr>
+    <tr><td>lo</td><td>回环接口（127.0.0.1）</td><td>本机自测用</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>原理补充：</strong>数据发送要经过调制 → 传输 → 解调还原；为安全还有加密/解密。军工等特殊场景使用加密网卡，主要目的是保密通信，不只是“防病毒”。</div>
+  <h3>3.2 关闭与打开网卡</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作</th><th>命令</th><th>效果</th></tr>
+    <tr><td>关闭网卡</td><td>sudo ifconfig ens33 down</td><td>网卡失效，只剩 lo，网络图标消失</td></tr>
+    <tr><td>打开网卡</td><td>sudo ifconfig ens33 up</td><td>网卡恢复，IP 与网络图标重现</td></tr>
+  </table>
+  </div>
+  <h3>3.3 修改虚拟机 IP</h3>
+  <p>一条命令即可，无需图形界面：<code>sudo ifconfig ens33 192.168.43.27</code>，再用 <code>ifconfig</code> 验证。</p>
+  <h3>3.4 Windows 上查看 IP</h3>
+  <p><code>Win + R</code> → 输入 <code>cmd</code> → 执行 <code>ipconfig</code>。本课中笔记本为 192.168.43.22，虚拟机为 192.168.43.27，前三位相同 → 同一局域网。</p>
+  <h3>3.5 三种网络模式与桥接</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模式</th><th>说明</th><th>能否上网</th><th>与宿主机互访</th></tr>
+    <tr><td>桥接 Bridged</td><td>虚拟机像局域网中的真实主机，同网段</td><td>能</td><td>能</td></tr>
+    <tr><td>NAT</td><td>经宿主机翻译共享上网</td><td>能</td><td>能（外部不能直连）</td></tr>
+    <tr><td>仅主机 Host-Only</td><td>只与宿主机组成私有网络</td><td>不能</td><td>能</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>桥接类比：</strong>全屋 Wi-Fi 桥接/中继——楼下路由器，楼上信号弱用桥接扩展；信号会被墙体、车辆、树木削弱，标称距离一般在空旷理想条件下。</div>
+  <h3>3.6 ping：测试网络连通性</h3>
+  <ul>
+    <li>作用：检测局域网内两台机器网络是否通畅；前提是都配好 IP。</li>
+    <li>Windows 测虚拟机：<code>ping 192.168.43.27</code>；Ubuntu 测 Windows：<code>ping 192.168.43.22</code>。</li>
+    <li>补充（C/S 架构）：一般把 Ubuntu 虚拟机看作<strong>客户端</strong>，Windows 看作<strong>服务器</strong>，访问前先 ping 测连通。</li>
+    <li>课堂演示 ping 未成功与防火墙有关；教材有完整示例，搭 Web 服务器时还会用到。</li>
+  </ul>
+</div>
+
+<div class="card" id="l4-tar">
+  <h2>四、压缩与打包 ★</h2>
+  <h3>4.1 打包 vs 压缩</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>概念</th><th>类比</th><th>说明</th></tr>
+    <tr><td>打包</td><td>把多件物品装进皮箱</td><td>多个文件合并成一个，体积基本不变</td></tr>
+    <tr><td>压缩</td><td>抽真空压缩袋压被子</td><td>减小文件体积（10 KB 压成 4 KB）</td></tr>
+  </table>
+  </div>
+  <h3>4.2 tar：打包与解包（教材 24 页 1.3.3）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>含义</th><th>参数</th></tr>
+    <tr><td>tar cfv hello.tar hello.c</td><td>打包</td><td>c=创建，f=文件名，v=显示过程</td></tr>
+    <tr><td>tar tfv hello.tar</td><td>查看包内容</td><td>t=列出</td></tr>
+    <tr><td>tar xfv hello.tar</td><td>解包</td><td>x=释放</td></tr>
+  </table>
+  </div>
+  <div class="warn"><strong>注意：</strong>空文件打包后体积变大属正常（有格式开销），就像“空腹 100 斤、吃完饭 102 斤”。</div>
+  <h3>4.3 打包并压缩：.tar.gz（重点）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td>sudo tar czvf hello.tar.gz hello.c</td><td>打包 + gzip 压缩生成 .tar.gz</td></tr>
+    <tr><td>sudo tar czvf hello.tar.gz /home/DIR/</td><td>把整个目录打包压缩</td></tr>
+    <tr><td>sudo tar xzvf hello.tar.gz</td><td>解压还原</td></tr>
+  </table>
+  </div>
+  <h3>4.4 gzip 与 bzip2 对比（了解）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>工具</th><th>压缩速度</th><th>压缩比</th></tr>
+    <tr><td>gzip（z）</td><td>快</td><td>低（10万→约7万）</td></tr>
+    <tr><td>bzip2（j）</td><td>慢</td><td>高（10万→约6万）</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>结论：</strong>要快用 gzip，要小用 bzip2。</div>
+</div>
+
+<div class="card" id="l4-ps">
+  <h2>五、进程查看：ps ★</h2>
+  <ul>
+    <li><code>ps aux</code> 可查看<b>当前虚拟机中运行的所有进程</b>。</li>
+    <li>主要列：USER（用户）、PID（进程号）、%CPU（CPU 占用）、%MEM（内存占用）、SIZE、COMMAND。</li>
+    <li>课堂发现：PID <strong>不连续</strong>（如从 12、13 开始，没有 9、10、11），每个进程占用独立号段。</li>
+    <li>最后一条命令执行时也会产生进程，属 linux（普通）用户身份。</li>
+    <li>第六章会详讲进程概念，本课只需会用命令查看。</li>
+  </ul>
+</div>
+
+<div class="card" id="l4-vi">
+  <h2>六、vi/vim 文本编辑器 ★（本课重点）</h2>
+  <h3>6.1 vi 与 vim</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>工具</th><th>特点</th></tr>
+    <tr><td>vi</td><td>老牌编辑器，全部黑体字</td></tr>
+    <tr><td>vim</td><td>vi 增强版，有语法高亮配色，更推荐</td></tr>
+  </table>
+  </div>
+  <p>编辑命令：<code>vi 文件名</code> 或 <code>vim 文件名</code>。后续配置 Web 服务器改配置文件主要用 vi/vim。</p>
+  <h3>6.2 三种模式 ★</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模式</th><th>进入方式</th><th>作用</th></tr>
+    <tr><td>标准模式（命令模式）</td><td>打开默认进入；Esc 返回</td><td>移动光标、删除、复制、粘贴、撤销、跳转</td></tr>
+    <tr><td>插入模式</td><td>按 i / a / o</td><td>输入/编辑文字</td></tr>
+    <tr><td>底行模式</td><td>按 Shift + :</td><td>保存、退出、设行号</td></tr>
+  </table>
+  </div>
+  <div class="flow">标准模式 --i/a/o--&gt; 插入模式
+标准模式 --Shift+:--&gt; 底行模式
+插入模式 --Esc--&gt; 标准模式
+底行模式 --回车/Esc--&gt; 标准模式</div>
+  <div class="warn"><strong>注意：</strong>插入模式<strong>不能直接</strong>进底行模式，必须先 Esc 回标准模式，再 Shift + :。</div>
+  <h3>6.3 标准模式常用操作（教材 37 页表 2-1）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>按键</th><th>作用</th></tr>
+    <tr><td>0</td><td>光标移到本行行首</td></tr>
+    <tr><td>$</td><td>光标移到本行行尾</td></tr>
+    <tr><td>G</td><td>跳到文件最后一行</td></tr>
+    <tr><td>nG（如 5G）</td><td>跳到第 n 行</td></tr>
+    <tr><td>n 回车</td><td>光标向下移动 n 行</td></tr>
+    <tr><td>Ctrl+B / Ctrl+F</td><td>向前 / 向后翻一页</td></tr>
+    <tr><td>Ctrl+U / Ctrl+D</td><td>向前 / 向后翻半页</td></tr>
+    <tr><td>/关键词</td><td>光标之后查找</td></tr>
+    <tr><td>?关键词</td><td>光标之前查找</td></tr>
+    <tr><td>x</td><td>删除光标处一个字符</td></tr>
+    <tr><td>ndd（如 2dd）</td><td>删除光标起 n 行</td></tr>
+    <tr><td>nyy（如 2yy）</td><td>复制光标起 n 行</td></tr>
+    <tr><td>p</td><td>粘贴</td></tr>
+    <tr><td>u</td><td>撤销</td></tr>
+  </table>
+  </div>
+  <h3>6.4 插入模式</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>按键</th><th>作用</th></tr>
+    <tr><td>i</td><td>光标前插入（最常用）</td></tr>
+    <tr><td>a</td><td>光标后插入</td></tr>
+    <tr><td>o</td><td>下一行新开一行插入</td></tr>
+    <tr><td>Esc</td><td>返回标准模式</td></tr>
+  </table>
+  </div>
+  <h3>6.5 底行模式常用命令</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td>:set nu</td><td>显示行号</td></tr>
+    <tr><td>:set nonu</td><td>取消行号</td></tr>
+    <tr><td>:wq 或 :x</td><td>保存并退出</td></tr>
+    <tr><td>:w</td><td>只保存不退出</td></tr>
+    <tr><td>:q</td><td>退出（未保存会提示）</td></tr>
+    <tr><td>:q!</td><td>强制退出不保存</td></tr>
+  </table>
+  </div>
+  <h3>6.6 完整操作流程</h3>
+  <ol>
+    <li>新建文件：touch hello.c</li>
+    <li>改权限：sudo chmod 777 hello.c</li>
+    <li>编辑：vi hello.c → 按 i 输入内容 → Esc</li>
+    <li>保存退出：Shift + : → 输入 wq 回车</li>
+    <li>验证：ls -l / cat hello.c</li>
+  </ol>
+  <div class="note"><strong>扩展：</strong>做项目可用 VS Code（图形界面 + 集成终端），但服务器上改配置仍以 vi/vim 为主。</div>
+</div>
+
+<div class="card" id="l4-homework">
+  <h2>七、作业讲评：四道基础题 ★</h2>
+  <ol>
+    <li><strong>架构组成：</strong>处理器（CPU/微处理器）→ 外围硬件 → 操作系统 → 应用程序，即硬件层、操作系统层、应用层三大部分。</li>
+    <li><strong>定义：</strong>以应用为中心、以计算机技术为基础、软硬件可裁剪，适用于对功能、可靠性、成本、功耗有严格要求的专用计算机系统；答题补充“成本、体积、功耗、稳定性”更完整。</li>
+    <li><strong>处理器种类与选择：</strong>MPU（中高端数据处理）、MCU（低端控制，如单片机）、DSP（数字信号处理）、SoC（片上系统，手机等）、SOPC（可编程片上系统）；按实际需求场景和性能选择——成本低选 MCU，处理量大选 MPU/DSP，集成度高选 SoC/SOPC。</li>
+    <li><strong>冯诺依曼 vs 哈佛：</strong>冯诺依曼指令与数据共用一条总线、互相冲突效率低（一个门）；哈佛存储与总线分开、互不影响效率高（前门后门）；现代 MCU/ARM 普遍用哈佛（改进型）。</li>
+  </ol>
+</div>
+
+<div class="card" id="l4-pitfall">
+  <h2>八、易错点复盘 ★</h2>
+  <ol>
+    <li>cp/rm 操作目录要加 -r，mv 不需要。</li>
+    <li>改权限要 sudo；chmod 777 权限最大，慎用于系统文件。</li>
+    <li>tar 参数：创建 c、释放 x、查看 t、压缩 z，别把 c/x 用反。</li>
+    <li>.tar 是打包，gz 才是压缩。</li>
+    <li>vi 三模式切换：i 进插入、Esc 回标准、Shift+: 进底行；插入模式不能直接进底行模式。</li>
+    <li>不保存退出 :q!，保存退出 :wq，别记反。</li>
+    <li>改文件前先 chmod 保证可写。</li>
+    <li>桥接模式要求同网段才能互通；改 IP 后 ifconfig 验证。</li>
+    <li>ping 不通先查防火墙、IP、是否同网段。</li>
+  </ol>
+</div>
+
+<div class="card" id="l4-practice">
+  <h2>九、课堂操作复盘</h2>
+  <ol>
+    <li>ifconfig 查网卡信息（ens33、IP、掩码、广播、RX/TX、丢包）。</li>
+    <li>sudo ifconfig ens33 down / up 关开网卡。</li>
+    <li>sudo ifconfig ens33 192.168.43.27 改 IP。</li>
+    <li>Windows：Win+R → cmd → ipconfig 查 IP。</li>
+    <li>Windows ping 192.168.43.27；Ubuntu ping 192.168.43.22。</li>
+    <li>tar cfv hello.tar hello.c 打包；tar xfv hello.tar 解包。</li>
+    <li>tar czvf hello.tar.gz hello.c 打包压缩；tar xzvf hello.tar.gz 解压。</li>
+    <li>ps aux 查进程。</li>
+    <li>touch hello.c → chmod 777 → vi hello.c → 输入 → Esc → :wq。</li>
+  </ol>
+</div>
+
+<div class="card" id="l4-quiz">
+  <h2>十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>查看虚拟机 IP、关闭/打开网卡、修改 IP 分别用什么命令？</li>
+    <li>打包和压缩有什么区别？</li>
+    <li>tar czvf a.tar.gz 目录 与 tar xzvf a.tar.gz 分别做什么？</li>
+    <li>ps aux 的 PID、%CPU 各表示什么？</li>
+    <li>vi 的三种模式及切换方式？</li>
+    <li>i、a、o 在 vi 中的区别？</li>
+    <li>:wq、:q!、:set nu 分别是什么意思？</li>
+    <li>桥接模式下为什么能互相 ping 通？</li>
+    <li>gzip 与 bzip2 的区别？</li>
+    <li>MCU、MPU、DSP、SoC 分别适合什么场景？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>ifconfig 查 IP；sudo ifconfig ens33 down 关；up 开；sudo ifconfig ens33 IP 改。</li>
+    <li>打包=多个文件合并（体积不变）；压缩=减小体积。</li>
+    <li>前者打包并 gzip 压缩成 .tar.gz；后者解压还原。</li>
+    <li>PID 进程号；%CPU CPU 占用率。</li>
+    <li>标准/插入/底行；i/a/o 进插入，Esc 回标准，Shift+: 进底行。</li>
+    <li>i 光标前插入；a 光标后插入；o 下一行新开一行。</li>
+    <li>保存并退出；强制退出不保存；显示行号。</li>
+    <li>桥接下虚拟机与宿主机同网段（同一局域网）。</li>
+    <li>gzip 快但压缩比低；bzip2 慢但压缩比高。</li>
+    <li>MCU 低成本控制；MPU 中高端处理；DSP 信号处理；SoC 高集成（手机）。</li>
+  </ol>
+  <h3>附录：本课命令速查表</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td>ifconfig / ip addr</td><td>查看网卡信息</td></tr>
+    <tr><td>sudo ifconfig ens33 up/down</td><td>打开/关闭网卡</td></tr>
+    <tr><td>sudo ifconfig ens33 IP</td><td>临时修改 IP</td></tr>
+    <tr><td>ipconfig</td><td>Windows 查 IP</td></tr>
+    <tr><td>ping IP</td><td>测试网络连通</td></tr>
+    <tr><td>tar cfv / tfv / xfv</td><td>打包 / 查包 / 解包</td></tr>
+    <tr><td>tar czvf / xzvf</td><td>打包压缩 / 解压</td></tr>
+    <tr><td>ps aux</td><td>查看所有进程</td></tr>
+    <tr><td>vi/vim 文件</td><td>编辑文件</td></tr>
+    <tr><td>:wq / :q! / :set nu</td><td>保存退出 / 强退 / 行号</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>补充：</strong>vi 表格（教材 37 页表 2-1）、压缩打包例子（教材 24 页 1.3.3）建议课后跟着练；老师作业需在实际 Linux 环境中操作。</div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–3 课 · 由课堂录音转写自动整理 · 更新日期 2026-09-21</p>
+  <p>第 1–4 课 · 由课堂录音转写自动整理 · 更新日期 2026-09-29</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
