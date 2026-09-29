@@ -4,16 +4,17 @@
 
 ## 在线阅读
 
-- [课程笔记（第 1–3 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [课程笔记（第 1–4 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 移动端网页，包含全部课程笔记（第 1–3 课） |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1–4 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 | `嵌入式系统设计原理与应用-第3课笔记.md` | 第 3 课 Markdown 笔记（详细版） |
+| `嵌入式系统设计原理与应用-第4课笔记.md` | 第 4 课 Markdown 笔记（详细版） |
 
 ## 内容概览
 
@@ -48,3 +49,12 @@
 8. 易错点、操作复盘、自测题含答案、命令速查表
 
 > 笔记基于课堂录音自动转写整理，已归纳重点并适当补充背景知识；原始转写可能存在口语化或同音字识别误差。
+
+### 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器（更详细）
+
+1. 网络配置与测试：ifconfig 查看网卡/IP/掩码、网卡 up/down、临时改 IP、桥接/NAT/仅主机、ping 连通测试
+2. 压缩与打包：打包 vs 压缩的区别、tar cfv/tfv/xfv、tar czvf/xzvf（.tar.gz）、gzip 与 bzip2 对比
+3. 进程查看：ps aux 查看系统进程、PID 不连续的成因
+4. vi/vim 编辑器：标准/插入/底行三种模式、i/a/o 进入插入、Esc、:wq / :q! / :set nu、标准模式快捷键（0/$/G/gg/nG/dd/yy/p/u 等）
+5. 作业讲评：架构组成、嵌入式定义、处理器分类与选型、冯·诺依曼 vs 哈佛
+6. 易错点、操作复盘、自测题含答案
