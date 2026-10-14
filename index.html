@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–4 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–6 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程</p>
 </header>
 
 <div class="toc">
@@ -184,6 +184,34 @@ footer a { color: var(--accent); }
     <li><a href="#l4-pitfall">易错点复盘 ★</a></li>
     <li><a href="#l4-practice">课堂操作复盘</a></li>
     <li><a href="#l4-quiz">复习自测题（含答案）</a></li>
+  </ol>
+  <h3>第 5 课：gcc 编译器 / 编译四阶段 / make 与 Makefile</h3>
+  <ol>
+    <li><a href="#l5-quick">本课重点速览</a></li>
+    <li><a href="#l5-review">课前复习（vi）</a></li>
+    <li><a href="#l5-ide">IDE 集成开发环境</a></li>
+    <li><a href="#l5-gcc">gcc 编译器 ★</a></li>
+    <li><a href="#l5-stages">编译四阶段 ★</a></li>
+    <li><a href="#l5-multi">多文件工程与 make/Makefile ★</a></li>
+    <li><a href="#l5-gdb">gdb 调试（了解）</a></li>
+    <li><a href="#l5-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l5-practice">课堂操作复盘</a></li>
+    <li><a href="#l5-quiz">复习自测题</a></li>
+    <li><a href="#l5-appendix">命令速查表</a></li>
+  </ol>
+  <h3>第 6 课：Samba 服务器配置 / Shell 编程基础</h3>
+  <ol>
+    <li><a href="#l6-quick">本课重点速览</a></li>
+    <li><a href="#l6-review">课前复习</a></li>
+    <li><a href="#l6-cs">服务器与 C/S 架构</a></li>
+    <li><a href="#l6-samba">Samba 服务器配置 ★</a></li>
+    <li><a href="#l6-shell">Shell 编程概述</a></li>
+    <li><a href="#l6-run">脚本的创建与运行 ★</a></li>
+    <li><a href="#l6-var">Shell 变量 ★</a></li>
+    <li><a href="#l6-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l6-practice">课堂操作复盘</a></li>
+    <li><a href="#l6-quiz">复习自测题</a></li>
+    <li><a href="#l6-appendix">命令速查表</a></li>
   </ol>
 </div>
 
@@ -922,7 +950,8 @@ footer a { color: var(--accent); }
     <tr><td>ls 目录路径</td><td>直接查看指定目录，如 ls /tmp</td></tr>
   </table>
   </div>
-  
+</div>
+
 <div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 3 课 · Linux 文件操作进阶（mv / rm / 权限 / 链接 / 网络）</h2><p style="color:#dff3ea;margin:0;">承接第 2 课，本课讲解 mv 移动、rm 删除、文件类型识别、权限 rwx 与 chmod、软硬链接 ln，并简介网络命令。内容更详细，含丰富对比表与例题。</p></div>
 
 <div class="card" id="l3-quick">
@@ -1543,12 +1572,582 @@ lrwxrwxrwx  1 asus asus   10 9月20日 11:49 shello.c -&gt; hello.c</div>
   <div class="note"><strong>补充：</strong>vi 表格（教材 37 页表 2-1）、压缩打包例子（教材 24 页 1.3.3）建议课后跟着练；老师作业需在实际 Linux 环境中操作。</div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 5 课 · gcc 编译器 / 编译四阶段 / make 与 Makefile</h2><p style="color:#dff3ea;margin:0;">复习 vi 三种模式后进入“编译”：gcc 的定位、编译四阶段（预处理→编译→汇编→链接）、多文件工程，以及用 make + Makefile 实现高效编译。</p></div>
+
+<div class="card" id="l5-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+    <tr><td>vi 复习</td><td>三种模式与切换规则</td><td>插入⇄底行 不能直接互转</td></tr>
+    <tr><td>权限</td><td>新建文件默认 644</td><td>不可写不能保存、不可执行不能编译</td></tr>
+    <tr><td>cat</td><td>快速查看代码</td><td>“瞄一眼”，不用进 vi</td></tr>
+    <tr><td>IDE</td><td>集成开发环境</td><td>Keil / Dev-C++ / Code::Blocks / VS Code</td></tr>
+    <tr><td>gcc</td><td>GNU 编译器</td><td>支持 C/C++/Java，跨平台</td></tr>
+    <tr><td>编译四阶段 ★</td><td>预处理→编译→汇编→链接</td><td>-E / -S / -c / 链接</td></tr>
+    <tr><td>中间文件</td><td>后缀递进</td><td>.i → .s → .o → 可执行</td></tr>
+    <tr><td>make ★</td><td>工程管理</td><td>目标: 依赖；Tab 缩进；M 大写；clean</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l5-review">
+  <h2>二、课前复习：vi 编辑器（第 4 课回顾）</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模式</th><th>别名</th><th>作用</th><th>如何进入</th></tr>
+    <tr><td>标准模式</td><td>命令 / 命令行模式</td><td>复制、粘贴、删除、移动、查找</td><td>打开即进入；插入模式按 Esc 返回</td></tr>
+    <tr><td>插入模式</td><td>编辑模式</td><td>输入代码/文字</td><td>命令模式按 i / a / o</td></tr>
+    <tr><td>底行模式</td><td>末行模式</td><td>保存、退出、设置行号</td><td>命令模式按 Shift + :</td></tr>
+  </table>
+  </div>
+  <div class="warn"><strong>判断题（课堂原题）：</strong>“三种模式相互之间可以进行转换。” —— <strong>错！</strong> 错在 <strong>插入模式与底行模式不能直接相互转换</strong>，必须先按 Esc 回到命令模式再切换。命令模式是三种模式的“交通枢纽”。</div>
+  <div class="flow">插入模式 ──Esc──► 命令模式 ──Shift+:──► 底行模式
+插入模式 ◄──i/a/o── 命令模式 ◄──Esc/回车── 底行模式
+（插入模式 ⇄ 底行模式 不能直接互转）</div>
+  <h3>完整操作流程</h3>
+  <ol>
+    <li><code>vi hello.c</code> 打开/新建文件（左下角显示文件名、行数、字节数）。</li>
+    <li>按 <code>i</code> 进插入模式（出现 <code>-- INSERT --</code>），开始写代码。</li>
+    <li>写完按 <code>Esc</code> 回命令模式。</li>
+    <li>按 <code>Shift + :</code> 进底行模式，输入 <code>wq</code> 回车 → 保存并退出。</li>
+  </ol>
+  <h3>权限与文件大小</h3>
+  <ul>
+    <li>新建文件默认权限 <code>rw-r--r--</code>（即 <strong>644</strong>）：所有者可读可写<strong>不可执行</strong>。</li>
+    <li><strong>不可写 → 不能保存；不可执行 → 不能编译、不能运行。</strong>涉及编译的文件要先把权限开大（<code>chmod 777 文件</code>）。</li>
+    <li><code>ls -l</code> 中 6 行 70 字节：<strong>1 字节（Byte/B）= 8 位（bit/b）</strong>，注意大 B 是字节、小 b 是位。</li>
+  </ul>
+  <h3>cat：不打开编辑器也能看代码</h3>
+  <ul>
+    <li>作用：直接在终端打印文件内容，“瞄一眼”。</li>
+    <li>场景：排错/看短代码用 <code>cat 文件</code>；要真正修改再用 <code>vi</code>。</li>
+  </ul>
+</div>
+
+<div class="card" id="l5-ide">
+  <h2>三、IDE：集成开发环境</h2>
+  <ul>
+    <li>IDE = <strong>Integrated Development Environment（集成开发环境）</strong>，把编辑器、编译器、调试器、工程管理整合到一个界面。</li>
+    <li>常见：Keil（单片机/ARM）、Dev-C++、Code::Blocks、VS Code。</li>
+    <li>支持多种芯片、多种语言：把各类工具链“打包集成”，所以能对不同芯片/语言开发。</li>
+  </ul>
+  <h3>UI 与底层逻辑</h3>
+  <ul>
+    <li>UI（用户界面）＝窗口布局：工具栏、工程栏、底部<strong>编译/报错栏</strong>、中间代码编辑区。</li>
+    <li><strong>底层逻辑</strong>：IDE 只是把命令行工具<strong>封装</strong>了——点“三角形”= 运行，点“正方形”= 暂停。</li>
+    <li>本课程的意义：揭开 IDE 这层“面向鼠标的壳”，直接看<strong>终端里的底层原理</strong>（编辑器 + gcc + gdb）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l5-gcc">
+  <h2>四、gcc 编译器 ★</h2>
+  <ul>
+    <li>全称 GNU C Compiler（GNU 编译器集合，通常叫 GCC）。</li>
+    <li>支持 <strong>C / C++ / Java</strong> 等多种高级语言。</li>
+    <li><strong>跨平台</strong>：Windows 上 Code::Blocks 用的就是 gcc，换到 Linux 内核完全不同它仍可用。</li>
+    <li>分工：<strong>vi 负责编辑，gcc 负责编译</strong>，两者配合完成“写代码 → 可执行程序”。</li>
+  </ul>
+  <h3>单文件编译</h3>
+  <div class="flow">gcc hello.c -o hello      # -o 后跟输出文件名（output）
+./hello                   # 执行：./ 后不加空格，直接跟文件名</div>
+  <ul>
+    <li><code>-o</code> 含义是 <strong>output</strong>，指定生成的可执行文件名（不能起成 <code>.c</code>）。</li>
+    <li>不加 <code>-o</code> 时默认生成 <code>a.out</code>。</li>
+    <li>编译后文件会<strong>变大</strong>（如 70 字节 → 约 15 KB），因为把库等内容链接了进来。</li>
+    <li><code>hello world</code> 只在<strong>终端</strong>回显，不像 Dev-C++ 单独弹窗。</li>
+  </ul>
+</div>
+
+<div class="card" id="l5-stages">
+  <h2>五、编译的四个阶段 ★（本课核心）</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>阶段</th><th>名称</th><th>参数</th><th>输入</th><th>输出</th><th>做了什么</th></tr>
+    <tr><td>①</td><td>预处理</td><td>-E</td><td>.c</td><td>.i</td><td>展开头文件、宏替换、去注释、条件编译</td></tr>
+    <tr><td>②</td><td>编译</td><td>-S</td><td>.i</td><td>.s</td><td>语法/语义分析，生成<strong>汇编代码</strong></td></tr>
+    <tr><td>③</td><td>汇编</td><td>-c</td><td>.s</td><td>.o</td><td>把汇编翻译成<strong>机器码</strong></td></tr>
+    <tr><td>④</td><td>链接</td><td>（-o）</td><td>.o + 库</td><td>可执行文件</td><td>把多个目标文件与库连成可执行程序</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>顺序不可变：</strong>一定是 ① → ② → ③ → ④。IDE 里点一下“编译运行”看似一瞬间，底层依次做完了这四步。</div>
+  <h3>逐阶段演示</h3>
+  <div class="flow">gcc -E hello.c -o hello.i   # ① 预处理 → .i
+gcc -S hello.i -o hello.s   # ② 编译   → .s（汇编）
+gcc -c hello.s -o hello.o   # ③ 汇编   → .o（目标文件）
+gcc hello.o -o hello        # ④ 链接   → 可执行文件
+./hello                     # ⑤ 执行</div>
+  <ul>
+    <li><strong>.i</strong>：头文件被展开、宏被替换、注释被删，但仍是 C 语言。</li>
+    <li><strong>.s</strong>：和 C 结构完全不同，一行一行，可见 <code>mov</code>、<code>register</code>、<code>offset</code> 等。C 后缀 <code>.c</code>，汇编后缀 <code>.s</code>。</li>
+    <li><strong>.o</strong>：二进制机器码，用 cat/vi 打开是乱码——这正是源码不直接暴露的原因（企业靠“编译后不开源”保护知识产权，反编译也难还原）。</li>
+    <li>把四步合成一条 = 日常的 <code>gcc hello.c -o hello</code>。</li>
+  </ul>
+  <h3>教材对照</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>内容</th><th>教材位置</th></tr>
+    <tr><td>gcc 参数总表（-c -S -E -g）</td><td>第 42 页 表 2-4</td></tr>
+    <tr><td>-E 只做预处理</td><td>第 44 页</td></tr>
+    <tr><td>链接阶段</td><td>第 45 页</td></tr>
+    <tr><td>gdb 常用命令表</td><td>第 46 页 表 2-7</td></tr>
+    <tr><td>C++ 编译示例（.cpp，用 g++ -g）</td><td>第 48 页</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l5-multi">
+  <h2>六、多文件工程与 make / Makefile ★</h2>
+  <h3>6.1 为什么要 Makefile</h3>
+  <ul>
+    <li>一个工程常有 <code>main.c</code>、<code>input.c</code>、<code>add.c</code>、<code>lcd12864.c</code> 等十几个 <code>.c</code> 文件。</li>
+    <li>若每次都用 <code>gcc a.c b.c c.c ... -o main</code>：命令又长又易错，改一个文件还得全部重编，<strong>低效且易错</strong>。</li>
+    <li>解决：用 <strong>make 工具 + Makefile 文件</strong>统一管理工程。</li>
+  </ul>
+  <h3>6.2 Makefile 的三条硬规则</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>规则</th><th>要求</th></tr>
+    <tr><td>文件名</td><td><code>Makefile</code>（M 必须<strong>大写</strong>；也可 makefile）</td></tr>
+    <tr><td>位置</td><td>与工程源文件放在<strong>同一个文件夹</strong></td></tr>
+    <tr><td>缩进</td><td>命令行的缩进必须用 <strong>Tab</strong>，不能用空格</td></tr>
+  </table>
+  </div>
+  <h3>6.3 书写格式</h3>
+  <div class="flow">main: main.o input.o add.o
+	gcc main.o input.o add.o -o main
+
+main.o: main.c
+	gcc -c main.c -o main.o
+
+input.o: input.c
+	gcc -c input.c -o input.o
+
+add.o: add.c
+	gcc -c add.c -o add.o
+
+clean:
+	rm -f *.o main</div>
+  <ul>
+    <li>格式 = <strong>目标: 依赖</strong>，下一行（Tab 缩进）是<strong>命令</strong>。</li>
+    <li>理解方式：<strong>倒推</strong>——想要 <code>main</code>，就得先有 <code>.o</code>；想要 <code>.o</code>，就得有对应 <code>.c</code>。</li>
+    <li><code>clean</code>：<code>make clean</code> 执行 <code>rm -f *.o main</code>，只删中间对象与可执行文件，<strong>保留源码 .c / .h / Makefile</strong>。</li>
+  </ul>
+  <h3>6.4 make 解决的三件事</h3>
+  <ol>
+    <li><strong>工程没编译过</strong>：所有 <code>.c</code> 全部编译。</li>
+    <li><strong>只改了个别 .c</strong>：只重新编译被改动的那个（10 个改 1 个只编 1 个，省时间）。</li>
+    <li><strong>头文件被改</strong>：找到引用了该头文件的 <code>.c</code> 重新编译，避免全量重编。</li>
+  </ol>
+  <div class="note"><strong>课堂现象：</strong><code>make</code> 后能看到 4 条编译信息；<code>ls</code> 多出若干 <code>.o</code> 与可执行文件；<code>make clean</code> 后恢复成“3 个 .c + 2 个 .h + Makefile”。</div>
+</div>
+
+<div class="card" id="l5-gdb">
+  <h2>七、gdb 调试（了解）</h2>
+  <ul>
+    <li>本课只做了解，不重点展开：对应教材第 46 页表 2-7、第 48 页示例（示例为 C++ 程序，用 <code>g++</code> 编译）。</li>
+    <li>常用能力：添加/删除<strong>断点</strong>、单步执行、快速进入某个函数。</li>
+    <li>至此形成闭环：<strong>vi 编辑 → gcc 编译 → gdb 调试</strong>。</li>
+  </ul>
+</div>
+
+<div class="card" id="l5-pitfall">
+  <h2>八、易错点复盘 ★</h2>
+  <ol>
+    <li>vi 三种模式不能随便互转——插入模式与底行模式必须经命令模式过渡。</li>
+    <li>新建文件默认 644，不加可执行权限<strong>编译/运行会失败</strong>；先 <code>chmod</code>。</li>
+    <li><code>gcc -E</code>、<code>-S</code>、<code>-c</code> <strong>大小写敏感</strong>，写错得不到期望的中间文件。</li>
+    <li>中间文件后缀别混：预处理 <code>.i</code>、汇编 <code>.s</code>、目标 <code>.o</code>、可执行无后缀。</li>
+    <li><code>-o</code> 是 output，指定输出名；<code>./</code> 后面不能有空格。</li>
+    <li>Makefile 里缩进必须用 <strong>Tab</strong>；文件名 <strong>M 大写</strong>；必须和工程同目录。</li>
+    <li><code>.o</code> 是二进制，用 cat/vi 看是乱码属正常现象。</li>
+  </ol>
+</div>
+
+<div class="card" id="l5-practice">
+  <h2>九、课堂操作复盘</h2>
+  <ol>
+    <li>复习 vi：<code>vi hello.c</code> → <code>i</code> 编辑 → <code>Esc</code> → <code>:wq</code> 保存退出。</li>
+    <li>单文件编译：<code>gcc hello.c -o hello</code> → <code>./hello</code> → 终端输出 hello world。</li>
+    <li>查看代码：<code>cat hello.c</code>（不打开编辑器）。</li>
+    <li>四阶段拆解：依次用 <code>-E / -S / -c</code> 生成 <code>.i / .s / .o</code>，最后链接成可执行文件。</li>
+    <li>多文件工程：<code>gcc main.c input.c add.c -o main</code> → <code>./main</code> → 输入两数求和。</li>
+    <li>Makefile 演示：编写 Makefile → <code>make</code> 自动分步编译 → <code>make clean</code> 清理。</li>
+  </ol>
+</div>
+
+<div class="card" id="l5-quiz">
+  <h2>十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>vi 有哪三种模式？它们之间能否任意互转？</li>
+    <li>vi 里写完代码如何保存退出？完整按键流程是什么？</li>
+    <li>新建文件默认权限是多少？为什么编译前常要改权限？</li>
+    <li>cat 和 vi 查看代码有什么区别？什么时候用 cat？</li>
+    <li>什么是 IDE？举两个例子。</li>
+    <li>gcc 支持哪些语言？为什么说它跨平台？</li>
+    <li>编译分哪四个阶段？顺序能否改变？</li>
+    <li>-E、-S、-c 各生成什么文件？</li>
+    <li>单文件编译并运行的命令是什么？</li>
+    <li>多文件工程一条命令怎么编译？</li>
+    <li>Makefile 的三条硬规则是什么？</li>
+    <li>make clean 一般做什么？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>标准（命令）模式、插入模式、底行模式；不能任意互转，插入模式与底行模式必须经命令模式过渡。</li>
+    <li>插入模式按 Esc 回命令模式，再按 Shift + : 进底行模式，输入 wq 回车。</li>
+    <li>644（rw-r--r--）；没有执行权限就无法编译、无法运行。</li>
+    <li>cat 直接把内容打印到终端、快；vi 用于编辑并需保存退出。排错/看短代码用 cat。</li>
+    <li>集成开发环境，把编辑器、编译器、调试器等集成到一个界面；如 Keil、Dev-C++、Code::Blocks、VS Code。</li>
+    <li>支持 C/C++/Java 等；Windows 与 Linux 内核不同它都能用，故称跨平台。</li>
+    <li>预处理 → 编译 → 汇编 → 链接；顺序不可变。</li>
+    <li>-E 生成 .i（预处理）、-S 生成 .s（汇编）、-c 生成 .o（目标文件）。</li>
+    <li><code>gcc hello.c -o hello</code> 然后 <code>./hello</code>。</li>
+    <li><code>gcc main.c input.c add.c -o main</code>。</li>
+    <li>文件名 Makefile（M 大写）；与工程同目录；命令缩进用 Tab。</li>
+    <li>执行 <code>rm -f *.o main</code> 之类，删除中间目标文件与可执行文件，保留源码。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol start="13">
+    <li>-E 生成的 .i 文件里为什么内容“多了一大堆”？</li>
+    <li>为什么 .o 文件用 cat 看是乱码？企业为什么这么做？</li>
+    <li>make 在“只改了一个 .c”时为什么更快？</li>
+    <li>g++ -g 与 gcc -g 分别用于什么？</li>
+  </ol>
+</div>
+
+<div class="card" id="l5-appendix">
+  <h2>十一、命令速查表</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td>vi 文件</td><td>打开/新建并编辑文件</td></tr>
+    <tr><td>Esc</td><td>回到命令模式</td></tr>
+    <tr><td>:wq / :q!</td><td>保存退出 / 强制退出不保存</td></tr>
+    <tr><td>:set nu</td><td>显示行号</td></tr>
+    <tr><td>cat 文件</td><td>直接在终端打印文件内容</td></tr>
+    <tr><td>chmod 777 文件</td><td>赋予最大权限</td></tr>
+    <tr><td>gcc 文件.c -o 名字</td><td>单文件编译</td></tr>
+    <tr><td>./名字</td><td>执行程序</td></tr>
+    <tr><td>gcc -E a.c -o a.i</td><td>只做预处理</td></tr>
+    <tr><td>gcc -S a.i -o a.s</td><td>生成汇编</td></tr>
+    <tr><td>gcc -c a.s -o a.o</td><td>生成目标文件</td></tr>
+    <tr><td>gcc a.c b.c c.c -o main</td><td>多文件一次性编译</td></tr>
+    <tr><td>make / make clean</td><td>按 Makefile 编译 / 清理</td></tr>
+    <tr><td>g++ -g x.cpp -o x</td><td>编译 C++ 程序（教材 48 页）</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>作业提醒：</strong>第二次作业共 15 题（10 判断 + 5 单选），注意截止时间；先把本课四阶段与 Makefile 规则弄熟。</div>
+</div>
+
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 6 课 · Samba 服务器配置 / Shell 编程基础</h2><p style="color:#dff3ea;margin:0;">完成第二章收尾：搭建 Samba 服务器实现 Ubuntu 与 Windows 文件共享；再进入第三章 Shell 编程：认识 Shell、创建与运行脚本、掌握变量与变量引用。</p></div>
+
+<div class="card" id="l6-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+    <tr><td>课前复习</td><td>vi / gcc / gdb / makefile</td><td>编辑→编译→调试→工程管理</td></tr>
+    <tr><td>服务器概述</td><td>TFTP / NFS / Samba</td><td>TFTP/NFS 用于 Linux 间；Samba 用于 Linux↔Windows</td></tr>
+    <tr><td>网络架构</td><td>C/S 架构</td><td>Client 客户端 / Server 服务器</td></tr>
+    <tr><td>Samba 配置 ★</td><td>七步流程</td><td>装包→建目录→建账户→改配置→重启→通网→登录</td></tr>
+    <tr><td>Shell 概述</td><td>用户与内核的桥梁</td><td>命令解析器 + 高级程序设计语言</td></tr>
+    <tr><td>Shell 分类</td><td>sh / csh / ksh / bash</td><td>Ubuntu 默认 bash</td></tr>
+    <tr><td>创建与运行 ★</td><td>#!/bin/bash；5 种执行方式</td><td>sh / ./ / source / . / bash</td></tr>
+    <tr><td>Shell 变量 ★</td><td>环境变量 / 用户自定义变量</td><td>引用加 $；赋值等号两边不加空格</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l6-review">
+  <h2>二、课前复习（第 5 课回顾）</h2>
+  <ol>
+    <li><strong>vi</strong>：三种模式（标准/命令、插入、底行）；插入模式与底行模式必须经命令模式过渡。</li>
+    <li><strong>gcc</strong>：功能是编译；编译格式为四阶段的组合。</li>
+    <li><strong>编译四阶段</strong>：预处理 → 编译 → 汇编 → 链接。</li>
+    <li><strong>gdb</strong>：调试工具（断点、单步等）。</li>
+    <li><strong>Makefile（make）</strong>：解决多文件工程编译问题——多文件一次编译链接、只编译改动文件、简化指令方便维护。</li>
+    <li><strong>Makefile 规则</strong>：目标: 依赖，下一行（Tab 缩进）写命令；文件名 M 大写；清理用 clean。</li>
+  </ol>
+</div>
+
+<div class="card" id="l6-cs">
+  <h2>三、服务器与 C/S 架构</h2>
+  <h3>3.1 三种常用服务器</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>服务器</th><th>作用范围</th><th>说明</th></tr>
+    <tr><td>TFTP</td><td>Linux ↔ Linux</td><td>简单文件传输，常用于开发板与主机之间</td></tr>
+    <tr><td>NFS</td><td>Linux ↔ Linux</td><td>网络文件系统，可把远端目录挂载成本地目录</td></tr>
+    <tr><td><strong>Samba</strong> ★</td><td>Linux ↔ Windows</td><td>让 Windows 直接访问 Linux 的共享目录（本课重点）</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>为什么讲 Samba：</strong>Ubuntu 跑在 VMware 虚拟机里，虚拟机又跑在 Windows 里——典型的<strong>跨平台</strong>环境，Samba 就是打通两平台<strong>文件共享</strong>的桥梁。</div>
+  <h3>3.2 C/S 架构</h3>
+  <ul>
+    <li><strong>C = Client（客户端）</strong>：提出请求的一方；<strong>S = Server（服务器）</strong>：提供服务、响应请求的一方。</li>
+    <li>生活类比：<strong>选课系统</strong>（白天抢课卡、半夜好登录）、<strong>双 11</strong>（并发太大卡单）、<strong>蓝桥杯</strong>（教师机当服务器、考生机当客户端下题）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l6-samba">
+  <h2>四、Samba 服务器配置 ★（七步流程）</h2>
+  <div class="warn"><strong>前提：</strong>所有搭建用<strong>命令行</strong>完成，且<strong>虚拟机必须联网</strong>——否则第 1 步 apt-get 装不上，后面全做不了。</div>
+  <h3>第 1 步：安装 Samba</h3>
+  <div class="flow">sudo apt-get install samba samba-common</div>
+  <ul>
+    <li><code>apt-get install</code> 安装软件包；<code>samba</code> 是服务程序，<code>samba-common</code> 是公共组件。</li>
+    <li>会输出进度、版本号；若已是最新会提示 already the newest version。</li>
+  </ul>
+  <h3>第 2 步：创建共享文件夹</h3>
+  <div class="flow">mkdir /home/samba          # 在 home 下创建共享文件夹
+chmod 777 /home/samba      # 给最大权限（否则客户端无权访问）</div>
+  <ul><li>必须改权限：就像门没有钥匙进不去，权限不够客户端无法上传/下载。</li></ul>
+  <h3>第 3 步：创建账户并设置密码</h3>
+  <div class="flow">sudo useradd -m samba          # 创建系统账户
+sudo smbpasswd -a samba        # 为 Samba 账户设置专用密码</div>
+  <ul>
+    <li>Samba 有独立密码体系：要用 <code>smbpasswd</code> <strong>单独设密码</strong>，与系统登录密码分开。</li>
+    <li><code>-a</code> 表示添加账户；输密码时不显示字符（安全机制）。</li>
+  </ul>
+  <h3>第 4 步：修改配置文件 ★</h3>
+  <div class="flow">sudo chmod 777 /etc/samba/smb.conf       # 先保证可写，否则 vi 保存不了
+sudo vi /etc/samba/smb.conf</div>
+  <ul>
+    <li>配置文件在 <strong>/etc/samba/</strong> 下，名 <code>smb.conf</code>。</li>
+    <li>命令模式用 <strong><code>nG</code></strong> 跳到第 n 行；用 <code>:set nu</code> 显示行号。</li>
+    <li>在文件末尾追加共享段（示意）：</li>
+  </ul>
+  <div class="flow">[samba]                     # 方括号里是共享名（=共享文件夹名）
+   comment = samba share
+   path = /home/samba       # 共享目录的绝对路径
+   browseable = yes         # 是否可被浏览
+   writable = yes           # 是否可写
+   public = yes             # 是否公开（公共）
+   available = yes          # 是否启用
+   valid users = samba      # 允许访问的账户</div>
+  <div class="note">关键字段：<strong>path（路径）、browseable（可浏览）、writable（可写）、public（公开）、available（可用）</strong>。权限要“给开”，客户端才能读写。</div>
+  <h3>第 5 步：重启服务</h3>
+  <div class="flow">sudo service smbd restart
+# 或 sudo systemctl restart smbd</div>
+  <ul><li>改完配置必须<strong>重启服务</strong>才生效；服务进程名是 <code>smbd</code>。</li></ul>
+  <h3>第 6 步：保证网络通畅</h3>
+  <div class="flow">ifconfig            # 查 Ubuntu 虚拟机 IP（如 192.168.43.37）
+ipconfig            # 在 Windows 的 cmd 中查宿主机 IP
+ping 192.168.43.37  # 两边互相 ping，能通即 OK</div>
+  <ul><li>只有两系统在<strong>同一网段、能 ping 通</strong>，Windows 才能连上 Samba。</li></ul>
+  <h3>第 7 步：Windows 端登录测试</h3>
+  <ol>
+    <li><code>Win + R</code> 打开“运行”框。</li>
+    <li>输入 <code>\\192.168.43.37</code>（<code>\\</code> + 服务器 IP）回车。</li>
+    <li>弹出登录框，输入 Samba 账户名与密码。</li>
+    <li>登录成功后看到共享目录，直接<strong>拖拽</strong>上传/下载文件。</li>
+  </ol>
+  <div class="note"><strong>一句话记：</strong>装包 → 建目录 → 建账户 → 改配置 → 重启 → 通网 → 登录。</div>
+</div>
+
+<div class="card" id="l6-shell">
+  <h2>五、Shell 编程基础</h2>
+  <h3>5.1 Shell 是什么</h3>
+  <ul>
+    <li><strong>Shell（外壳）</strong>：介于<strong>操作系统内核</strong>与<strong>用户</strong>之间的桥梁。</li>
+    <li>用户输入的每条命令（ls、mkdir、history 等）都经 Shell 传给内核，内核执行后由 Shell 把结果反馈给用户。</li>
+    <li>双重身份：① <strong>命令解析器</strong>（解释执行单条命令）；② <strong>高级程序设计语言</strong>（有变量、关键字、控制语句，可把多条命令组织成脚本）。</li>
+  </ul>
+  <h3>5.2 Shell 的分类</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>名称</th><th>简称</th><th>说明</th></tr>
+    <tr><td>Bourne Shell</td><td>sh</td><td>最早、最基础</td></tr>
+    <tr><td>C Shell</td><td>csh</td><td>语法类似 C</td></tr>
+    <tr><td>Korn Shell</td><td>ksh</td><td>兼容 sh 并增强</td></tr>
+    <tr><td>Bourne Again Shell</td><td><strong>bash</strong></td><td>Ubuntu/Linux 默认，功能最强 ★</td></tr>
+  </table>
+  </div>
+  <ul><li>查看当前 Shell：<code>echo $SHELL</code>（通常显示 <code>/bin/bash</code>）。</li></ul>
+</div>
+
+<div class="card" id="l6-run">
+  <h2>六、脚本的创建与运行 ★</h2>
+  <h3>6.1 创建脚本</h3>
+  <ol>
+    <li>第一行必须是 <strong>shebang</strong>：<code>#!/bin/bash</code>（指明用哪种 Shell 解释）。</li>
+    <li>用 vi / touch 创建，后缀习惯用 <strong>.sh</strong>：</li>
+  </ol>
+  <div class="flow">mkdir shell
+cd shell
+touch test.sh
+chmod 777 test.sh      # 或 chmod a+x test.sh
+vi test.sh</div>
+  <ol start="3"><li>脚本内容示例：</li></ol>
+  <div class="flow">#!/bin/bash
+echo "first shell program"   # echo 相当于“回声/打印”，类似 C 的 printf
+date                         # 输出当前日期时间</div>
+  <h3>6.2 运行脚本的五种方式 ★</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>方式</th><th>命令</th><th>是否需可执行权限</th><th>说明</th></tr>
+    <tr><td>①</td><td>sh test.sh</td><td>否</td><td>显式用 sh 解释</td></tr>
+    <tr><td>②</td><td>./test.sh</td><td><strong>是</strong></td><td>最常见，需先 chmod a+x</td></tr>
+    <tr><td>③</td><td>source test.sh</td><td>否</td><td>在当前 Shell 中执行</td></tr>
+    <tr><td>④</td><td>. test.sh</td><td>否</td><td>与 source 等价，<strong>点后必须有空格</strong></td></tr>
+    <tr><td>⑤</td><td>bash test.sh</td><td>否</td><td>显式用 bash 解释</td></tr>
+  </table>
+  </div>
+  <div class="warn"><strong>易错：</strong><code>source</code> 和 <code>.</code> 后面<strong>一定要有空格</strong>，否则命令无效。</div>
+  <h3>6.3 脚本 vs C 程序</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>对比</th><th>C 程序</th><th>Shell 脚本</th></tr>
+    <tr><td>是否需编译</td><td><strong>需要</strong>（gcc）</td><td><strong>不需要</strong></td></tr>
+    <tr><td>权限</td><td>需要可执行权限</td><td>按运行方式决定（./ 需可执行）</td></tr>
+    <tr><td>运行</td><td>先 gcc 再 ./</td><td>改好权限即可运行</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l6-var">
+  <h2>七、Shell 变量 ★</h2>
+  <h3>7.1 命名规则（与 C 相同）</h3>
+  <ul>
+    <li>由<strong>字母、数字、下划线</strong>组成。</li>
+    <li>只能以<strong>字母或下划线</strong>开头，<strong>不能以数字开头</strong>。</li>
+    <li>不能使用 Shell 的<strong>关键字</strong>（保留字）。</li>
+  </ul>
+  <h3>7.2 变量分类</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>类别</th><th>说明</th><th>示例</th></tr>
+    <tr><td>环境变量</td><td>保存系统状态/环境参数</td><td>HOME、HISTSIZE、LOGNAME、SHELL</td></tr>
+    <tr><td>位置参数变量</td><td>传递脚本参数、判断命令返回值</td><td>$0、$1~$9、$*、$#、$?</td></tr>
+    <tr><td>用户自定义变量</td><td>脚本中自己定义使用</td><td>A=3、B=$A</td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>引用变量必须加 $</strong>（如 <code>echo $A</code>），这一步叫<strong>变量替换/变量引用</strong>，非常重要。</div>
+  <h3>7.3 赋值与使用</h3>
+  <div class="flow">A=3                       # 等号两边不能有空格！
+B="hello world"           # 值含空格用双引号
+echo $A                   # 打印变量 A 的值
+C=$B                      # 变量可递进赋值
+echo "hello, $C"          # 变量可嵌入字符串</div>
+  <ul>
+    <li><strong>等号两侧不能有空格</strong>（<code>A = 3</code> 会报错）。</li>
+    <li>值中有空格时用<strong>双引号</strong>括起来。</li>
+    <li>变量可“链式”赋值（C=$B、B=$A），值依次传递。</li>
+    <li>变量可作为字符串的一部分，类似 C 中 <code>printf("年龄为%d", age)</code> 的格式化效果。</li>
+  </ul>
+  <h3>7.4 变量的数据计算</h3>
+  <div class="flow">A=2
+expr 8 + $A               # 结果 10（注意运算符两侧要有空格）
+B=10
+let C=5+B                 # 结果 15
+echo $C</div>
+  <ul>
+    <li>两条指令：<strong>expr</strong> 与 <strong>let</strong>。</li>
+    <li>expr 做算术/比较，变量要加 <code>$</code>，运算符两侧留空格；let 直接做整数运算并赋值。</li>
+    <li>这些也可在<strong>终端</strong>直接执行——Shell 既是命令解析器，也是编程语言。</li>
+  </ul>
+</div>
+
+<div class="card" id="l6-pitfall">
+  <h2>八、易错点复盘 ★</h2>
+  <ol>
+    <li><code>apt-get install</code> 前必须<strong>联网</strong>，否则第一步就失败。</li>
+    <li>共享目录<strong>必须改权限</strong>（如 777），否则 Windows 端打不开。</li>
+    <li>Samba 账户密码要用 <code>smbpasswd -a</code> 单独设置，不是系统密码。</li>
+    <li>改完 <code>smb.conf</code> 必须 <strong>重启 smbd</strong> 才生效。</li>
+    <li>用 vi 改 /etc 下配置文件前，先 chmod 保证可写。</li>
+    <li>Shell 变量<strong>赋值等号两边不能有空格</strong>，<strong>引用时必须加 $</strong>。</li>
+    <li>运行方式 <code>. test.sh</code> / <code>source test.sh</code>，点与 source 后<strong>必须有空格</strong>。</li>
+    <li>脚本第一行 <code>#!/bin/bash</code> 不要漏，它决定由哪种 Shell 解释。</li>
+  </ol>
+</div>
+
+<div class="card" id="l6-practice">
+  <h2>九、课堂操作复盘</h2>
+  <ol>
+    <li>复习：vi 三模式、gcc 四阶段、Makefile 规则。</li>
+    <li>Samba：装包 → 建 /home/samba 并改权限 → 建账户并 smbpasswd 设密码 → vi 改 smb.conf → service smbd restart → ifconfig/ping → Windows 输入 \\IP 登录。</li>
+    <li>验证：Ubuntu 里 touch 1.c 写内容，Windows 端可见并能拖拽下载。</li>
+    <li>Shell：mkdir shell → touch test.sh → chmod 777 → vi 写入 echo/date → 用 5 种方式运行。</li>
+    <li>变量：A=3 → echo $A；expr 8+$A、let C=5+B 验证计算。</li>
+  </ol>
+</div>
+
+<div class="card" id="l6-quiz">
+  <h2>十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>TFTP、NFS、Samba 三种服务器分别用于哪种平台之间？</li>
+    <li>什么是 C/S 架构？C 和 S 各代表什么？</li>
+    <li>Samba 配置的七步流程是什么？</li>
+    <li>为什么配置 Samba 前虚拟机必须联网？</li>
+    <li>共享文件夹为什么要 chmod 777？</li>
+    <li>Samba 账户密码用什么命令设置？</li>
+    <li>改完 smb.conf 后要做什么才能生效？</li>
+    <li>Shell 是什么？它和内核、用户是什么关系？</li>
+    <li>Ubuntu 默认的 Shell 是哪一种？脚本第一行通常写什么？</li>
+    <li>运行脚本有哪几种方式？</li>
+    <li>Shell 变量命名规则是什么？</li>
+    <li>引用变量的符号是什么？赋值时要注意什么？</li>
+    <li>求变量运算的两条指令是什么？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>TFTP、NFS 用于 Linux（Ubuntu）之间；Samba 用于 Linux 与 Windows 之间。</li>
+    <li>客户端—服务器架构；C = Client 客户端，S = Server 服务器。</li>
+    <li>装包 → 建共享目录 → 建账户设密码 → 改配置文件 → 重启 smbd → 保证网络通畅 → Windows 端登录测试。</li>
+    <li>因为第 1 步 apt-get install 需要从互联网下载软件包，不联网就装不上。</li>
+    <li>权限不足客户端无法访问/上传/下载，需给读写执行权限。</li>
+    <li><code>sudo smbpasswd -a 账户名</code>。</li>
+    <li>重启服务：<code>sudo service smbd restart</code>。</li>
+    <li>Shell 是操作系统内核与用户之间的桥梁/接口，既是命令解析器，也是一门程序设计语言。</li>
+    <li>bash；第一行写 <code>#!/bin/bash</code>。</li>
+    <li>sh 脚本、./脚本（需可执行权限）、source 脚本、. 脚本、bash 脚本（共 5 种）。</li>
+    <li>由字母、数字、下划线组成，只能字母或下划线开头，不能用关键字。</li>
+    <li><code>$</code>；赋值时等号两边不能有空格，值含空格要用双引号。</li>
+    <li><code>expr</code> 与 <code>let</code>。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol start="14">
+    <li>为什么 Samba 需要单独的密码体系（smbpasswd）？</li>
+    <li>. 脚本 与 ./脚本 在“执行环境”上可能有什么不同？</li>
+    <li>为什么脚本不需要“编译”就能运行？</li>
+  </ol>
+</div>
+
+<div class="card" id="l6-appendix">
+  <h2>十一、命令速查表</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td>sudo apt-get install samba samba-common</td><td>安装 Samba</td></tr>
+    <tr><td>mkdir /home/samba</td><td>创建共享目录</td></tr>
+    <tr><td>chmod 777 /home/samba</td><td>共享目录赋权限</td></tr>
+    <tr><td>sudo useradd -m samba</td><td>创建账户</td></tr>
+    <tr><td>sudo smbpasswd -a samba</td><td>为 Samba 账户设密码</td></tr>
+    <tr><td>sudo vi /etc/samba/smb.conf</td><td>编辑 Samba 配置</td></tr>
+    <tr><td>sudo service smbd restart</td><td>重启 Samba 服务</td></tr>
+    <tr><td>ifconfig / ipconfig / ping</td><td>查看 IP / 测试连通</td></tr>
+    <tr><td>\\服务器IP（Windows 运行框）</td><td>访问共享目录</td></tr>
+    <tr><td>echo $SHELL</td><td>查看当前 Shell</td></tr>
+    <tr><td>vi/touch test.sh</td><td>创建脚本（.sh）</td></tr>
+    <tr><td>chmod 777 test.sh / chmod a+x test.sh</td><td>脚本赋可执行权限</td></tr>
+    <tr><td>sh / ./ / source / . / bash 脚本</td><td>五种运行方式</td></tr>
+    <tr><td>变量=值</td><td>变量赋值（等号两边无空格）</td></tr>
+    <tr><td>echo $变量</td><td>打印变量值</td></tr>
+    <tr><td>expr 8 + $A / let C=5+B</td><td>变量算术运算</td></tr>
+  </table>
+  </div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–4 课 · 由课堂录音转写自动整理 · 更新日期 2026-09-29</p>
+  <p>第 1–6 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-14</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
