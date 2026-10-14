@@ -4,17 +4,19 @@
 
 ## 在线阅读
 
-- [课程笔记（第 1–4 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [课程笔记（第 1–6 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 移动端网页，包含全部课程笔记（第 1–4 课） |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1–6 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 | `嵌入式系统设计原理与应用-第3课笔记.md` | 第 3 课 Markdown 笔记（详细版） |
 | `嵌入式系统设计原理与应用-第4课笔记.md` | 第 4 课 Markdown 笔记（详细版） |
+| `嵌入式系统设计原理与应用-第5课笔记.md` | 第 5 课 Markdown 笔记（gcc 编译与 Makefile） |
+| `嵌入式系统设计原理与应用-第6课笔记.md` | 第 6 课 Markdown 笔记（Samba 服务器与 Shell 编程） |
 
 ## 内容概览
 
@@ -58,3 +60,22 @@
 4. vi/vim 编辑器：标准/插入/底行三种模式、i/a/o 进入插入、Esc、:wq / :q! / :set nu、标准模式快捷键（0/$/G/gg/nG/dd/yy/p/u 等）
 5. 作业讲评：架构组成、嵌入式定义、处理器分类与选型、冯·诺依曼 vs 哈佛
 6. 易错点、操作复盘、自测题含答案
+
+### 第 5 课：gcc 编译器与编译流程 / make 与 Makefile（更详细）
+
+1. vi 复习：三种模式与切换规则（插入⇄底行不能直接互转）、权限、cat 查看代码
+2. IDE 集成开发环境：Keil / Dev-C++ / Code::Blocks / VS Code，UI 与底层封装
+3. gcc 编译器：支持 C/C++/Java、跨平台；单文件编译 `gcc hello.c -o hello`
+4. 编译四阶段 ★：预处理(-E→.i) → 编译(-S→.s) → 汇编(-c→.o) → 链接(→可执行文件)
+5. 多文件工程：`gcc main.c input.c add.c -o main`
+6. make 与 Makefile ★：目标:依赖、Tab 缩进、M 大写、clean 目标、三大作用
+7. gdb 调试了解、教材页码对照、易错点、操作复盘、自测题、命令速查表
+
+### 第 6 课：Samba 服务器配置 / Shell 编程基础（更详细）
+
+1. 服务器概述：TFTP / NFS（Linux 间）、Samba（Linux↔Windows）；C/S 架构
+2. Samba 配置七步 ★：装包 → 建共享目录 → 建账户 → 改 smb.conf → 重启 smbd → 通网 → Windows 登录
+3. Shell 概述：用户与内核的桥梁，命令解析器 + 高级程序设计语言；sh/csh/ksh/bash
+4. 脚本创建与运行 ★：`#!/bin/bash`；五种执行方式（sh / ./ / source / . / bash）
+5. Shell 变量 ★：命名规则、环境变量/位置参数变量/用户自定义变量、`$` 引用、赋值、expr 与 let
+6. 易错点、操作复盘、自测题、命令速查表
