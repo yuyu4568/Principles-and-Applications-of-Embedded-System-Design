@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–6 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–7 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制</p>
 </header>
 
 <div class="toc">
@@ -212,6 +212,22 @@ footer a { color: var(--accent); }
     <li><a href="#l6-practice">课堂操作复盘</a></li>
     <li><a href="#l6-quiz">复习自测题</a></li>
     <li><a href="#l6-appendix">命令速查表</a></li>
+  </ol>
+  <h3>第 7 课：Shell 通配符 / 条件测试 / 流程控制</h3>
+  <ol>
+    <li><a href="#l7-quick">本课重点速览</a></li>
+    <li><a href="#l7-review">课前复习</a></li>
+    <li><a href="#l7-glob">通配符 ★</a></li>
+    <li><a href="#l7-quote">元字符与引号</a></li>
+    <li><a href="#l7-test">条件测试 ★</a></li>
+    <li><a href="#l7-if">if 条件语句</a></li>
+    <li><a href="#l7-select">select 与 case</a></li>
+    <li><a href="#l7-loop">循环语句 ★</a></li>
+    <li><a href="#l7-break">break 与 continue</a></li>
+    <li><a href="#l7-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l7-practice">课堂操作复盘</a></li>
+    <li><a href="#l7-quiz">复习自测题</a></li>
+    <li><a href="#l7-appendix">命令速查表</a></li>
   </ol>
 </div>
 
@@ -2142,12 +2158,462 @@ echo $C</div>
   </div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 7 课 · Shell 通配符 / 条件测试 / 流程控制</h2><p style="color:#dff3ea;margin:0;">系统讲解通配符、元字符、转义字符与引号，再进入 Shell 编程核心：文件/字符串/数值/逻辑条件测试，以及 if、select、case、for、while、break/continue 流程控制。</p></div>
+
+<div class="card" id="l7-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+    <tr><td>通配符 ★</td><td>* ? [abc] [!abc] [a-z]</td><td>* 匹配多个字符，? 只匹配一个</td></tr>
+    <tr><td>元字符</td><td>= $ &gt; &gt;&gt; &lt; &amp;</td><td>赋值、取值、重定向、后台运行</td></tr>
+    <tr><td>引号 ★</td><td>单引号 / 双引号 / 反引号</td><td>单引号全屏蔽；双引号保留 $；反引号取命令结果</td></tr>
+    <tr><td>条件测试 ★</td><td>test 与 [ ]</td><td>真 = 0，假 = 非 0（与 C 相反）</td></tr>
+    <tr><td>$?</td><td>上一条命令的退出状态</td><td>0 成功/真，非 0 失败/假</td></tr>
+    <tr><td>测试分类</td><td>文件 / 字符串 / 数值 / 逻辑</td><td>-f、-z、-eq、-a/-o</td></tr>
+    <tr><td>if 语句</td><td>if…then…fi</td><td>fi 收尾，elif 是一个词</td></tr>
+    <tr><td>case / select</td><td>多分支 / 菜单</td><td>;; 结束分支，esac 收尾</td></tr>
+    <tr><td>循环 ★</td><td>for / while</td><td>带列表与不带列表；do…done</td></tr>
+    <tr><td>break / continue</td><td>跳出 / 跳过</td><td>break 跳出循环，continue 跳过本次</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l7-review">
+  <h2>二、课前复习（第 6 课回顾）</h2>
+  <h3>2.1 Samba 配置七步</h3>
+  <ol>
+    <li>安装：<code>sudo apt-get install samba samba-common</code></li>
+    <li>创建共享目录：<code>mkdir /home/samba</code>，再 <code>chmod 777</code></li>
+    <li>创建账户：<code>useradd</code>，并用 <code>smbpasswd -a</code> 单独设密码</li>
+    <li>修改配置：先给 <code>/etc/samba/smb.conf</code> 权限，再 <code>vi</code> 编辑（约 241 行附近）</li>
+    <li>重启服务：<code>sudo service smbd restart</code></li>
+    <li>检查网络：<code>ifconfig</code> / <code>ipconfig</code> / <code>ping</code></li>
+    <li>Windows 端 <code>Win + R</code> → <code>\\服务器IP</code> → 输入账户密码登录</li>
+  </ol>
+  <h3>2.2 Shell 基础</h3>
+  <ul>
+    <li>Shell 两大功能：<strong>命令解析器</strong> + <strong>高级程序设计语言</strong>。</li>
+    <li>分类：sh / csh / ksh / <strong>bash</strong>（Ubuntu 默认）。</li>
+    <li>脚本第一行：<code>#!/bin/bash</code>；其余以 <code>#</code> 开头的内容都是注释。</li>
+    <li>运行方式五种：<code>sh 脚本</code>、<code>./脚本</code>、<code>source 脚本</code>、<code>. 脚本</code>、<code>bash 脚本</code>。</li>
+    <li>变量：引用加 <code>$</code>；赋值等号两边不能有空格；计算用 <code>expr</code> 与 <code>let</code>。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-glob">
+  <h2>三、通配符（Globbing）★</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>通配符</th><th>匹配含义</th><th>示例</th></tr>
+    <tr><td><code>*</code></td><td>匹配<strong>任意多个</strong>字符（任意字符串）</td><td><code>ls *.c</code> 列出所有 .c 文件</td></tr>
+    <tr><td><code>?</code></td><td>匹配<strong>任意一个</strong>字符</td><td><code>ls test?.c</code> 匹配 test1.c、testa.c</td></tr>
+    <tr><td><code>[abc]</code></td><td>匹配方括号中<strong>任意一个</strong>字符</td><td><code>ls test[123].c</code></td></tr>
+    <tr><td><code>[!abc]</code></td><td>匹配<strong>除</strong>方括号内字符外的任意一个字符</td><td><code>ls test[!1].c</code></td></tr>
+    <tr><td><code>[a-z]</code></td><td>匹配指定<strong>范围</strong>内的一个字符</td><td><code>ls [a-c]*.c</code></td></tr>
+  </table>
+  </div>
+  <ul>
+    <li><code>*</code> 使用频率最高，Makefile 的 <code>rm -f *.o</code> 就是典型应用。</li>
+    <li>区分：<code>*</code> 匹配一串字符，<code>?</code> 只匹配一个字符，<code>[...]</code> 匹配一个“字符集合”中的字符。</li>
+    <li>课堂例：<code>ls *.c</code> 会把 test1.c、test.c 等以 .c 结尾的文件全部筛出来。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-quote">
+  <h2>四、元字符与转义字符</h2>
+  <h3>4.1 常见元字符</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>元字符</th><th>含义</th><th>说明</th></tr>
+    <tr><td><code>=</code></td><td>赋值</td><td>左侧变量，右侧值（等号两边不能有空格）</td></tr>
+    <tr><td><code>$</code></td><td>变量替换/引用</td><td><code>echo $HOME</code></td></tr>
+    <tr><td><code>&gt;</code></td><td>输出重定向</td><td>把输出写入文件（覆盖）</td></tr>
+    <tr><td><code>&gt;&gt;</code></td><td>追加重定向</td><td>把输出追加到文件末尾</td></tr>
+    <tr><td><code>&lt;</code></td><td>标准输入重定向</td><td>从文件读取输入</td></tr>
+    <tr><td><code>&amp;</code></td><td>后台运行</td><td>如 <code>firefox &amp;</code>，用 <code>ps aux</code> 可看到进程</td></tr>
+    <tr><td><code>()</code> <code>;</code> <code>!</code></td><td>分组 / 命令分隔 / 逻辑非</td><td>了解即可</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li><code>&gt;</code> 会<strong>覆盖</strong>原文件内容；<code>&gt;&gt;</code> 是<strong>追加</strong>，不会清空原内容。</li>
+    <li><code>&amp;</code> 让程序在后台运行，终端可以继续输入其他命令。</li>
+  </ul>
+  <h3>4.2 转义字符</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>转义</th><th>含义</th></tr>
+    <tr><td><code>\n</code></td><td>换行/回车</td></tr>
+    <tr><td><code>\t</code></td><td>制表符（Tab）</td></tr>
+    <tr><td><code>\a</code></td><td>响铃（提示音）</td></tr>
+    <tr><td><code>\\</code></td><td>反斜杠本身</td></tr>
+  </table>
+  </div>
+  <ul><li>最常用的是 <code>\n</code>；在 <code>echo -e "a\nb"</code> 中才会解析转义。</li></ul>
+  <h3>4.3 单引号 vs 双引号 vs 反引号 ★</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>引号</th><th>行为</th><th>例子</th><th>结果</th></tr>
+    <tr><td><strong>单引号</strong> <code>' '</code></td><td>关闭所有元字符/通配符功能，内部全部当普通字符</td><td><code>echo '$HOME'</code></td><td>原样输出 <code>$HOME</code></td></tr>
+    <tr><td><strong>双引号</strong> <code>" "</code></td><td>保留元字符功能（<code>$</code> 替换、反引号命令替换等）</td><td><code>echo "$HOME"</code></td><td>输出 <code>/home/用户名</code></td></tr>
+    <tr><td><strong>反引号</strong> <code>` `</code></td><td>命令替换：先执行命令，再用结果替换</td><td><code>echo `pwd`</code></td><td>输出当前路径</td></tr>
+    <tr><td><strong>反斜杠</strong> <code>\</code></td><td>转义紧随其后的单个字符</td><td><code>echo \$HOME</code></td><td>输出 <code>$HOME</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><strong>记忆：</strong>单引号“全屏蔽”，双引号“留功能”，反引号“先算再用”。反引号与单引号外观不同：单引号垂直 <code>'</code>，反引号带斜度 <code>`</code>。现代写法也常用 <code>$(pwd)</code> 代替反引号。</div>
+</div>
+
+<div class="card" id="l7-test">
+  <h2>五、条件测试 ★（本课核心）</h2>
+  <h3>5.1 两种写法</h3>
+  <div class="flow">test 表达式            # 方式一：test 后跟表达式（有空格）
+[ 表达式 ]             # 方式二：方括号，左右内侧必须有空格</div>
+  <div class="warn"><strong>注意：</strong><code>[</code> 本质是一个命令，所以 <code>[</code> 后、<code>]</code> 前都<strong>必须有空格</strong>，写成 <code>[-f file]</code> 会报错。</div>
+  <h3>5.2 真假返回值（与 C 相反！）★</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>结果</th><th>Shell 返回值</th></tr>
+    <tr><td>条件为<strong>真</strong></td><td><strong>0</strong></td></tr>
+    <tr><td>条件为<strong>假</strong></td><td><strong>非 0</strong>（通常 1）</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>C 语言里习惯“真 = 1、假 = 0”，Shell 正好反过来，考试和写脚本都容易错。</li>
+    <li>用 <code>$?</code> 查看<strong>上一条命令的退出状态</strong>。</li>
+  </ul>
+  <div class="flow">test -r hello.c
+echo $?          # 0 表示可读（真）；1 表示不可读（假）</div>
+  <h3>5.3 文件测试</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作符</th><th>含义</th></tr>
+    <tr><td><code>-b 文件</code></td><td>存在且为<strong>块设备</strong>文件</td></tr>
+    <tr><td><code>-c 文件</code></td><td>存在且为<strong>字符设备</strong>文件</td></tr>
+    <tr><td><code>-d 文件</code></td><td>存在且为<strong>目录</strong></td></tr>
+    <tr><td><code>-e 文件</code></td><td>文件<strong>存在</strong>（exist）</td></tr>
+    <tr><td><code>-f 文件</code></td><td>存在且为<strong>普通文件</strong>（file）</td></tr>
+    <tr><td><code>-r 文件</code></td><td>存在且<strong>可读</strong>（read）</td></tr>
+    <tr><td><code>-w 文件</code></td><td>存在且<strong>可写</strong>（write）</td></tr>
+    <tr><td><code>-x 文件</code></td><td>存在且<strong>可执行</strong>（execute）</td></tr>
+    <tr><td><code>-p 文件</code></td><td>存在且为 FIFO 管道文件</td></tr>
+    <tr><td><code>-s 文件</code></td><td>存在且<strong>非空</strong>（size &gt; 0）</td></tr>
+  </table>
+  </div>
+  <h3>5.4 字符串测试</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作符</th><th>含义</th></tr>
+    <tr><td><code>-z 字符串</code></td><td>字符串<strong>为空</strong>（zero）</td></tr>
+    <tr><td><code>-n 字符串</code></td><td>字符串<strong>非空</strong></td></tr>
+    <tr><td><code>串1 = 串2</code></td><td>两字符串<strong>相等</strong>（= 两边要有空格）</td></tr>
+    <tr><td><code>串1 != 串2</code></td><td>两字符串<strong>不相等</strong></td></tr>
+  </table>
+  </div>
+  <div class="warn">比较的是<strong>内容</strong>不是长度；<code>=</code> 两边若不留空格，会被当成<strong>赋值</strong>而不是比较。</div>
+  <h3>5.5 数值测试</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作符</th><th>含义</th><th>单词来源</th></tr>
+    <tr><td><code>-eq</code></td><td>等于</td><td>equal</td></tr>
+    <tr><td><code>-ne</code></td><td>不等于</td><td>not equal</td></tr>
+    <tr><td><code>-lt</code></td><td>小于</td><td>less than</td></tr>
+    <tr><td><code>-le</code></td><td>小于等于</td><td>less or equal</td></tr>
+    <tr><td><code>-gt</code></td><td>大于</td><td>greater than</td></tr>
+    <tr><td><code>-ge</code></td><td>大于等于</td><td>greater or equal</td></tr>
+  </table>
+  </div>
+  <div class="warn">Shell 的 <code>[ ]</code> 里<strong>不能直接用 <code>&gt;</code> <code>&lt;</code> 比较数字</strong>（会被当成重定向），必须用 <code>-gt/-lt</code> 等。</div>
+  <h3>5.6 逻辑运算</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>操作符</th><th>含义</th><th>说明</th></tr>
+    <tr><td><code>!</code></td><td>逻辑非</td><td>真变假、假变真</td></tr>
+    <tr><td><code>-a</code></td><td>逻辑与（AND）</td><td>左右都为真才为真</td></tr>
+    <tr><td><code>-o</code></td><td>逻辑或（OR）</td><td>有一个为真就为真</td></tr>
+    <tr><td><code>\( \)</code></td><td>分组/提高优先级</td><td>括号要用反斜杠转义</td></tr>
+  </table>
+  </div>
+  <div class="flow">[ -f file -a -r file ]        # 是普通文件且可读
+[ -f a -o -f b ]              # a 或 b 存在
+[ ! -d dir ]                  # 不是目录</div>
+  <ul>
+    <li>课堂例：<code>[ 10 -gt 13 ]</code> 为假 → <code>$?</code> = 1；<code>[ 10 -lt 13 ]</code> 为真 → <code>$?</code> = 0。</li>
+    <li>优先级：先算关系运算，再算逻辑运算；复杂表达式用 <code>\( \)</code> 分组。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-if">
+  <h2>六、if 条件语句</h2>
+  <h3>6.1 三种形式</h3>
+  <div class="flow"># ① 单分支
+if [ 条件 ]; then
+    命令
+fi
+
+# ② 双分支
+if [ 条件 ]; then
+    命令1
+else
+    命令2
+fi
+
+# ③ 多分支
+if [ 条件1 ]; then
+    命令1
+elif [ 条件2 ]; then
+    命令2
+else
+    命令3
+fi</div>
+  <ul>
+    <li>与 C 的区别：Shell 用 <strong>then</strong> 引出语句、用 <strong>fi</strong> 结束；C 用 <code>{ }</code>。</li>
+    <li><code>elif</code> 在 Shell 中是<strong>一个单词</strong>（不是 <code>else if</code>）。</li>
+    <li><code>if</code> 与 <code>fi</code> 必须成对出现。</li>
+  </ul>
+  <h3>6.2 例子：判断普通文件</h3>
+  <div class="flow">#!/bin/bash
+if [ -f "$1" ]; then
+    echo "$1 是一个普通文件"
+else
+    echo "$1 不是一个普通文件"
+fi</div>
+  <h3>6.3 例子：比较两个数</h3>
+  <div class="flow">#!/bin/bash
+N1=10
+N2=20
+if [ $N1 -eq $N2 ]; then
+    echo "相等"
+elif [ $N1 -gt $N2 ]; then
+    echo "N1 大于 N2"
+else
+    echo "N1 小于 N2"
+fi</div>
+</div>
+
+<div class="card" id="l7-select">
+  <h2>七、select 与 case</h2>
+  <h3>7.1 select：交互式菜单</h3>
+  <div class="flow">select var in A B C D
+do
+    echo "你的回答是 $var"
+    break
+done</div>
+  <ul>
+    <li>特点：<strong>自动生成 1) 2) 3)… 编号菜单</strong>，自动读取用户输入并赋给变量。</li>
+    <li>不需要自己写 echo 菜单、不需要写 read、不需要手动赋值。</li>
+    <li>适合做<strong>点菜式菜单</strong>：输入编号，自动映射到对应选项。</li>
+    <li>用 <code>break</code> 退出，否则会一直循环。</li>
+  </ul>
+  <h3>7.2 case：多分支匹配</h3>
+  <div class="flow">case "$1" in
+    1)
+        echo "你选了 1"
+        ;;
+    2)
+        echo "你选了 2"
+        ;;
+    *)
+        echo "输入不在 1~4 范围内"
+        ;;
+esac</div>
+  <ul>
+    <li>类似 C 的 <code>switch-case</code>：把值与各分支模式依次比对。</li>
+    <li><code>;;</code> 表示<strong>一个分支结束</strong>（两个分号，别漏）。</li>
+    <li><code>*</code> 是默认分支（相当于 default）。</li>
+    <li><code>esac</code> 是 <code>case</code> 的<strong>倒写</strong>，表示结束。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-loop">
+  <h2>八、循环语句 ★</h2>
+  <h3>8.1 for：带列表</h3>
+  <div class="flow">for country in 中国 美国 英国 日本
+do
+    echo $country
+done</div>
+  <ul>
+    <li>依次从列表中取值，每取一个执行一次循环体。</li>
+    <li>列表可以是字符串、数字、文件名通配符（如 <code>for f in *.c</code>）。</li>
+  </ul>
+  <h3>8.2 for：不带列表 / C 风格</h3>
+  <div class="flow"># 方式一：自己生成列表
+for i in 1 2 3
+do
+    echo "观点$i"
+done
+
+# 方式二：C 风格三段式
+for ((i=1; i&lt;=100; i++))
+do
+    sum=$((sum + i))
+done</div>
+  <ul>
+    <li>“不带列表”不是没有列表，而是<strong>由用户/脚本自己创建列表</strong>（或使用 C 风格三段式）。</li>
+    <li>C 风格：<code>for ((初始值; 条件; 步长))</code>，与 C 的 for 几乎一致。</li>
+  </ul>
+  <h3>8.3 while：条件为真就循环</h3>
+  <div class="flow">i=1
+sum=0
+while [ $i -le 100 ]
+do
+    sum=$((sum + i))
+    i=$((i + 1))
+done
+echo $sum</div>
+  <ul>
+    <li>先判断条件，成立才执行循环体；不成立一次都不执行。</li>
+    <li>课堂例子：求 1~100 的和；求 1~100 的<strong>奇数和</strong>时，步长改为 <code>i=$((i+2))</code>。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-break">
+  <h2>九、break 与 continue</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>语句</th><th>作用</th></tr>
+    <tr><td><code>break</code></td><td><strong>跳出整个循环</strong>，不再执行后续轮次</td></tr>
+    <tr><td><code>continue</code></td><td><strong>跳过本次循环剩余语句</strong>，直接进入下一轮</td></tr>
+  </table>
+  </div>
+  <div class="flow">for i in 2 3 4 5
+do
+    if [ $i -eq 4 ]; then
+        continue        # 跳过 4，不打印
+    fi
+    echo $i             # 输出 2 3 5
+done</div>
+  <ul>
+    <li>课堂现象：输出 <code>2 3 5</code>，因为遇到 4 时 continue 跳过了 echo。</li>
+    <li>若用 break，则遇到 4 后整个循环直接结束。</li>
+  </ul>
+</div>
+
+<div class="card" id="l7-pitfall">
+  <h2>十、易错点复盘 ★</h2>
+  <ol>
+    <li><strong>真假返回值与 C 相反</strong>：Shell 中真 = 0，假 = 非 0；<code>$?</code> 取上一条命令状态。</li>
+    <li><code>[ ]</code> 的<strong>内侧必须有空格</strong>：<code>[ -f file ]</code> 正确，<code>[-f file]</code> 报错。</li>
+    <li>字符串比较 <code>=</code> 两边<strong>必须有空格</strong>，否则变成赋值。</li>
+    <li>数值比较<strong>不能用 <code>&gt;</code> <code>&lt;</code></strong>，要用 <code>-gt</code>、<code>-lt</code> 等。</li>
+    <li><code>if</code> 要用 <code>then</code> 引出、<code>fi</code> 结束；<code>elif</code> 是一个单词。</li>
+    <li><code>case</code> 的每个分支以 <strong><code>;;</code></strong> 结束，整体以 <strong><code>esac</code></strong> 结束。</li>
+    <li><code>select</code> 不会自动退出，通常配合 <code>break</code>。</li>
+    <li>单引号会<strong>屏蔽所有元字符</strong>；双引号保留 <code>$</code> 等；反引号是<strong>命令替换</strong>。</li>
+    <li>循环变量记得<strong>更新</strong>，否则 while 会死循环。</li>
+  </ol>
+</div>
+
+<div class="card" id="l7-practice">
+  <h2>十一、课堂操作复盘</h2>
+  <ol>
+    <li>复习 Samba 七步与 Shell 脚本五种运行方式。</li>
+    <li>通配符：<code>ls *.c</code>、<code>ls test?.c</code> 观察匹配结果。</li>
+    <li>元字符：<code>&gt;</code> 覆盖、<code>&gt;&gt;</code> 追加；<code>firefox &amp;</code> 后台运行，再用 <code>ps aux</code> 查看进程。</li>
+    <li>引号：分别用单引号、双引号、反引号 echo，对比 <code>$HOME</code> 与 <code>pwd</code> 的输出。</li>
+    <li>条件测试：<code>test -r 文件</code>、<code>echo $?</code> 验证真/假返回值。</li>
+    <li>if 例子：判断文件是否为普通文件、比较两个数大小。</li>
+    <li>select 例子：菜单选择 A/B/C/D 并输出回答。</li>
+    <li>case 例子：输入 1~4 输出对应提示，其他输出“不在范围内”。</li>
+    <li>循环：for 遍历国家列表；while 求 1~100 和与奇数和；continue 验证输出 2 3 5。</li>
+  </ol>
+</div>
+
+<div class="card" id="l7-quiz">
+  <h2>十二、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>* 与 ? 在通配符中有什么区别？</li>
+    <li>[abc] 与 [!abc] 分别匹配什么？</li>
+    <li>&gt; 与 &gt;&gt; 的区别是什么？</li>
+    <li>&amp; 放在命令末尾有什么作用？</li>
+    <li>单引号、双引号、反引号各有什么特点？</li>
+    <li>条件测试有哪两种写法？方括号内侧要注意什么？</li>
+    <li>Shell 中“真”和“假”的返回值分别是多少？与 C 有何不同？</li>
+    <li>$? 表示什么？</li>
+    <li>文件测试 -d、-f、-e、-x 分别表示什么？</li>
+    <li>字符串测试 -z 与 -n 的区别？</li>
+    <li>数值比较 -eq、-ne、-lt、-gt 分别表示什么？</li>
+    <li>逻辑与、逻辑或、逻辑非分别用什么符号？</li>
+    <li>if 语句的三种形式分别是什么？fi 的作用？</li>
+    <li>elif 与 C 的 else if 有何区别？</li>
+    <li>select 语句有什么特点？适合什么场景？</li>
+    <li>case 语句用什么结束一个分支？用什么结束整个语句？</li>
+    <li>for 循环“带列表”和“不带列表”分别怎么理解？</li>
+    <li>while 循环的执行顺序是什么？</li>
+    <li>break 与 continue 的区别？</li>
+    <li>求 1~100 的奇数和，循环变量应如何变化？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>* 匹配任意多个字符；? 只匹配任意一个字符。</li>
+    <li>[abc] 匹配 a/b/c 中任意一个字符；[!abc] 匹配除 a/b/c 外的任意一个字符。</li>
+    <li>&gt; 覆盖写入文件；&gt;&gt; 追加到文件末尾。</li>
+    <li>让命令在后台运行，终端可继续执行其他命令。</li>
+    <li>单引号屏蔽所有元字符/通配符；双引号保留 $ 等元字符功能；反引号执行命令并用结果替换。</li>
+    <li><code>test 表达式</code> 与 <code>[ 表达式 ]</code>；方括号内侧必须有空格。</li>
+    <li>真 = 0，假 = 非 0；与 C（真 = 1，假 = 0）相反。</li>
+    <li>上一条命令的退出状态（0 成功/真，非 0 失败/假）。</li>
+    <li>-d 目录、-f 普通文件、-e 存在、-x 可执行。</li>
+    <li>-z 判断为空；-n 判断非空。</li>
+    <li>等于、不等于、小于、大于。</li>
+    <li>-a（与）、-o（或）、!（非）。</li>
+    <li>单分支 if…then…fi；双分支 if…then…else…fi；多分支 if…then…elif…else…fi；fi 表示 if 结束。</li>
+    <li>elif 在 Shell 中是一个单词，C 中是 else if 两个词。</li>
+    <li>自动生成编号菜单、自动读取输入并赋值；适合交互式菜单/点菜式选择。</li>
+    <li>分支用 ;; 结束；整体用 esac 结束。</li>
+    <li>带列表是从给定列表依次取值；不带列表是由用户自己创建列表或用 C 风格三段式。</li>
+    <li>先判断条件，成立则执行循环体，再回到条件判断；不成立则退出。</li>
+    <li>break 跳出整个循环；continue 跳过本次剩余语句，进入下一轮。</li>
+    <li>步长改为 <code>i=$((i+2))</code>（从 1 开始，每次加 2）。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol start="21">
+    <li>为什么 <code>[ $a &gt; $b ]</code> 在 Shell 里可能得到错误结果？</li>
+    <li>反引号与 <code>$()</code> 的关系是什么？</li>
+    <li>为什么 select 通常要和 break 一起用？</li>
+    <li>while 循环忘记更新变量会发生什么？</li>
+  </ol>
+</div>
+
+<div class="card" id="l7-appendix">
+  <h2>十三、命令与语法速查表</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>语法/命令</th><th>作用</th></tr>
+    <tr><td><code>ls *.c</code></td><td>通配符列出所有 .c 文件</td></tr>
+    <tr><td><code>cmd &gt; file</code></td><td>输出重定向（覆盖）</td></tr>
+    <tr><td><code>cmd &gt;&gt; file</code></td><td>输出追加重定向</td></tr>
+    <tr><td><code>cmd &amp;</code></td><td>后台运行</td></tr>
+    <tr><td><code>'字符串'</code></td><td>单引号：屏蔽元字符</td></tr>
+    <tr><td><code>"字符串"</code></td><td>双引号：保留 $ 等功能</td></tr>
+    <tr><td><code>`cmd`</code> / <code>$(cmd)</code></td><td>命令替换</td></tr>
+    <tr><td><code>test 表达式</code></td><td>条件测试方式一</td></tr>
+    <tr><td><code>[ 表达式 ]</code></td><td>条件测试方式二（内侧留空格）</td></tr>
+    <tr><td><code>$?</code></td><td>上一条命令退出状态</td></tr>
+    <tr><td><code>[ -f f ]</code></td><td>是否为普通文件</td></tr>
+    <tr><td><code>[ -d d ]</code></td><td>是否为目录</td></tr>
+    <tr><td><code>[ -z s ]</code> / <code>[ -n s ]</code></td><td>字符串为空 / 非空</td></tr>
+    <tr><td><code>[ a -eq b ]</code></td><td>数值相等</td></tr>
+    <tr><td><code>[ a -gt b -a c -lt d ]</code></td><td>逻辑与组合</td></tr>
+    <tr><td><code>if …; then …; fi</code></td><td>单分支</td></tr>
+    <tr><td><code>if …; then …; else …; fi</code></td><td>双分支</td></tr>
+    <tr><td><code>if …; then …; elif …; then …; else …; fi</code></td><td>多分支</td></tr>
+    <tr><td><code>select v in A B; do …; done</code></td><td>交互式菜单</td></tr>
+    <tr><td><code>case $v in p) …;; esac</code></td><td>多分支匹配</td></tr>
+    <tr><td><code>for x in 列表; do …; done</code></td><td>for 循环</td></tr>
+    <tr><td><code>for ((i=1;i&lt;=n;i++)); do …; done</code></td><td>C 风格 for</td></tr>
+    <tr><td><code>while [ 条件 ]; do …; done</code></td><td>while 循环</td></tr>
+    <tr><td><code>break</code> / <code>continue</code></td><td>跳出循环 / 跳过本次</td></tr>
+  </table>
+  </div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–6 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-14</p>
+  <p>第 1–7 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-17</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
