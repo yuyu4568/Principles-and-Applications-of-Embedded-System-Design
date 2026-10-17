@@ -4,19 +4,20 @@
 
 ## 在线阅读
 
-- [课程笔记（第 1–6 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [课程笔记（第 1–7 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 移动端网页，包含全部课程笔记（第 1–6 课） |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1–7 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 | `嵌入式系统设计原理与应用-第3课笔记.md` | 第 3 课 Markdown 笔记（详细版） |
 | `嵌入式系统设计原理与应用-第4课笔记.md` | 第 4 课 Markdown 笔记（详细版） |
 | `嵌入式系统设计原理与应用-第5课笔记.md` | 第 5 课 Markdown 笔记（gcc 编译与 Makefile） |
 | `嵌入式系统设计原理与应用-第6课笔记.md` | 第 6 课 Markdown 笔记（Samba 服务器与 Shell 编程） |
+| `嵌入式系统设计原理与应用-第7课笔记.md` | 第 7 课 Markdown 笔记（条件测试与流程控制） |
 
 ## 内容概览
 
@@ -79,3 +80,16 @@
 4. 脚本创建与运行 ★：`#!/bin/bash`；五种执行方式（sh / ./ / source / . / bash）
 5. Shell 变量 ★：命名规则、环境变量/位置参数变量/用户自定义变量、`$` 引用、赋值、expr 与 let
 6. 易错点、操作复盘、自测题、命令速查表
+
+### 第 7 课：Shell 通配符 / 条件测试 / 流程控制（更详细）
+
+1. 课前复习：Samba 七步、Shell 概念与脚本五种运行方式
+2. 通配符 ★：`*`、`?`、`[abc]`、`[!abc]`、`[a-z]`
+3. 元字符与转义字符：`=`、`$`、`>`、`>>`、`<`、`&`、`\n`、`\t`、`\a`
+4. 单引号 / 双引号 / 反引号 ★：全屏蔽、保留功能、命令替换
+5. 条件测试 ★：`test` 与 `[ ]`；真=0、假=非0；`$?`
+6. 测试分类：文件（`-f/-d/-e/-r/-w/-x`）、字符串（`-z/-n/=/!=`）、数值（`-eq/-ne/-lt/-gt`）、逻辑（`!/-a/-o`）
+7. 条件语句：`if…then…fi`、`if…else…fi`、`if…elif…else…fi`
+8. select 菜单与 case 多分支（`;;`、`esac`）
+9. 循环 ★：for 带/不带列表、C 风格 for、while
+10. break / continue、易错点、操作复盘、自测题、速查表
