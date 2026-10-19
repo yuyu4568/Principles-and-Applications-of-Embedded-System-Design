@@ -4,13 +4,13 @@
 
 ## 在线阅读
 
-- [课程笔记（第 1–7 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [课程笔记（第 1–8 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 移动端网页，包含全部课程笔记（第 1–7 课） |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1–8 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 | `嵌入式系统设计原理与应用-第3课笔记.md` | 第 3 课 Markdown 笔记（详细版） |
@@ -18,6 +18,7 @@
 | `嵌入式系统设计原理与应用-第5课笔记.md` | 第 5 课 Markdown 笔记（gcc 编译与 Makefile） |
 | `嵌入式系统设计原理与应用-第6课笔记.md` | 第 6 课 Markdown 笔记（Samba 服务器与 Shell 编程） |
 | `嵌入式系统设计原理与应用-第7课笔记.md` | 第 7 课 Markdown 笔记（条件测试与流程控制） |
+| `嵌入式系统设计原理与应用-第8课笔记.md` | 第 8 课 Markdown 笔记（Linux 文件 I/O 函数，含完整可编译代码） |
 
 ## 内容概览
 
@@ -93,3 +94,17 @@
 8. select 菜单与 case 多分支（`;;`、`esac`）
 9. 循环 ★：for 带/不带列表、C 风格 for、while
 10. break / continue、易错点、操作复盘、自测题、速查表
+
+### 第 8 课：Linux 文件 I/O——目录操作与文件操作函数（更详细）
+
+1. 导入 ★：硬件 IO（引脚 0/1 电平）→ 文件 IO（数据流）；输入/输出是**相对方向**
+2. 文件基础回顾：`ls -l` 七字段、UGO 权限与 8421、七种文件类型、硬链接 vs 软链接（`ln` / `ln -s`）
+3. 两套 API ★：标准 I/O（`fopen/fread/fwrite/fclose`）vs 文件 I/O（`open/read/write/close`）；系统级头文件 `<sys/stat.h>`、`<unistd.h>`、`<fcntl.h>`
+4. 函数三要素与铁律：返回值类型 + 函数名 + 参数；**成功 0 / 失败 −1**；`errno` + `perror` + `strerror`
+5. 文件描述符 `fd`（句柄）：0/1/2 被标准流占用，新文件从 3 开始
+6. 目录操作 ★：`mkdir`（含 `argc/argv`）、`rmdir`（仅空目录）、`getcwd`、`opendir/readdir/closedir`（扩充）
+7. `stat` / `fstat` / `lstat` ★：`struct stat` 成员表、`S_IS*` 类型判断宏
+8. 文件操作 ★：`access`（0/1/2/4）、`creat`、`open`（`O_RDONLY/O_WRONLY/O_RDWR/O_CREAT/O_EXCL/O_TRUNC/O_APPEND`）、`close`、`read`、`write`、`lseek`（扩充）、`unlink`
+9. 权限陷阱 ★：`umask` 削权——`0777 & ~022 = 0755`
+10. 课本例题逐行解析 + 8 个完整可编译程序（mkdir / getcwd / stat / creat / 存在判断 / 读写 / 文件复制 / 目录遍历）
+11. 易错点复盘、课堂操作复盘、自测题含答案、函数速查表

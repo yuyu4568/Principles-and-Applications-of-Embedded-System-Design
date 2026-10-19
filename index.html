@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–7 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–8 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数</p>
 </header>
 
 <div class="toc">
@@ -228,6 +228,22 @@ footer a { color: var(--accent); }
     <li><a href="#l7-practice">课堂操作复盘</a></li>
     <li><a href="#l7-quiz">复习自测题</a></li>
     <li><a href="#l7-appendix">命令速查表</a></li>
+  </ol>
+  <h3>第 8 课：Linux 文件 I/O——目录操作与文件操作函数</h3>
+  <ol>
+    <li><a href="#l8-quick">本课重点速览</a></li>
+    <li><a href="#l8-io">从硬件 IO 到文件 IO</a></li>
+    <li><a href="#l8-fs">文件系统基础回顾 ★</a></li>
+    <li><a href="#l8-stdio">标准 I/O 与文件 I/O ★</a></li>
+    <li><a href="#l8-func">函数三要素与 errno</a></li>
+    <li><a href="#l8-dir">目录操作函数 ★</a></li>
+    <li><a href="#l8-file">文件操作函数 ★</a></li>
+    <li><a href="#l8-example">课本例题逐行解析</a></li>
+    <li><a href="#l8-code">完整可编译代码合集</a></li>
+    <li><a href="#l8-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l8-practice">课堂操作复盘</a></li>
+    <li><a href="#l8-quiz">复习自测题</a></li>
+    <li><a href="#l8-appendix">函数速查表</a></li>
   </ol>
 </div>
 
@@ -2608,12 +2624,827 @@ done</div>
   </div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 8 课 · Linux 文件 I/O——目录操作与文件操作函数</h2><p style="color:#dff3ea;margin:0;">从硬件 IO 与数据流讲起，回顾文件类型与权限，系统梳理目录操作（mkdir / rmdir / getcwd / stat）与文件操作（access / creat / open / close / read / write / unlink）系统调用、返回值约定与 errno，并把课本例题补全为可直接编译运行的完整代码。</p></div>
+
+<div class="card" id="l8-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>承接第 7 课的 Shell 流程控制，本课进入教材 <strong>第五章：文件 I/O</strong>。开篇先把"硬件 IO"与"文件 IO"打通，回顾文件类型与权限，然后按 <strong>目录操作 → 文件操作 → 文件删除</strong> 三条线，逐个讲 Linux 系统调用：<code>mkdir / rmdir / getcwd / stat</code>，<code>access / creat / open / close / read / write / unlink</code>。</p><p>这一课的最大特点是：<strong>函数多、参数多、返回值约定统一</strong>。看懂"返回值类型 + 函数名 + 参数"三要素，再记住"成功 0、失败 −1"这条铁律，剩下的就是查手册。转写稿中代码只念了片段，本笔记按教材逻辑<strong>补全为可直接编译运行的完整程序</strong>。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td>IO 的本质</td><td>硬件 IO 跑 0/1 电平，文件 IO 跑数据流</td><td>输入/输出是<strong>方向</strong>问题</td></tr>
+      <tr><td>文件基础 ★</td><td>7 种文件类型、UGO 权限、8421</td><td><code>- d l c b p s</code>；rwx = 421</td></tr>
+      <tr><td>链接</td><td>硬链接 vs 软链接</td><td>硬链接共享 inode，软链接新建文件</td></tr>
+      <tr><td>两套 API ★</td><td>标准 I/O（<code>fopen</code> 系）vs 文件 I/O（<code>open</code> 系）</td><td>带 <code>f</code> 的是 C 库，不带 <code>f</code> 的是系统调用</td></tr>
+      <tr><td>返回值约定 ★</td><td>成功 0（或非负），失败 −1</td><td><code>if (ret == -1)</code></td></tr>
+      <tr><td>错误处理</td><td><code>errno</code> + <code>perror</code> + <code>strerror</code></td><td>错误码翻译成人类可读文本</td></tr>
+      <tr><td>文件描述符</td><td><code>fd</code>，也叫句柄</td><td>0/1/2 已被占用，新文件从 3 开始</td></tr>
+      <tr><td>目录操作 ★</td><td><code>mkdir</code> <code>rmdir</code> <code>getcwd</code> <code>stat</code></td><td>建、删、取路径、取状态</td></tr>
+      <tr><td>文件操作 ★</td><td><code>access</code> <code>creat</code> <code>open</code> <code>close</code> <code>read</code> <code>write</code></td><td>检查、创建、打开、关闭、读、写</td></tr>
+      <tr><td>删除</td><td><code>unlink</code></td><td>删的是<strong>目录项</strong>，链接数减到 0 才真正释放</td></tr>
+      <tr><td>权限陷阱 ★</td><td><code>umask</code> 会削掉 mode 的权限位</td><td><code>0666 &amp; ~022 = 0644</code></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l8-io">
+  <h2>二、课前导入：从硬件 IO 到文件 IO</h2>
+  <h3>2.1 你早就接触过 "IO"</h3>
+  <p><code>I</code> = Input（输入），<code>O</code> = Output（输出）。在 51 单片机、STM32 里说 IO，指的是<strong>引脚上的高低电平</strong>：</p>
+  <ul>
+    <li>例：P0.0 外接一个发光二极管，负极接地。要点亮它，P0.0 必须输出<strong>高电平</strong>——一高一低才有电位差，才有电流。</li>
+    <li>这里"数据"就是 <code>0</code> 和 <code>1</code> 两个电平状态，靠<strong>总线</strong>在 CPU、内存、外设之间搬运。</li>
+  </ul>
+  <h3>2.2 到了 Linux，IO 的对象变成了"文件"</h3>
+  <p>同一条总线、同一批 0/1，只是<strong>搬运的对象换了</strong>：从"引脚电平"变成"文件里的字节"。所以：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>场景</th><th>对谁而言是"输入"</th><th>对谁而言是"输出"</th></tr>
+      <tr><td>在 Word 里敲一篇报告</td><td>文件（被写入）</td><td>键盘</td></tr>
+      <tr><td>把 Word1 的内容复制到 Word2</td><td>Word2（被写入）</td><td>Word1</td></tr>
+      <tr><td>U 盘拷文件给别人</td><td>你的硬盘（输出）</td><td>对方 U 盘（输入）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p><strong>关键认知</strong>：输入/输出不是绝对的，而是<strong>相对某个对象</strong>而言的方向。同一个"拷贝"动作，从源看是输出，从目的看是输入。</p></div>
+  <h3>2.3 本课要学什么</h3>
+  <p>教材第五章往后，函数数量陡增，覆盖：<strong>文件操作、目录操作、时间操作、进程操作、进程间通信</strong>。老师的原话是：难度高于 C 语言课，但<strong>用到的语法全是 C 语言</strong>，只是侧重点从"语法"变成了"函数怎么用"。</p>
+</div>
+
+<div class="card" id="l8-fs">
+  <h2>三、文件系统基础回顾 ★</h2>
+  <h3>3.1 <code>ls -l</code> 一行七个字段</h3>
+<div class="flow">-rwxr-xr--  2  root  root  4096  10月 17 14:30  test
+ |  |  |  |   |    |     |     |        |         |
+ ①  ②  ③  ④   ⑤    ⑥     ⑦     ⑧        ⑨        ⑩</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>位置</th><th>含义</th><th>说明</th></tr>
+      <tr><td>①</td><td>文件类型</td><td>第 1 个字符：<code>-</code> <code>d</code> <code>l</code> <code>c</code> <code>b</code> <code>p</code> <code>s</code></td></tr>
+      <tr><td>②</td><td>权限位</td><td>9 位 = U（属主）G（属组）O（其他）各 3 位 rwx</td></tr>
+      <tr><td>③</td><td>链接数</td><td>目录文件表示<strong>子目录个数</strong>；普通文件表示<strong>硬链接个数</strong></td></tr>
+      <tr><td>④</td><td>属主</td><td>创建者 user</td></tr>
+      <tr><td>⑤</td><td>属组</td><td>所属 group</td></tr>
+      <tr><td>⑥</td><td>大小</td><td><strong>字节</strong>为单位（4096、16384…），不是按 MB 显示在字段里</td></tr>
+      <tr><td>⑦</td><td>时间</td><td>月 日 时:分（当年不显示年份）</td></tr>
+      <tr><td>⑧</td><td>文件名</td><td>—</td></tr>
+  </table>
+  </div>
+  <h3>3.2 权限与 8421</h3>
+  <ul>
+    <li><code>r</code> = 4（读）、<code>w</code> = 2（写）、<code>x</code> = 1（执行/进入）</li>
+    <li>三组各占一个<strong>八进制位</strong>（0～7）：<code>rwx</code>=7，<code>rw-</code>=6，<code>r-x</code>=5，<code>r--</code>=4</li>
+    <li>例：<code>761</code> → 属主 <code>rwx</code>、属组 <code>rw-</code>、其他 <code>--x</code></li>
+  </ul>
+  <div class="note"><p><strong>补充</strong>：目录的 <code>x</code> 权限含义特殊——它代表"<strong>能不能进入（cd）</strong>"，<code>r</code> 才是"能不能列出目录内容"。</p></div>
+  <h3>3.3 七种文件类型</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>首字符</th><th>类型</th><th>说明</th></tr>
+      <tr><td><code>-</code></td><td>普通文件</td><td>文本、二进制、压缩包都算</td></tr>
+      <tr><td><code>d</code></td><td>目录文件</td><td>directory</td></tr>
+      <tr><td><code>l</code></td><td>符号链接</td><td>软链接，快捷方式</td></tr>
+      <tr><td><code>c</code></td><td>字符设备</td><td>串口、终端，按字节流访问</td></tr>
+      <tr><td><code>b</code></td><td>块设备</td><td>硬盘、U 盘，按数据块访问</td></tr>
+      <tr><td><code>p</code></td><td>管道文件</td><td>FIFO，进程间通信</td></tr>
+      <tr><td><code>s</code></td><td>套接字</td><td>socket，网络通信</td></tr>
+  </table>
+  </div>
+  <h3>3.4 硬链接与软链接</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比项</th><th>硬链接</th><th>软链接（符号链接）</th></tr>
+      <tr><td>本质</td><td>同一 inode 的<strong>另一个目录项</strong>，引用计数 +1</td><td><strong>新建一个独立文件</strong>，里面只存目标路径</td></tr>
+      <tr><td>是否占空间</td><td>几乎不占（只加一条目录项）</td><td>占一个 inode + 路径字符串</td></tr>
+      <tr><td>删除原文件</td><td>文件内容仍在（计数 −1）</td><td>链接变成"断链"，打不开</td></tr>
+      <tr><td>能否跨分区</td><td>不能</td><td>能</td></tr>
+      <tr><td>能否链接目录</td><td>不能（普通用户）</td><td>能</td></tr>
+      <tr><td>创建命令</td><td><code>ln 源 目标</code></td><td><code>ln -s 源 目标</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师用一个很形象的比喻：<strong>软链接是"实"的（磁盘上真有一个新文件），硬链接是"虚"的（只是个引用计数）</strong>。</p></div>
+</div>
+
+<div class="card" id="l8-stdio">
+  <h2>四、标准 I/O 与文件 I/O ★</h2>
+  <h3>4.1 什么是"流"</h3>
+  <p>"流"（stream）借的是水流、车流的意象：<strong>数据量大、连续、快</strong>。内存与外设之间通过总线不停搬运 0/1，这种连续的字节序列就叫<strong>数据流</strong>。</p>
+  <h3>4.2 两套体系</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th>标准 I/O（标准流）</th><th>文件 I/O（文件流）</th></tr>
+      <tr><td>来源</td><td>C 标准库</td><td>Linux 内核系统调用</td></tr>
+      <tr><td>代表函数</td><td><code>fopen</code> <code>fread</code> <code>fwrite</code> <code>fclose</code></td><td><code>open</code> <code>read</code> <code>write</code> <code>close</code></td></tr>
+      <tr><td>记忆法</td><td><strong>带 f 的都是 file</strong></td><td>不带 f，是内核 API</td></tr>
+      <tr><td>缓冲</td><td>有用户态缓冲（效率高）</td><td>无缓冲，直接进内核</td></tr>
+      <tr><td>头文件</td><td><code>&lt;stdio.h&gt;</code></td><td><code>&lt;fcntl.h&gt;</code> <code>&lt;unistd.h&gt;</code> <code>&lt;sys/stat.h&gt;</code></td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>操作</th><th>标准 I/O</th><th>文件 I/O</th></tr>
+      <tr><td>打开</td><td><code>fopen</code></td><td><code>open</code></td></tr>
+      <tr><td>读</td><td><code>fread</code> / <code>fgets</code> / <code>fscanf</code></td><td><code>read</code></td></tr>
+      <tr><td>写</td><td><code>fwrite</code> / <code>fputs</code> / <code>fprintf</code></td><td><code>write</code></td></tr>
+      <tr><td>关闭</td><td><code>fclose</code></td><td><code>close</code></td></tr>
+      <tr><td>位置</td><td><code>fseek</code> / <code>ftell</code></td><td><code>lseek</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>就像 51 用 <code>reg51.h</code>、STM32 用 <code>stm32f10x.h</code>——<strong>语言还是 C，只是换了一套"官方头文件"</strong>。</p></div>
+  <h3>4.3 头文件为什么长这样</h3>
+<div class="flow">#include &lt;stdio.h&gt;      /* 老面孔：标准输入输出 */
+#include &lt;sys/stat.h&gt;   /* 新面孔：带路径！系统级头文件 */
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;dirent.h&gt;</div>
+  <ul>
+    <li>尖括号里带 <code>/</code> 的头文件，说明它属于<strong>操作系统/内核接口层</strong>，不是 C 标准库。</li>
+    <li>头文件多、函数多，<strong>不需要死记</strong>：写多了自然记住；查手册（<code>man 2 open</code>）比背更靠谱。</li>
+  </ul>
+</div>
+
+<div class="card" id="l8-func">
+  <h2>五、函数三要素、返回值约定与 errno</h2>
+  <h3>5.1 看懂一个函数声明</h3>
+  <p>以 <code>mkdir</code> 为例：</p>
+<div class="flow">#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+
+int mkdir(const char *pathname, mode_t mode);
+  ↑      ↑                  ↑
+返回值类型  函数名           参数列表</div>
+  <ul>
+    <li><strong>返回值</strong>：<code>int</code>，成功 <code>0</code>，失败 <code>-1</code></li>
+    <li><strong>函数名</strong>：<code>mkdir</code> = <strong>m</strong>a<strong>k</strong>e <strong>dir</strong>ectory，和 shell 指令 <code>mkdir</code> 同名同义</li>
+    <li><strong>参数 1</strong>：<code>const char *pathname</code> —— 路径（<code>*</code> 说明是指针，指向字符串首地址）</li>
+    <li><strong>参数 2</strong>：<code>mode_t mode</code> —— 权限模式，用八进制写，如 <code>0777</code></li>
+  </ul>
+  <div class="note"><p><strong>函数的作用</strong>就是<strong>模块化</strong>：一个功能封装成一个模块，便于调用、便于排错，符合"自顶向下、按模块划分"的设计思想。</p></div>
+  <h3>5.2 铁律：成功返回 0，失败返回 −1</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>成功</th><th>失败</th></tr>
+      <tr><td><code>mkdir</code> <code>rmdir</code> <code>stat</code> <code>access</code> <code>close</code></td><td><code>0</code></td><td><code>-1</code></td></tr>
+      <tr><td><code>open</code> <code>creat</code></td><td>返回 <code>fd</code>（≥ 0，通常 ≥ 3）</td><td><code>-1</code></td></tr>
+      <tr><td><code>getcwd</code></td><td>返回 <code>buf</code> 指针</td><td><code>NULL</code></td></tr>
+      <tr><td><code>read</code> <code>write</code></td><td>实际读写的<strong>字节数</strong></td><td><code>-1</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>⚠️ <strong>和 Shell 正好相反</strong>：Shell 里 <code>0</code> 表示真/成功，C 里 <code>0</code> 也表示成功，但<strong>函数返回值 −1 表示失败</strong>，而 Shell 习惯用"非 0 为假"。写代码时判断一律写成 <code>if (ret == -1)</code>。</p></div>
+  <h3>5.3 errno、perror、strerror</h3>
+  <p>系统调用失败时，内核会把<strong>错误码</strong>写进全局变量 <code>errno</code>。三个标准动作：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>方式</th><th>写法</th><th>输出</th></tr>
+      <tr><td>只打印错误码</td><td><code>printf("error: %d\n", errno);</code></td><td><code>error: 17</code></td></tr>
+      <tr><td>自动打印字符串</td><td><code>perror("mkdir");</code></td><td><code>mkdir: File exists</code></td></tr>
+      <tr><td>手动翻译文本</td><td><code>printf("%s\n", strerror(errno));</code></td><td><code>File exists</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师用洗衣机打比方：屏幕只显示 <code>E1</code>、<code>E3</code>，你得翻说明书才知道"E1 是盖子没盖、E3 是没进水"。<code>strerror</code> 就是<strong>自动帮你翻说明书</strong>的那个函数。</p></div>
+  <h3>5.4 文件描述符 fd（句柄）</h3>
+<div class="flow">int fd;   /* fd = file descriptor = 文件描述符，也叫"句柄" */</div>
+  <ul>
+    <li>每打开/创建一个文件，内核返回一个<strong>非负整数</strong>作为身份证，后续 <code>read</code> <code>write</code> <code>close</code> 全靠它。</li>
+    <li><code>0</code> <code>1</code> <code>2</code> 已经被系统占用：</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+      <tr><th>fd</th><th>名称</th><th>含义</th></tr>
+      <tr><td>0</td><td><code>STDIN_FILENO</code></td><td>标准输入（键盘）</td></tr>
+      <tr><td>1</td><td><code>STDOUT_FILENO</code></td><td>标准输出（屏幕）</td></tr>
+      <tr><td>2</td><td><code>STDERR_FILENO</code></td><td>标准错误（屏幕）</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>新打开的文件拿到的是<strong>当前最小可用的编号</strong>，通常从 <code>3</code> 开始，但<strong>不一定是 3</strong>（取决于内核与已打开的文件）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l8-dir">
+  <h2>六、目录操作函数 ★</h2>
+  <h3>6.1 mkdir：创建目录</h3>
+<div class="flow">int mkdir(const char *pathname, mode_t mode);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th><th>说明</th></tr>
+      <tr><td><code>pathname</code></td><td>目录路径</td><td>可绝对可相对，如 <code>/home/linux/test</code></td></tr>
+      <tr><td><code>mode</code></td><td>访问权限</td><td>八进制，如 <code>0777</code>、<code>0666</code></td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>权限宏</th><th>值</th><th>含义</th></tr>
+      <tr><td><code>S_IRUSR</code></td><td>0400</td><td>属主<strong>读</strong></td></tr>
+      <tr><td><code>S_IWUSR</code></td><td>0200</td><td>属主<strong>写</strong></td></tr>
+      <tr><td><code>S_IXUSR</code></td><td>0100</td><td>属主<strong>执行</strong></td></tr>
+      <tr><td><code>S_IRGRP</code></td><td>0040</td><td>属组读</td></tr>
+      <tr><td><code>S_IWGRP</code></td><td>0020</td><td>属组写</td></tr>
+      <tr><td><code>S_IXGRP</code></td><td>0010</td><td>属组执行</td></tr>
+      <tr><td><code>S_IROTH</code></td><td>0004</td><td>其他读</td></tr>
+      <tr><td><code>S_IWOTH</code></td><td>0002</td><td>其他写</td></tr>
+      <tr><td><code>S_IXOTH</code></td><td>0001</td><td>其他执行</td></tr>
+  </table>
+  </div>
+  <div class="note"><p><code>S_IRUSR | S_IWUSR | S_IXUSR</code> 等价于 <code>0700</code>，也等价于 <code>rwx------</code>。</p></div>
+  <p><strong>课本例 1：用命令行参数指定目录名</strong></p>
+<div class="flow">/* mkdir_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(int argc, char *argv[])
+{
+    int ret;
+
+    if (argc &lt; 2) {                       /* 没带参数就提示用法 */
+        printf("usage: %s &lt;dirname&gt;\n", argv[0]);
+        return -1;
+    }
+
+    ret = mkdir(argv[1], 0777);           /* 用 argv[1] 作为目录名 */
+    if (ret == -1) {                      /* 失败：打印错误码 + 原因 */
+        printf("mkdir error: %d, %s\n", errno, strerror(errno));
+        return -1;
+    }
+
+    printf("mkdir %s ok\n", argv[1]);
+    return 0;
+}</div>
+  <p>编译运行：</p>
+<div class="flow">gcc mkdir_demo.c -o mkdir_demo
+./mkdir_demo test        # 创建 test 目录
+ls -ld test              # 实际权限是 drwxr-xr-x（见下方 umask 说明）</div>
+  <p><strong>关于 <code>argc</code> / <code>argv</code>（老师重点强调）：</strong></p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>写法</th><th>含义</th></tr>
+      <tr><td><code>int argc</code></td><td>参数<strong>个数</strong>（argument count），程序名本身算 1 个</td></tr>
+      <tr><td><code>char *argv[]</code></td><td>参数<strong>数组</strong>（argument vector），<code>argv[0]</code> 是程序名</td></tr>
+      <tr><td><code>char **argv</code></td><td>与 <code>char *argv[]</code> <strong>完全等价</strong>，都是"指向指针的指针"</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>执行 <code>./mkdir_demo test</code> 时：<code>argc = 2</code>，<code>argv[0] = "./mkdir_demo"</code>，<code>argv[1] = "test"</code>。</li>
+    <li><code>main</code> 不写参数也能编译通过，只是<strong>拿不到命令行参数</strong>。</li>
+  </ul>
+  <h3>6.2 rmdir：删除目录</h3>
+<div class="flow">int rmdir(const char *pathname);</div>
+  <ul>
+    <li>对应指令 <code>rmdir</code>，<strong>只能删除空目录</strong>（和指令行为一致）。</li>
+    <li>成功 <code>0</code>，失败 <code>-1</code>；目录非空会失败（<code>ENOTEMPTY</code>）。</li>
+    <li>想递归删非空目录，Linux 没有"系统调用一键搞定"的，需要自己写递归（<code>opendir</code> + <code>readdir</code> + <code>unlink</code> + <code>rmdir</code>）。</li>
+  </ul>
+  <h3>6.3 getcwd：获取当前工作目录</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+char *getcwd(char *buf, size_t size);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th></tr>
+      <tr><td><code>buf</code></td><td>存放路径字符串的<strong>缓冲区地址</strong>（数组名即首地址）</td></tr>
+      <tr><td><code>size</code></td><td>缓冲区大小（字节）</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>成功：返回 <code>buf</code>；失败：返回 <code>NULL</code>（并设置 <code>errno</code>）。</li>
+    <li>缓冲区太小会失败（<code>ERANGE</code>），所以要给足空间（<code>PATH_MAX</code> = 4096 最稳）。</li>
+  </ul>
+<div class="flow">/* getcwd_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    char buf[256];
+
+    if (getcwd(buf, sizeof(buf)) == NULL) {
+        printf("getcwd error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    printf("current dir: %s\n", buf);
+    return 0;
+}</div>
+  <div class="note"><p>相关补充：<code>chdir("/tmp")</code> 可以<strong>改变</strong>当前工作目录，<code>getcwd</code> 取，<code>chdir</code> 改，成对理解。</p></div>
+  <h3>6.4 目录遍历：opendir / readdir / closedir（扩充）</h3>
+  <p><code>stat</code> 只能看"一个"文件/目录的属性；要<strong>列出一个目录里有什么</strong>，得用目录流：</p>
+<div class="flow">#include &lt;stdio.h&gt;
+#include &lt;dirent.h&gt;
+
+int main(int argc, char *argv[])
+{
+    DIR *dir;
+    struct dirent *entry;
+
+    if (argc &lt; 2) { printf("usage: %s &lt;dir&gt;\n", argv[0]); return -1; }
+
+    dir = opendir(argv[1]);              /* 打开目录流 */
+    if (dir == NULL) { perror("opendir"); return -1; }
+
+    while ((entry = readdir(dir)) != NULL) {   /* 逐个读目录项 */
+        printf("%s\n", entry-&gt;d_name);         /* d_name 是文件名 */
+    }
+
+    closedir(dir);                       /* 关闭目录流 */
+    return 0;
+}</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>作用</th><th>成功</th><th>失败</th></tr>
+      <tr><td><code>opendir</code></td><td>打开目录</td><td><code>DIR *</code></td><td><code>NULL</code></td></tr>
+      <tr><td><code>readdir</code></td><td>读下一个目录项</td><td><code>struct dirent *</code></td><td><code>NULL</code>（读完）</td></tr>
+      <tr><td><code>closedir</code></td><td>关闭目录</td><td><code>0</code></td><td><code>-1</code></td></tr>
+  </table>
+  </div>
+  <h3>6.5 stat / fstat / lstat：获取文件状态 ★</h3>
+<div class="flow">#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+
+int stat(const char *pathname, struct stat *buf);   /* 通过【路径】获取 */
+int fstat(int fd, struct stat *buf);                /* 通过【已打开的 fd】获取 */
+int lstat(const char *pathname, struct stat *buf);  /* 不跟随软链接（看链接本身） */</div>
+  <p><strong><code>stat</code> 与 <code>fstat</code> 的区别（老师强调）：</strong></p>
+  <ul>
+    <li><code>stat</code>：传<strong>路径</strong>即可，文件<strong>不需要打开</strong>。目录只能用它（目录没法 <code>open</code> 后按普通文件读）。</li>
+    <li><code>fstat</code>：传<strong>文件描述符</strong>，文件<strong>必须已经打开</strong>。</li>
+  </ul>
+  <p><strong><code>struct stat</code> 主要成员：</strong></p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>成员</th><th>类型</th><th>含义</th></tr>
+      <tr><td><code>st_mode</code></td><td><code>mode_t</code></td><td>文件类型 + 权限位，配合 <code>S_IS*</code> 宏判断类型</td></tr>
+      <tr><td><code>st_nlink</code></td><td><code>nlink_t</code></td><td>硬链接数</td></tr>
+      <tr><td><code>st_uid</code> / <code>st_gid</code></td><td><code>uid_t</code> / <code>gid_t</code></td><td>属主 ID / 属组 ID</td></tr>
+      <tr><td><code>st_size</code></td><td><code>off_t</code></td><td>文件大小（字节）</td></tr>
+      <tr><td><code>st_atime</code></td><td><code>time_t</code></td><td>最后访问时间</td></tr>
+      <tr><td><code>st_mtime</code></td><td><code>time_t</code></td><td>最后修改时间</td></tr>
+      <tr><td><code>st_ctime</code></td><td><code>time_t</code></td><td>状态改变时间</td></tr>
+      <tr><td><code>st_ino</code></td><td><code>ino_t</code></td><td>inode 号</td></tr>
+      <tr><td><code>st_dev</code></td><td><code>dev_t</code></td><td>所在设备号</td></tr>
+      <tr><td><code>st_blksize</code> / <code>st_blocks</code></td><td>—</td><td>块大小 / 占用块数</td></tr>
+  </table>
+  </div>
+  <p><strong>文件类型判断宏（<code>st_mode</code> 专用）：</strong></p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>宏</th><th>判断</th></tr>
+      <tr><td><code>S_ISREG(m)</code></td><td>普通文件</td></tr>
+      <tr><td><code>S_ISDIR(m)</code></td><td>目录</td></tr>
+      <tr><td><code>S_ISCHR(m)</code></td><td>字符设备</td></tr>
+      <tr><td><code>S_ISBLK(m)</code></td><td>块设备</td></tr>
+      <tr><td><code>S_ISFIFO(m)</code></td><td>管道</td></tr>
+      <tr><td><code>S_ISLNK(m)</code></td><td>符号链接</td></tr>
+      <tr><td><code>S_ISSOCK(m)</code></td><td>套接字</td></tr>
+  </table>
+  </div>
+  <p><strong>课本例：判断文件类型</strong></p>
+<div class="flow">/* stat_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(int argc, char *argv[])
+{
+    struct stat st;
+    int ret;
+
+    if (argc &lt; 2) { printf("usage: %s &lt;path&gt;\n", argv[0]); return -1; }
+
+    ret = stat(argv[1], &amp;st);            /* 取地址传入结构体 */
+    if (ret == -1) {
+        printf("stat error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    if (S_ISDIR(st.st_mode))
+        printf("%s: is a directory\n", argv[1]);
+    else if (S_ISREG(st.st_mode))
+        printf("%s: is a regular file\n", argv[1]);
+    else if (S_ISLNK(st.st_mode))
+        printf("%s: is a symbolic link\n", argv[1]);
+    else if (S_ISCHR(st.st_mode))
+        printf("%s: is a character device\n", argv[1]);
+    else if (S_ISBLK(st.st_mode))
+        printf("%s: is a block device\n", argv[1]);
+    else if (S_ISFIFO(st.st_mode))
+        printf("%s: is a fifo\n", argv[1]);
+    else if (S_ISSOCK(st.st_mode))
+        printf("%s: is a socket\n", argv[1]);
+
+    printf("size = %ld bytes, links = %lu\n",
+           (long)st.st_size, (unsigned long)st.st_nlink);
+    return 0;
+}</div>
+  <p>运行效果（对应课堂演示）：</p>
+<div class="flow">./stat_demo test        # test 是目录 → is a directory
+./stat_demo stat_demo.c # 普通文件 → is a regular file</div>
+</div>
+
+<div class="card" id="l8-file">
+  <h2>七、文件操作函数 ★</h2>
+  <h3>7.1 access：检查文件是否存在/权限</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+int access(const char *pathname, int mode);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th><code>mode</code> 常量</th><th>数值</th><th>检查什么</th></tr>
+      <tr><td><code>F_OK</code></td><td>0</td><td>文件<strong>是否存</strong>在</td></tr>
+      <tr><td><code>X_OK</code></td><td>1</td><td>是否有<strong>执行</strong>权限</td></tr>
+      <tr><td><code>W_OK</code></td><td>2</td><td>是否有<strong>写</strong>权限</td></tr>
+      <tr><td><code>R_OK</code></td><td>4</td><td>是否有<strong>读</strong>权限</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>记忆：<strong>0 存在、1 执行、2 写、4 读</strong>，正好对上 <code>rwx = 421</code>。</li>
+    <li>成功返回 <code>0</code>，失败返回 <code>-1</code>。</li>
+    <li>多个权限可以按位或：<code>access("f", R_OK | W_OK)</code>。</li>
+  </ul>
+  <h3>7.2 creat：创建文件</h3>
+<div class="flow">#include &lt;fcntl.h&gt;
+#include &lt;sys/stat.h&gt;
+
+int creat(const char *pathname, mode_t mode);</div>
+  <ul>
+    <li>成功：返回<strong>文件描述符</strong>；失败：<code>-1</code>。</li>
+    <li>等价于 <code>open(pathname, O_WRONLY | O_CREAT | O_TRUNC, mode)</code>。</li>
+    <li><strong>创建完文件就是"打开"状态</strong>，用完必须 <code>close</code>，否则占用系统资源（老师比喻：教室开门不关，资源一直占着）。</li>
+    <li>文件已存在时，<code>creat</code> 会<strong>清空原内容</strong>（<code>O_TRUNC</code>）——这是坑，见易错点。</li>
+  </ul>
+<div class="flow">/* creat_demo.c —— 对应课本"打印 fd"的例子 */
+#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    int fd = -1;
+
+    fd = creat("./test.txt", 0777);      /* 0777：属主/属组/其他全 rwx */
+    if (fd &lt; 0) {
+        printf("creat error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    printf("ok: %d\n", fd);              /* 课堂上输出 ok: 3 */
+    close(fd);                           /* 一定要关 */
+    return 0;
+}</div>
+  <h3>7.3 open：打开/创建文件 ★</h3>
+<div class="flow">#include &lt;fcntl.h&gt;
+
+int open(const char *pathname, int flags);                  /* 不带创建 */
+int open(const char *pathname, int flags, mode_t mode);     /* 带 O_CREAT 时必须给 mode */</div>
+  <p><strong><code>flags</code> 常用标志：</strong></p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>标志</th><th>含义</th><th>说明</th></tr>
+      <tr><td><code>O_RDONLY</code></td><td>只读</td><td>三者<strong>只能选一个</strong></td></tr>
+      <tr><td><code>O_WRONLY</code></td><td>只写</td><td>—</td></tr>
+      <tr><td><code>O_RDWR</code></td><td>读写</td><td>—</td></tr>
+      <tr><td><code>O_CREAT</code></td><td>不存在则创建</td><td>需配合 <code>mode</code></td></tr>
+      <tr><td><code>O_EXCL</code></td><td>与 <code>O_CREAT</code> 连用</td><td>文件已存在则<strong>失败</strong>，防止覆盖</td></tr>
+      <tr><td><code>O_TRUNC</code></td><td>打开时清空</td><td>长度截为 0</td></tr>
+      <tr><td><code>O_APPEND</code></td><td>追加</td><td>每次写前把读写位置移到<strong>文件末尾</strong></td></tr>
+  </table>
+  </div>
+  <p>组合示例：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>需求</th><th>写法</th></tr>
+      <tr><td>读写打开，不存在就创建</td><td><code>O_RDWR | O_CREAT</code></td></tr>
+      <tr><td>创建新文件，已存在就报错</td><td><code>O_WRONLY | O_CREAT | O_EXCL</code></td></tr>
+      <tr><td>追加写，不存在就创建</td><td><code>O_WRONLY | O_CREAT | O_APPEND</code></td></tr>
+      <tr><td>打开并清空（等价 creat）</td><td><code>O_WRONLY | O_CREAT | O_TRUNC</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p><code>O_CREAT | O_EXCL</code> 就是"<strong>安全创建</strong>"：只有文件真不存在才成功，避免误覆盖已有文件。</p></div>
+  <h3>7.4 close：关闭文件</h3>
+<div class="flow">int close(int fd);</div>
+  <ul>
+    <li>成功 <code>0</code>，失败 <code>-1</code>。</li>
+    <li>关闭后 fd 被释放，可被后续 <code>open</code> 复用。</li>
+    <li>程序退出时内核会自动回收，但<strong>显式 close 是好习惯</strong>（尤其循环里打开大量文件时）。</li>
+  </ul>
+  <h3>7.5 read：读数据</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+ssize_t read(int fd, void *buf, size_t count);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>返回值</th><th>含义</th></tr>
+      <tr><td><code>&gt; 0</code></td><td>实际读到的<strong>字节数</strong>（可能小于 <code>count</code>）</td></tr>
+      <tr><td><code>0</code></td><td>已读到<strong>文件末尾</strong>（EOF）</td></tr>
+      <tr><td><code>-1</code></td><td>出错（看 <code>errno</code>）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>关键：<code>read</code> 返回的不一定是你请求的字节数，<strong>必须用返回值当有效长度</strong>，不能假设读满了。</p></div>
+  <h3>7.6 write：写数据</h3>
+<div class="flow">ssize_t write(int fd, const void *buf, size_t count);</div>
+  <ul>
+    <li>返回实际写入的字节数；<code>-1</code> 表示失败。</li>
+    <li><code>write</code> 是<strong>系统调用</strong>，不经过 <code>printf</code> 的用户态缓冲区；<code>printf</code> 有缓冲，混用时注意 <code>fflush(stdout)</code>。</li>
+  </ul>
+  <h3>7.7 lseek：移动读写位置（扩充）</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+off_t lseek(int fd, off_t offset, int whence);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th><code>whence</code></th><th>基准</th></tr>
+      <tr><td><code>SEEK_SET</code></td><td>文件开头</td></tr>
+      <tr><td><code>SEEK_CUR</code></td><td>当前位置</td></tr>
+      <tr><td><code>SEEK_END</code></td><td>文件末尾</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>返回<strong>新的偏移量</strong>，失败 <code>-1</code>。</li>
+    <li>常用：<code>lseek(fd, 0, SEEK_END)</code> 求文件大小；<code>lseek(fd, 0, SEEK_SET)</code> 回到开头重读。</li>
+    <li>老师课上提到"文件读写指针"可以调位置，<code>lseek</code> 就是干这个的，和标准 I/O 的 <code>fseek</code> 对应。</li>
+  </ul>
+  <h3>7.8 unlink：删除文件</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+int unlink(const char *pathname);</div>
+  <ul>
+    <li>对应指令 <code>rm</code>。成功 <code>0</code>，失败 <code>-1</code>。</li>
+    <li>它删除的是<strong>目录项</strong>（文件名），并让 inode 的<strong>硬链接计数 −1</strong>；<strong>计数减到 0 时，数据块才真正释放</strong>。</li>
+    <li>所以：有硬链接的文件，<code>unlink</code> 掉一个名字，文件内容还在；删软链接只删链接本身，不动源文件。</li>
+  </ul>
+</div>
+
+<div class="card" id="l8-example">
+  <h2>八、课本例题逐行解析</h2>
+  <h3>8.1 例 1：mkdir 创建目录</h3>
+  <p>见 6.1 的 <code>mkdir_demo.c</code>。要点：</p>
+  <ol>
+    <li>前 4 行是头文件（<code>stdio.h</code> 提供 <code>printf</code>，<code>sys/stat.h</code> 提供 <code>mkdir</code>，<code>errno.h</code>+<code>string.h</code> 提供错误处理）。</li>
+    <li><code>int main(int argc, char *argv[])</code>：入口，带命令行参数。</li>
+    <li><code>ret = mkdir(argv[1], 0777)</code>：目录名来自用户输入。</li>
+    <li><code>if (ret == -1)</code>：只有失败才走报错分支。</li>
+    <li>编译：<code>gcc mkdir_demo.c -o mkdir_demo</code>，运行：<code>./mkdir_demo test</code>。</li>
+  </ol>
+  <h3>8.2 例 2：判断存在 → 打开，否则创建</h3>
+<div class="flow">/* exist_open.c —— 课本 5.3.4 例 */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(int argc, char *argv[])
+{
+    int fd, ret;
+
+    if (argc &lt; 2) { printf("usage: %s &lt;file&gt;\n", argv[0]); return -1; }
+
+    ret = access(argv[1], F_OK);         /* 检查是否存在 */
+    if (ret == -1) {                     /* 不存在 → 创建 */
+        printf("%s not exist, create it\n", argv[1]);
+        fd = creat(argv[1], 0666);
+        if (fd &lt; 0) { perror("creat"); return -1; }
+        printf("creat ok, fd = %d\n", fd);
+        close(fd);
+    } else {                             /* 存在 → 打开 */
+        printf("%s exists, open it\n", argv[1]);
+        fd = open(argv[1], O_RDWR);
+        if (fd &lt; 0) { perror("open"); return -1; }
+        printf("open ok, fd = %d\n", fd);
+        close(fd);
+    }
+
+    return 0;
+}</div>
+  <div class="note"><p>逻辑主线：<strong>先问"有没有"（<code>access</code>），再决定"开还是建"（<code>open</code> / <code>creat</code>）</strong>。</p></div>
+  <h3>8.3 例 3：存在就读 200 字节，不存在就创建并写</h3>
+<div class="flow">/* read_or_write.c */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;string.h&gt;
+#include &lt;errno.h&gt;
+
+int main(int argc, char *argv[])
+{
+    int fd, ret;
+    char rbuf[4096];                     /* 读缓冲：4096 字节 */
+    char wbuf[256];                      /* 写缓冲：256 字节 */
+
+    if (argc &lt; 2) { printf("usage: %s &lt;file&gt;\n", argv[0]); return -1; }
+
+    if (access(argv[1], F_OK) == 0) {     /* 文件存在 → 读 */
+        fd = open(argv[1], O_RDONLY);
+        if (fd &lt; 0) { perror("open"); return -1; }
+
+        ret = read(fd, rbuf, 200);        /* 只读 200 字节 */
+        if (ret &lt; 0) { perror("read"); close(fd); return -1; }
+        rbuf[ret] = '\0';                 /* 补字符串结束符，才能用 %s 打印 */
+
+        printf("read %d bytes:\n%s\n", ret, rbuf);
+        close(fd);
+    } else {                             /* 文件不存在 → 创建并写 */
+        fd = creat(argv[1], 0666);
+        if (fd &lt; 0) { perror("creat"); return -1; }
+
+        printf("input some words: ");
+        if (scanf("%255s", wbuf) != 1) { close(fd); return -1; }  /* 存进内存 */
+
+        ret = write(fd, wbuf, strlen(wbuf));                       /* 内存 → 文件 */
+        if (ret &lt; 0) { perror("write"); close(fd); return -1; }
+
+        printf("write %d bytes ok\n", ret);
+        close(fd);
+    }
+
+    return 0;
+}</div>
+  <div class="note"><p>老师强调的点：<code>scanf</code> 只是把内容读进<strong>内存</strong>（<code>wbuf</code>），真正落盘要靠 <code>write</code> 把内存内容写进 <code>fd</code>。</p></div>
+  <h3>8.4 例 4：文件复制（本课最完整的一个）</h3>
+  <p>思路相当于"两杯水交换"要一个中间杯子：<strong>A 文件 → 中间缓冲 <code>buf</code> → B 文件</strong>，循环搬运直到读完。</p>
+<div class="flow">/* mycp.c —— 实现 cp 的核心逻辑 */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;string.h&gt;
+#include &lt;errno.h&gt;
+
+int main(int argc, char *argv[])
+{
+    int fd_src, fd_dst, ret;
+    char buf[1024];                      /* 中间缓冲：1KB */
+
+    if (argc &lt; 3) {
+        printf("usage: %s &lt;src&gt; &lt;dst&gt;\n", argv[0]);
+        return -1;
+    }
+
+    fd_src = open(argv[1], O_RDONLY);                  /* 源文件：只读 */
+    if (fd_src &lt; 0) { perror("open src"); return -1; }
+
+    fd_dst = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0666);  /* 目标：写+建+清空 */
+    if (fd_dst &lt; 0) { perror("open dst"); close(fd_src); return -1; }
+
+    while ((ret = read(fd_src, buf, sizeof(buf))) &gt; 0) {
+        if (write(fd_dst, buf, ret) != ret) {          /* 必须写满 ret 字节 */
+            perror("write");
+            close(fd_src); close(fd_dst);
+            return -1;
+        }
+    }
+    if (ret &lt; 0) perror("read");                       /* 循环因出错退出 */
+
+    close(fd_src);
+    close(fd_dst);
+    printf("copy done\n");
+    return 0;
+}</div>
+  <p>编译运行：</p>
+<div class="flow">gcc mycp.c -o mycp
+./mycp a.txt b.txt
+diff a.txt b.txt        # 无输出即复制成功</div>
+</div>
+
+<div class="card" id="l8-code">
+  <h2>九、完整可编译代码合集</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>文件</th><th>功能</th><th>关键函数</th></tr>
+      <tr><td><code>mkdir_demo.c</code></td><td>命令行创建目录</td><td><code>mkdir</code>、<code>argc/argv</code></td></tr>
+      <tr><td><code>getcwd_demo.c</code></td><td>打印当前目录</td><td><code>getcwd</code></td></tr>
+      <tr><td><code>stat_demo.c</code></td><td>判断文件类型</td><td><code>stat</code>、<code>S_IS*</code></td></tr>
+      <tr><td><code>creat_demo.c</code></td><td>创建文件并打印 fd</td><td><code>creat</code>、<code>close</code></td></tr>
+      <tr><td><code>exist_open.c</code></td><td>存在则打开，否则创建</td><td><code>access</code>、<code>open</code>、<code>creat</code></td></tr>
+      <tr><td><code>read_or_write.c</code></td><td>读 200B / 写 256B</td><td><code>read</code>、<code>write</code>、<code>scanf</code></td></tr>
+      <tr><td><code>mycp.c</code></td><td>文件复制</td><td><code>open</code>、<code>read</code>、<code>write</code>、<code>close</code></td></tr>
+      <tr><td><code>list_dir.c</code></td><td>遍历目录</td><td><code>opendir</code>、<code>readdir</code>、<code>closedir</code></td></tr>
+  </table>
+  </div>
+  <p>统一编译方式：</p>
+<div class="flow">gcc xxx.c -o xxx
+./xxx 参数</div>
+</div>
+
+<div class="card" id="l8-pitfall">
+  <h2>十、易错点复盘 ★</h2>
+  <ol>
+    <li><strong><code>open</code> 带 <code>O_CREAT</code> 却忘记给第三个参数 <code>mode</code></strong> —— 编译不报错，运行时生成的文件权限是<strong>随机垃圾值</strong>（其实是栈上残值），必须写 <code>open(path, O_CREAT|O_WRONLY, 0666)</code>。</li>
+    <li><strong><code>umask</code> 会"暗中削权限"</strong> —— <code>creat("f", 0777)</code> 在默认 <code>umask 022</code> 下得到的是 <code>0755</code>，不是 <code>0777</code>。实际权限 = <code>mode &amp; ~umask</code>。想验证：<code>umask</code> 查看，<code>umask 000</code> 临时清零。</li>
+    <li><strong>目录用 <code>creat</code>/<code>open</code> 打开会失败</strong> —— 目录不能用普通文件方式读写，要 <code>opendir</code>/<code>readdir</code>。</li>
+    <li><strong><code>read</code> 返回值当成"读满了"</strong> —— 返回值才是有效长度，且 <code>0</code> 表示 EOF，<code>-1</code> 才是错误。循环要写 <code>while ((n = read(...)) &gt; 0)</code>。</li>
+    <li><strong><code>write</code> 没写满就不管了</strong> —— 严格写法是判断 <code>write</code> 返回值是否等于 <code>ret</code>，不等要重试或报错。</li>
+    <li><strong><code>creat</code> 会清空已有文件</strong> —— <code>creat</code> = <code>O_TRUNC</code>，想在原文件后追加要用 <code>O_APPEND</code>。</li>
+    <li><strong>字符串缓冲区没补 <code>'\0'</code> 就用 <code>printf("%s")</code></strong> —— <code>read</code> 不会自动加结束符，必须 <code>buf[n] = '\0'</code>。</li>
+    <li><strong><code>stat</code> 和 <code>fstat</code> 混用</strong> —— <code>fstat</code> 需要已打开的 <code>fd</code>；目录只能用 <code>stat</code>。</li>
+    <li><strong><code>close</code> 忘写</strong> —— 短程序看不出问题，长程序/循环里会<strong>耗尽 fd</strong>（默认上限 1024，报 <code>Too many open files</code>）。</li>
+    <li><strong><code>errno</code> 要紧接着用</strong> —— 中间又调了别的函数，<code>errno</code> 可能被覆盖；要么立刻打印，要么先存起来。</li>
+    <li><strong>返回值判断写成 <code>if (fd)</code></strong> —— <code>fd</code> 为 <code>0</code> 时也是合法描述符（虽然标准流占用了 0/1/2），判断失败要用 <code>&lt; 0</code>，不要用 <code>!fd</code>。</li>
+  </ol>
+</div>
+
+<div class="card" id="l8-practice">
+  <h2>十一、课堂操作复盘</h2>
+  <ol>
+    <li>写 <code>mkdir_demo.c</code> → <code>gcc mkdir_demo.c -o mkdir_demo</code> → <code>./mkdir_demo test</code>，观察目录被创建。</li>
+    <li>用 <code>ls -ld test</code> 查看权限，发现给的是 <code>0777</code> 实际却是 <code>drwxr-xr-x</code> → 引出 <code>umask</code>。</li>
+    <li>写 <code>stat_demo.c</code> 判断 <code>test</code> 的类型，输出 <code>is a directory</code>；判断 <code>stat_demo.c</code> 输出 <code>is a regular file</code>。</li>
+    <li>写 <code>creat_demo.c</code>，运行输出 <code>ok: 3</code>，理解 fd 从 3 开始分配。</li>
+    <li>写 <code>exist_open.c</code>，先对一个不存在的文件运行（走 <code>creat</code> 分支），再运行一次（走 <code>open</code> 分支），观察两条不同输出。</li>
+    <li>写 <code>read_or_write.c</code>，对已存在文件读 200 字节；对不存在文件输入字符串后写入，再 <code>cat</code> 查看。</li>
+    <li>写 <code>mycp.c</code> 完成文件复制，用 <code>diff</code> 验证与原文件一致。</li>
+  </ol>
+</div>
+
+<div class="card" id="l8-quiz">
+  <h2>十二、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>文件 I/O 与标准 I/O 的代表函数分别是什么？如何一眼区分？</li>
+    <li><code>mkdir</code> 成功和失败分别返回什么？失败后怎么拿到错误原因？</li>
+    <li><code>fd</code> 是什么？为什么新文件通常拿到 3 而不是 0？</li>
+    <li><code>stat</code> 与 <code>fstat</code> 的区别是什么？判断文件类型用哪个宏？</li>
+    <li><code>access</code> 的 <code>mode</code> 四个常量分别是什么含义？</li>
+    <li><code>open</code> 的 <code>O_CREAT | O_EXCL</code> 组合有什么用？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>标准 I/O：<code>fopen/fread/fwrite/fclose</code>；文件 I/O：<code>open/read/write/close</code>。<strong>带 <code>f</code> 的是标准库（有缓冲），不带 <code>f</code> 的是内核系统调用</strong>。</li>
+    <li>成功返回 <code>0</code>，失败返回 <code>-1</code>；失败原因在 <code>errno</code>，用 <code>perror("xxx")</code> 或 <code>printf("%s", strerror(errno))</code> 打印。</li>
+    <li>文件描述符，是内核给已打开文件的非负整数编号（句柄）。0/1/2 分别被标准输入/输出/错误占用，所以新文件取<strong>最小可用编号</strong>，通常是 3。</li>
+    <li><code>stat</code> 用路径获取、文件不用打开；<code>fstat</code> 用已打开的 <code>fd</code>。判断类型用 <code>S_ISREG/S_ISDIR/S_ISLNK/S_ISCHR/S_ISBLK/S_ISFIFO/S_ISSOCK</code> 配合 <code>st_mode</code>。</li>
+    <li><code>F_OK</code>=0 存在、<code>X_OK</code>=1 执行、<code>W_OK</code>=2 写、<code>R_OK</code>=4 读（合起来就是 rwx=421）。</li>
+    <li>只有文件<strong>不存在</strong>时才创建成功；若已存在则失败，防止误覆盖。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li><code>creat("f", 0777)</code> 实际生成的权限是多少？为什么？</li>
+    <li><code>read</code> 返回 0 和返回 −1 有什么区别？</li>
+    <li>为什么"删除了文件"磁盘空间没立刻变大？</li>
+    <li>写一个程序：把命令行给出的目录里所有普通文件的大小打印出来。</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li>通常是 <code>0755</code>。因为 <code>umask</code> 默认 <code>022</code>，实际权限 = <code>mode &amp; ~umask</code> = <code>0777 &amp; ~022</code> = <code>0755</code>。</li>
+    <li><code>0</code> 表示已到<strong>文件末尾</strong>（正常）；<code>-1</code> 表示<strong>出错</strong>，需要查 <code>errno</code>。</li>
+    <li><code>unlink</code> 只删除<strong>目录项</strong>并让硬链接计数 −1；只有计数归零、且没有进程还持有该 <code>fd</code> 时，数据块才真正释放。</li>
+    <li>用 <code>opendir/readdir</code> 遍历，对每项拼路径后 <code>stat</code>，判断 <code>S_ISREG</code>，打印 <code>st_size</code>。</li>
+  </ol>
+</div>
+
+<div class="card" id="l8-appendix">
+  <h2>十三、函数速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>成功</th><th>失败</th></tr>
+      <tr><td><code>mkdir</code></td><td><code>int mkdir(const char *path, mode_t mode)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>rmdir</code></td><td><code>int rmdir(const char *path)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>getcwd</code></td><td><code>char *getcwd(char *buf, size_t size)</code></td><td><code>buf</code></td><td><code>NULL</code></td></tr>
+      <tr><td><code>chdir</code></td><td><code>int chdir(const char *path)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>opendir</code></td><td><code>DIR *opendir(const char *name)</code></td><td><code>DIR *</code></td><td><code>NULL</code></td></tr>
+      <tr><td><code>readdir</code></td><td><code>struct dirent *readdir(DIR *dir)</code></td><td>目录项</td><td><code>NULL</code></td></tr>
+      <tr><td><code>closedir</code></td><td><code>int closedir(DIR *dir)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>stat</code></td><td><code>int stat(const char *path, struct stat *buf)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>fstat</code></td><td><code>int fstat(int fd, struct stat *buf)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>lstat</code></td><td><code>int lstat(const char *path, struct stat *buf)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>access</code></td><td><code>int access(const char *path, int mode)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>creat</code></td><td><code>int creat(const char *path, mode_t mode)</code></td><td><code>fd</code></td><td>-1</td></tr>
+      <tr><td><code>open</code></td><td><code>int open(const char *path, int flags[, mode_t mode])</code></td><td><code>fd</code></td><td>-1</td></tr>
+      <tr><td><code>close</code></td><td><code>int close(int fd)</code></td><td>0</td><td>-1</td></tr>
+      <tr><td><code>read</code></td><td><code>ssize_t read(int fd, void *buf, size_t count)</code></td><td>字节数</td><td>-1</td></tr>
+      <tr><td><code>write</code></td><td><code>ssize_t write(int fd, const void *buf, size_t count)</code></td><td>字节数</td><td>-1</td></tr>
+      <tr><td><code>lseek</code></td><td><code>off_t lseek(int fd, off_t off, int whence)</code></td><td>新偏移</td><td>-1</td></tr>
+      <tr><td><code>unlink</code></td><td><code>int unlink(const char *path)</code></td><td>0</td><td>-1</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>常量</th><th>值/含义</th></tr>
+      <tr><td><code>F_OK</code> / <code>X_OK</code> / <code>W_OK</code> / <code>R_OK</code></td><td>0 / 1 / 2 / 4</td></tr>
+      <tr><td><code>O_RDONLY</code> / <code>O_WRONLY</code> / <code>O_RDWR</code></td><td>只读 / 只写 / 读写（三选一）</td></tr>
+      <tr><td><code>O_CREAT</code> / <code>O_EXCL</code> / <code>O_TRUNC</code> / <code>O_APPEND</code></td><td>创建 / 排他 / 清空 / 追加</td></tr>
+      <tr><td><code>SEEK_SET</code> / <code>SEEK_CUR</code> / <code>SEEK_END</code></td><td>文件头 / 当前位置 / 文件尾</td></tr>
+      <tr><td><code>S_ISREG</code> / <code>S_ISDIR</code> / <code>S_ISLNK</code> / <code>S_ISCHR</code> / <code>S_ISBLK</code> / <code>S_ISFIFO</code> / <code>S_ISSOCK</code></td><td>文件类型判断宏</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理并大幅扩充：<strong>转写稿中只念到的代码片段已补全为可编译运行的完整程序</strong>，并补充了 <code>umask</code>、<code>lseek</code>、<code>opendir/readdir</code>、<code>O_TRUNC/O_APPEND</code> 等老师一带而过但考试与实战常考的知识点。转写存在口语化与同音字误差（如 "MPDR" = <code>mkdir</code>、"exercise" = <code>access</code>、"Buds" = <code>buf</code>、"图文件" = 头文件），内容以规范表述为准。</p></div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–7 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-17</p>
+  <p>第 1–8 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-19</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
