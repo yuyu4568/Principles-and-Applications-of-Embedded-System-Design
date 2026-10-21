@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–8 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–9 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换</p>
 </header>
 
 <div class="toc">
@@ -244,6 +244,27 @@ footer a { color: var(--accent); }
     <li><a href="#l8-practice">课堂操作复盘</a></li>
     <li><a href="#l8-quiz">复习自测题</a></li>
     <li><a href="#l8-appendix">函数速查表</a></li>
+  </ol>
+
+  <h3>第 9 课：C 语言时间编程与格林威治时间转换</h3>
+  <ol>
+    <li><a href="#l9-quick">本课重点速览</a></li>
+    <li><a href="#l9-review">课前复习与课堂寄语</a></li>
+    <li><a href="#l9-basics">时间编程的两个基本概念 ★</a></li>
+    <li><a href="#l9-time">time：获取当前秒数 ★</a></li>
+    <li><a href="#l9-tm">struct tm 结构体 ★</a></li>
+    <li><a href="#l9-gmtime">gmtime：秒 → 格林威治时间 ★</a></li>
+    <li><a href="#l9-localtime">localtime：秒 → 本地时间 ★</a></li>
+    <li><a href="#l9-mktime">mktime：结构体 → 秒（反向转换）★</a></li>
+    <li><a href="#l9-timeval">gettimeofday / settimeofday：微秒级时间 ★</a></li>
+    <li><a href="#l9-strings">asctime 与 ctime：时间 → 字符串 ★</a></li>
+    <li><a href="#l9-summary">八个函数总览与对比 ★</a></li>
+    <li><a href="#l9-convert">本地时间 ↔ 格林威治时间互转 ★</a></li>
+    <li><a href="#l9-code">完整可编译代码合集</a></li>
+    <li><a href="#l9-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l9-practice">课堂操作复盘</a></li>
+    <li><a href="#l9-quiz">复习自测题（含答案）</a></li>
+    <li><a href="#l9-appendix">函数速查表</a></li>
   </ol>
 </div>
 
@@ -3439,12 +3460,706 @@ diff a.txt b.txt        # 无输出即复制成功</div>
   <div class="note"><p>本笔记依据课堂录音转写整理并大幅扩充：<strong>转写稿中只念到的代码片段已补全为可编译运行的完整程序</strong>，并补充了 <code>umask</code>、<code>lseek</code>、<code>opendir/readdir</code>、<code>O_TRUNC/O_APPEND</code> 等老师一带而过但考试与实战常考的知识点。转写存在口语化与同音字误差（如 "MPDR" = <code>mkdir</code>、"exercise" = <code>access</code>、"Buds" = <code>buf</code>、"图文件" = 头文件），内容以规范表述为准。</p></div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 9 课 · C 语言时间编程与格林威治时间转换</h2><p style="color:#dff3ea;margin:0;">从 UTC 与日历时间两个概念讲起，逐个梳理 time、gmtime、localtime、mktime、gettimeofday、settimeofday、asctime、ctime 八个函数，最后落到本地时间与格林威治时间（东八区 480 分钟）的相互转换。</p></div>
+
+<div class="card" id="l9-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>本课是教材 <strong>第五章</strong> 的后半部分：前半部分（第 8 课）讲的是"文件 I/O"，这部分讲 <strong>时间编程</strong>。开篇先用几分钟复习目录操作与文件操作函数，随后进入时间主题：<strong>协调世界时（UTC/格林威治时间）与日历时间（1970 年起的秒数）</strong> 两个概念，再逐个讲 8 个时间函数——<code>time</code>、<code>gmtime</code>、<code>localtime</code>、<code>mktime</code>、<code>gettimeofday</code>、<code>settimeofday</code>、<code>asctime</code>、<code>ctime</code>，最后落到"<strong>本地时间 ↔ 格林威治时间</strong>"的相互转换。</p><p>本课录音分为上下两段（中途中断重录），内容连续：上半段讲到 <code>gmtime</code> 输出比本地时间少 8 小时埋下伏笔，下半段用 <code>localtime</code> 解开这个谜。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td>两个时间概念 ★</td><td>协调世界时（UTC/GMT） vs 日历时间</td><td>UTC 是"几点"，日历时间是"第几秒"</td></tr>
+      <tr><td>日历时间 ★</td><td>1970-01-01 00:00:00 UTC 起的秒数</td><td>Unix 时间戳，2026 年约 17.9 亿</td></tr>
+      <tr><td>头文件</td><td><code>#include &lt;time.h&gt;</code></td><td>8 个时间函数都在这里</td></tr>
+      <tr><td><code>time</code> ★</td><td>获取当前秒数</td><td><code>time_t</code>，参数可传 <code>NULL</code></td></tr>
+      <tr><td><code>struct tm</code> ★</td><td>年月日时分秒结构体</td><td><code>tm_year</code> 从 1900、<code>tm_mon</code> 从 0、<code>tm_wday</code> 0=周日</td></tr>
+      <tr><td><code>gmtime</code> ★</td><td>秒 → 格林威治时间</td><td>比本地时间<strong>少 8 小时</strong></td></tr>
+      <tr><td><code>localtime</code> ★</td><td>秒 → 本地时间</td><td>东八区，比 UTC <strong>多 8 小时</strong></td></tr>
+      <tr><td><code>mktime</code> ★</td><td>结构体 → 秒（反向）</td><td>与 <code>time</code> 方向相反，失败返回 −1</td></tr>
+      <tr><td><code>gettimeofday</code></td><td>微秒级时间</td><td><code>tv_sec</code> + <code>tv_usec</code>（1 秒 = 10⁶ 微秒）</td></tr>
+      <tr><td><code>settimeofday</code></td><td>设置系统时间</td><td>需要 root 权限</td></tr>
+      <tr><td><code>asctime</code></td><td>结构体 → 字符串</td><td>三步：<code>time → gmtime → asctime</code></td></tr>
+      <tr><td><code>ctime</code></td><td>秒 → 字符串</td><td>两步：<code>time → ctime</code>，输出本地时间</td></tr>
+      <tr><td>时区换算 ★</td><td>本地 − 8 小时 = 格林威治</td><td>480 分钟，东八区 UTC+8</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l9-review">
+  <h2>二、课前复习与课堂寄语</h2>
+  <h3>2.1 目录操作（第 8 课）</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>功能</th><th>函数</th><th>成功 / 失败</th></tr>
+      <tr><td>创建目录</td><td><code>mkdir</code></td><td>0 / −1</td></tr>
+      <tr><td>删除目录（仅空目录）</td><td><code>rmdir</code></td><td>0 / −1</td></tr>
+      <tr><td>获取当前目录</td><td><code>getcwd</code></td><td>返回缓冲区指针 / <code>NULL</code></td></tr>
+      <tr><td>获取文件状态</td><td><code>stat</code> / <code>fstat</code> / <code>lstat</code></td><td>0 / −1</td></tr>
+      <tr><td>遍历目录</td><td><code>opendir</code> / <code>readdir</code> / <code>closedir</code></td><td>—</td></tr>
+  </table>
+  </div>
+  <h3>2.2 文件操作（第 8 课）</h3>
+  <p>课堂提问的<strong>标准操作链</strong>（老师强调就是这个顺序）：</p>
+<div class="flow">access 判断文件是否存在
+   ├─ 不存在 → creat 创建
+   └─ 存在   → open 打开
+                    ↓
+                 read / write
+                    ↓
+                  close 关闭</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>功能</th><th>函数</th><th>成功 / 失败</th></tr>
+      <tr><td>检查存在与权限</td><td><code>access</code></td><td>0 / −1</td></tr>
+      <tr><td>创建文件</td><td><code>creat</code></td><td>返回 fd / −1</td></tr>
+      <tr><td>打开文件</td><td><code>open</code></td><td>返回 fd / −1</td></tr>
+      <tr><td>关闭文件</td><td><code>close</code></td><td>0 / −1</td></tr>
+      <tr><td>读 / 写</td><td><code>read</code> / <code>write</code></td><td>字节数 / −1</td></tr>
+      <tr><td>删除文件</td><td><code>unlink</code></td><td>0 / −1</td></tr>
+  </table>
+  </div>
+  <h3>2.3 课堂寄语（压缩版）</h3>
+  <p>老师在进入时间编程前花了二十分钟讲就业与学习态度，核心就四句：</p>
+  <ul>
+    <li>看了海康威视等公司的岗位要求，<strong>C/C++、数据结构、Linux、网络协议</strong>这些都在我们课程体系里，门槛已经搭好，剩下靠自己。</li>
+    <li>上课刷抖音、打游戏，"不难但上瘾"的东西只会<strong>拉低你的智力</strong>；现在这个年龄段该装的是能换工作的知识。</li>
+    <li>考试没有"范围"，<strong>听得好就答得好</strong>；别作弊，代价一定是自己承担。</li>
+    <li>后面代码会<strong>越来越多、越来越枯燥</strong>——第五章的难度就是从这里开始的。</li>
+  </ul>
+</div>
+
+<div class="card" id="l9-basics">
+  <h2>三、时间编程的两个基本概念 ★</h2>
+  <h3>3.1 协调世界时（UTC）</h3>
+  <ul>
+    <li>又叫<strong>世界标准时</strong>，就是地理课上的<strong>格林威治时间</strong>（GMT，英国格林尼治天文台所在经线为本初子午线）。</li>
+    <li>严格来说：<strong>GMT 是天文时，UTC 是原子时</strong>，两者日常使用中数值一致，C 语言里中文教材一般统称"格林威治时间"。</li>
+    <li>我们日常说的"北京时间"是<strong>东八区（UTC+8）</strong>，比格林威治<strong>快 8 小时</strong>。</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+      <tr><th>地点</th><th>时区</th><th>与 UTC 关系</th></tr>
+      <tr><td>格林威治</td><td>UTC+0</td><td>基准</td></tr>
+      <tr><td>北京</td><td>UTC+8</td><td>比 UTC <strong>快 8 小时</strong>（480 分钟）</td></tr>
+  </table>
+  </div>
+  <h3>3.2 日历时间（Unix 时间戳）</h3>
+  <p><strong>定义：从 1970 年 1 月 1 日 00:00:00 UTC 起，到现在经过的秒数。</strong></p>
+  <ul>
+    <li>为什么是 1970？这是 Unix 系统的纪元（Epoch）约定，与 Unix 诞生年代有关。</li>
+    <li>这个秒数是一个<strong>很大的整数</strong>：2026 年 10 月约为 <strong>17.9 亿秒</strong>（课堂上跑出 16 亿多、17 亿多的数）。</li>
+    <li>我们看到"上午 10:30"这种人类可读形式，本质上都是把这一大串秒数<strong>换算</strong>出来的。</li>
+    <li>因为不含小数，所以日历时间<strong>只精确到秒</strong>；要微秒级就得用 <code>gettimeofday</code>。</li>
+  </ul>
+  <h3>3.3 为什么时间这么重要</h3>
+  <p>老师举的例子：有黑客攻击<strong>北京授时中心</strong>。因为全国的手机、手表、电视、路灯控制、航天发射倒计时，全靠统一授时同步——时间一旦被篡改，所有与时间相关的控制系统都会大乱。所以"时间"在嵌入式系统里是<strong>基础设施级</strong>的数据。</p>
+</div>
+
+<div class="card" id="l9-time">
+  <h2>四、time：获取当前秒数 ★</h2>
+  <h3>4.1 函数原型</h3>
+<div class="flow">#include &lt;time.h&gt;
+
+time_t time(time_t *tloc);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>返回值 <code>time_t</code></td><td>自 1970-01-01 00:00:00 UTC 起的<strong>秒数</strong></td></tr>
+      <tr><td>参数 <code>tloc</code></td><td>指针。传 <code>NULL</code> 则只用返回值；传地址则<strong>同时把值写进该地址</strong></td></tr>
+      <tr><td>失败</td><td>返回 <code>(time_t)-1</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>注意：返回值类型<strong>不是 <code>int</code></strong>，而是 <code>time_t</code>（通常是 <code>long</code> 或 64 位整数）。这是时间函数区别于前面所有函数的第一个特殊点。</p></div>
+  <h3>4.2 完整代码</h3>
+<div class="flow">/* time_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t seconds;
+
+    seconds = time(NULL);                 /* 方式一：只要返回值 */
+    printf("seconds = %ld\n", (long)seconds);
+
+    time(&amp;seconds);                       /* 方式二：传地址，值也写进来 */
+    printf("seconds = %ld\n", (long)seconds);
+
+    return 0;
+}</div>
+  <p>编译运行：</p>
+<div class="flow">gcc time_demo.c -o time_demo
+./time_demo
+# seconds = 1792540800   （2026-10-21 前后，具体值取决于运行时刻）</div>
+  <h3>4.3 关于这个"巨大数值"</h3>
+  <p>课堂上运行得到 <strong>17 亿多</strong>，PPT 上是 16 亿多——因为两次运行相隔了上亿秒。这说明：</p>
+  <ul>
+    <li>数值<strong>只增不减</strong>，且<strong>每过一秒加 1</strong>；</li>
+    <li>2026 年 ≈ 17.9 亿秒，20 年后约 2.4 亿秒更多；</li>
+    <li>32 位有符号 <code>time_t</code> 最大约 21.4 亿秒 → <strong>2038 年 1 月 19 日</strong>会溢出，这就是"<strong>2038 年问题</strong>"。现代 64 位系统已改用 64 位 <code>time_t</code>，但嵌入式设备要注意。</li>
+  </ul>
+</div>
+
+<div class="card" id="l9-tm">
+  <h2>五、struct tm 结构体 ★</h2>
+  <p><code>gmtime</code> 和 <code>localtime</code> 都返回 <code>struct tm *</code>——把秒数拆成"年、月、日、时、分、秒"的结构体。</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>成员</th><th>类型</th><th>含义</th><th>取值范围 / 起点</th></tr>
+      <tr><td><code>tm_sec</code></td><td><code>int</code></td><td>秒</td><td>0–59（<strong>闰秒时可为 60，甚至 61</strong>）</td></tr>
+      <tr><td><code>tm_min</code></td><td><code>int</code></td><td>分</td><td>0–59</td></tr>
+      <tr><td><code>tm_hour</code></td><td><code>int</code></td><td>时</td><td>0–23</td></tr>
+      <tr><td><code>tm_mday</code></td><td><code>int</code></td><td>日</td><td>1–31（受大小月、闰年影响）</td></tr>
+      <tr><td><code>tm_mon</code></td><td><code>int</code></td><td>月</td><td><strong>0–11（0 表示一月）</strong> ★</td></tr>
+      <tr><td><code>tm_year</code></td><td><code>int</code></td><td>年</td><td><strong>自 1900 年起的年数</strong> ★</td></tr>
+      <tr><td><code>tm_wday</code></td><td><code>int</code></td><td>星期</td><td><strong>0–6，0 表示星期日</strong> ★</td></tr>
+      <tr><td><code>tm_yday</code></td><td><code>int</code></td><td>一年中第几天</td><td>0–365（1 月 1 日为 0）</td></tr>
+      <tr><td><code>tm_isdst</code></td><td><code>int</code></td><td>夏令时标志</td><td>&gt;0 生效，0 未生效，&lt;0 未知</td></tr>
+  </table>
+  </div>
+  <h3>三个必须记住的"坑"</h3>
+  <ol>
+    <li><strong><code>tm_year</code> 要加 1900</strong>：显示 2026 年，<code>tm_year</code> 是 <code>126</code>。</li>
+    <li><strong><code>tm_mon</code> 要加 1</strong>：显示 10 月，<code>tm_mon</code> 是 <code>9</code>。</li>
+    <li><strong><code>tm_wday</code> 从星期日开始</strong>：0=周日、1=周一……6=周六。如果数组从"周一"排，要用 <code>(tm_wday + 6) % 7</code> 换算。</li>
+  </ol>
+  <div class="note"><p>老师说"年是从 1900 年开始算，到今年 2026，所以是 126"——这个偏移量没记住，考试必错。</p></div>
+</div>
+
+<div class="card" id="l9-gmtime">
+  <h2>六、gmtime：秒 → 格林威治时间 ★</h2>
+  <h3>6.1 函数原型</h3>
+<div class="flow">struct tm *gmtime(const time_t *timep);</div>
+  <ul>
+    <li>参数：<strong>秒数的地址</strong>（注意是指针，要 <code>&amp;t</code>）。</li>
+    <li>返回：指向 <code>struct tm</code> 的指针，内容是 <strong>UTC（格林威治）时间</strong>。</li>
+    <li>失败返回 <code>NULL</code>。</li>
+  </ul>
+  <h3>6.2 完整代码（对应课堂 PPT 例子）</h3>
+<div class="flow">/* gmtime_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t;
+    struct tm *p;
+    char *week[] = {"Sunday", "Monday", "Tuesday", "Wednesday",
+                    "Thursday", "Friday", "Saturday"};
+
+    t = time(NULL);          /* 第一步：取秒数 */
+    p = gmtime(&amp;t);          /* 第二步：转成结构体（格林威治时间） */
+
+    printf("%d-%02d-%02d %s %02d:%02d:%02d\n",
+           1900 + p-&gt;tm_year,      /* 年：+1900 */
+           p-&gt;tm_mon + 1,          /* 月：+1 */
+           p-&gt;tm_mday,             /* 日 */
+           week[p-&gt;tm_wday],       /* 星期：数组下标 */
+           p-&gt;tm_hour,
+           p-&gt;tm_min,
+           p-&gt;tm_sec);
+
+    return 0;
+}</div>
+  <p>课堂输出（PPT 运行结果）：</p>
+<div class="flow">2022-02-05 Saturday 03:22:52</div>
+  <h3>6.3 访问结构体成员的两种写法</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>写法</th><th>适用对象</th><th>说明</th></tr>
+      <tr><td><code>p-&gt;tm_year</code></td><td><strong>指针</strong></td><td>等价于 <code>(*p).tm_year</code>，最常用</td></tr>
+      <tr><td><code>s.tm_year</code></td><td><strong>普通结构体变量</strong></td><td>直接访问</td></tr>
+      <tr><td><code>(*p).tm_year</code></td><td>指针</td><td>先解引用再取成员，与 <code>-&gt;</code> 完全等价</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师提醒：下学期讲 STM32 时，代码里基本都是 <code>.</code>（因为常用普通结构体变量）；这里因为是<strong>函数返回的指针</strong>，所以用 <code>-&gt;</code>。</p></div>
+  <h3>6.4 埋下的伏笔：差了 8 小时</h3>
+  <p>课堂运行时，<code>gmtime</code> 输出的是 <strong>03:16:27</strong>，而当时实际时间是 <strong>上午 11:16</strong>——<strong>正好差 8 小时</strong>。</p>
+  <p>原因：<code>gmtime</code> 给的是<strong>格林威治时间</strong>，而我们在北京时间（UTC+8）。课程到这里故意停下，下一节用 <code>localtime</code> 解开。</p>
+</div>
+
+<div class="card" id="l9-localtime">
+  <h2>七、localtime：秒 → 本地时间 ★</h2>
+  <h3>7.1 函数原型</h3>
+<div class="flow">struct tm *localtime(const time_t *timep);</div>
+  <ul>
+    <li>参数、返回值、用法与 <code>gmtime</code> <strong>完全一样</strong>，<strong>唯一区别就是函数名</strong>。</li>
+    <li>区别在语义：<code>localtime</code> 按<strong>本地时区</strong>（这里是东八区）换算。</li>
+  </ul>
+  <h3>7.2 完整代码</h3>
+<div class="flow">/* localtime_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t;
+    struct tm *p;
+
+    t = time(NULL);
+    p = localtime(&amp;t);
+
+    printf("%d-%02d-%02d %02d:%02d:%02d\n",
+           1900 + p-&gt;tm_year, p-&gt;tm_mon + 1, p-&gt;tm_mday,
+           p-&gt;tm_hour, p-&gt;tm_min, p-&gt;tm_sec);
+
+    return 0;
+}</div>
+  <p>运行结果：</p>
+<div class="flow">2026-10-21 11:25:03      ← 与手机/电脑时间一致</div>
+  <h3>7.3 对比表</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>时区</th><th>课堂输出时刻</th><th>相对本地</th></tr>
+      <tr><td><code>gmtime</code></td><td>UTC（格林威治）</td><td>03:16:27</td><td><strong>落后 8 小时</strong></td></tr>
+      <tr><td><code>localtime</code></td><td>本地（东八区）</td><td>11:25:03</td><td>正确</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>结论：<strong>东八区 = 比 UTC 快 8 小时</strong>。所以"格林威治时间 + 8 小时 = 北京时间"。</p></div>
+  <h3>7.4 ⚠️ 静态缓冲区陷阱（重要补充）</h3>
+  <p><code>gmtime</code>、<code>localtime</code>、<code>asctime</code>、<code>ctime</code> 都返回<strong>指向函数内部静态缓冲区</strong>的指针。连续调用会<strong>互相覆盖</strong>：</p>
+<div class="flow">struct tm *a = localtime(&amp;t);
+struct tm *b = gmtime(&amp;t);   /* 可能覆盖 a 指向的内容！ */
+printf("%d %d\n", a-&gt;tm_hour, b-&gt;tm_hour);  /* 可能输出相同值 */</div>
+  <p>安全写法：<strong>拷贝一份再走</strong>。</p>
+<div class="flow">struct tm local_tm = *localtime(&amp;t);
+struct tm utc_tm   = *gmtime(&amp;t);
+printf("本地 %02d 时，UTC %02d 时\n", local_tm.tm_hour, utc_tm.tm_hour);</div>
+</div>
+
+<div class="card" id="l9-mktime">
+  <h2>八、mktime：结构体 → 秒（反向转换）★</h2>
+  <h3>8.1 函数原型</h3>
+<div class="flow">time_t mktime(struct tm *tm);</div>
+  <ul>
+    <li>方向与 <code>time</code> <strong>相反</strong>：把 <code>struct tm</code> 换成<strong>日历时间秒数</strong>。</li>
+    <li>参数是结构体<strong>指针</strong>，按<strong>本地时区</strong>解释。</li>
+    <li>成功返回秒数，失败返回 <code>(time_t)-1</code>。</li>
+    <li><strong>会自动规范化越界字段</strong>：比如 <code>tm_hour = 25</code>，会进位成"次日 1 点"。</li>
+  </ul>
+  <h3>8.2 完整代码（往返验证）</h3>
+<div class="flow">/* mktime_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t1, t2;
+    struct tm *p;
+
+    t1 = time(NULL);          /* 系统 → 秒 */
+    p  = localtime(&amp;t1);      /* 秒 → 本地结构体 */
+    t2 = mktime(p);           /* 结构体 → 秒（再回去） */
+
+    printf("time   = %ld\n", (long)t1);
+    printf("mktime = %ld\n", (long)t2);
+
+    return 0;
+}</div>
+  <p>运行结果：</p>
+<div class="flow">time   = 1792545903
+mktime = 1792545903      ← 两个数完全一样</div>
+  <div class="note"><p>为什么一样？因为 <code>localtime</code> 与 <code>mktime</code> 是<strong>一对互逆操作</strong>（都基于本地时区），秒数转过去再转回来自然相等。</p><p>有同学问"中间隔了几行代码，时间不是过去了吗？"——<strong>不会</strong>，因为 <code>p</code> 里存的是 <code>t1</code> 那个瞬间的<strong>快照</strong>，不是在读实时时钟。</p></div>
+  <h3>8.3 反向转换的典型用途</h3>
+  <ul>
+    <li>已知"2026 年 12 月 1 日 08:00:00"这个时间点，想算它距 1970 年多少秒 → 填 <code>struct tm</code> 后 <code>mktime</code>。</li>
+    <li>做日期加减：把 <code>tm_mday</code> 加 30，<code>mktime</code> 会自动进位到下个月。</li>
+  </ul>
+<div class="flow">struct tm tm = {0};
+tm.tm_year = 2026 - 1900;
+tm.tm_mon  = 12 - 1;
+tm.tm_mday = 1;
+tm.tm_hour = 8;
+printf("%ld\n", (long)mktime(&amp;tm));</div>
+</div>
+
+<div class="card" id="l9-timeval">
+  <h2>九、gettimeofday / settimeofday：微秒级时间 ★</h2>
+  <h3>9.1 函数原型</h3>
+<div class="flow">#include &lt;sys/time.h&gt;
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+int settimeofday(const struct timeval *tv, const struct timezone *tz);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>返回值</td><td>成功 0，失败 −1</td></tr>
+      <tr><td><code>tv</code></td><td>时间值结构体（秒 + 微秒）</td></tr>
+      <tr><td><code>tz</code></td><td>时区结构体（<strong>已废弃</strong>，现代用法传 <code>NULL</code>）</td></tr>
+  </table>
+  </div>
+  <h3>9.2 两个结构体</h3>
+<div class="flow">struct timeval {
+    time_t      tv_sec;    /* 秒 */
+    suseconds_t tv_usec;   /* 微秒（0 ~ 999999） */
+};
+
+struct timezone {
+    int tz_minuteswest;    /* 与 UTC 相差的分钟数，【西为正】 */
+    int tz_dsttime;        /* 夏令时状态 */
+};</div>
+  <div class="note"><p>⚠️ <strong>课上口误纠正</strong>：老师说"1 秒 = 1000 微秒（10 的三次方）"——<strong>不对</strong>。</p><p>正确是：<strong>1 秒 = 1,000,000 微秒 = 10⁶ 微秒</strong>；<code>10³</code> 那个是<strong>毫秒</strong>。</p></div>
+  <h3>9.3 完整代码</h3>
+<div class="flow">/* gettimeofday_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;sys/time.h&gt;
+
+int main(void)
+{
+    struct timeval tv;
+    struct timezone tz;
+
+    if (gettimeofday(&amp;tv, &amp;tz) == -1) {
+        perror("gettimeofday");
+        return -1;
+    }
+
+    printf("tv_sec         = %ld\n", (long)tv.tv_sec);    /* 秒 */
+    printf("tv_usec        = %ld\n", (long)tv.tv_usec);   /* 微秒 */
+    printf("tz_minuteswest = %d\n",  tz.tz_minuteswest);  /* 东八区为 -480 */
+    printf("tz_dsttime     = %d\n",  tz.tz_dsttime);      /* 0 表示未启用夏令时 */
+
+    return 0;
+}</div>
+  <p>运行结果（课堂）：</p>
+<div class="flow">tv_sec         = 1792545900
+tv_usec        = 245317
+tz_minuteswest = -480        ← 480 分钟 = 8 小时，负号表示在东边
+tz_dsttime     = 0</div>
+  <h3>9.4 为什么是 −480？</h3>
+  <ul>
+    <li>1 小时 = 60 分钟 → <strong>8 小时 = 480 分钟</strong>。</li>
+    <li>字段名 <code>minuteswest</code>：<strong>向西为正</strong>。我们在东八区（UTC+8），向西是负方向，所以是 <code>-480</code>。</li>
+    <li>换个角度记：<code>本地时间 = UTC − tz_minuteswest</code> 分钟（<code>UTC − (−480)</code> = UTC + 480 = UTC + 8 小时）。</li>
+  </ul>
+  <h3>9.5 夏令时（DST / 日光节约时）</h3>
+  <ul>
+    <li><strong>定义</strong>：夏季人为把时间<strong>调快 1 小时</strong>，让人早睡早起，减少照明、节约能源。</li>
+    <li>例：本来下午 2:00，调成 3:00——同样是"下午"，但天还亮着，少开一小时灯。</li>
+    <li>中国在 <strong>1986—1991 年</strong>实行过夏令时，1992 年起取消；现在 <code>tz_dsttime</code> 基本恒为 0。</li>
+    <li>这也解释了为什么欧洲/北美的服务器时间会"莫名其妙差一小时"。</li>
+  </ul>
+  <h3>9.6 设置时间：settimeofday</h3>
+<div class="flow">struct timeval tv;
+tv.tv_sec  = 1792545900;
+tv.tv_usec = 0;
+if (settimeofday(&amp;tv, NULL) == -1) {
+    perror("settimeofday");     /* 普通用户会得到 EPERM */
+}</div>
+  <ul>
+    <li><strong>必须 root 权限</strong>，普通用户调用失败（<code>Operation not permitted</code>）。</li>
+    <li>实际项目里一般交给 <code>date -s</code>、NTP 或 <code>timedatectl</code>，程序里少直接改系统时间。</li>
+  </ul>
+</div>
+
+<div class="card" id="l9-strings">
+  <h2>十、asctime 与 ctime：时间 → 字符串 ★</h2>
+  <h3>10.1 asctime：结构体 → 固定格式字符串</h3>
+<div class="flow">char *asctime(const struct tm *tm);</div>
+  <ul>
+    <li>参数：<code>struct tm *</code>（不是秒）。</li>
+    <li>返回：<strong>固定格式</strong>的字符串指针，格式为：</li>
+  </ul>
+<div class="flow">Wed Oct 21 03:47:52 2026
+ │   │   │  │        └─ 年
+ │   │   │  └────────── 时:分:秒
+ │   │   └───────────── 日
+ │   └───────────────── 月（英文缩写）
+ └───────────────────── 星期（英文缩写）</div>
+  <ul>
+    <li>注意顺序是"<strong>星期 月 日 时:分:秒 年</strong>"，和 <code>localtime</code> 打印的"年月日时分秒"<strong>不一样</strong>。</li>
+    <li>字符串<strong>自带换行符 <code>\n</code></strong>，<code>printf</code> 时别再手动加。</li>
+  </ul>
+  <p><strong>三步流程</strong>：</p>
+<div class="flow">time() → gmtime() → asctime()
+ 秒        结构体        字符串</div>
+<div class="flow">/* asctime_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t;
+    struct tm *p;
+
+    t = time(NULL);
+    p = gmtime(&amp;t);                  /* 用 gmtime → 得到格林威治时间字符串 */
+    printf("%s", asctime(p));
+
+    return 0;
+}</div>
+  <p>输出（比本地时间少 8 小时）：</p>
+<div class="flow">Wed Oct 21 03:47:52 2026</div>
+  <h3>10.2 ctime：秒 → 本地时间字符串</h3>
+<div class="flow">char *ctime(const time_t *timep);</div>
+  <ul>
+    <li>参数是<strong>秒数地址</strong>，直接输出<strong>本地时间</strong>字符串。</li>
+    <li>格式与 <code>asctime</code> <strong>完全相同</strong>，差别只在<strong>时区</strong>。</li>
+  </ul>
+  <p><strong>两步流程</strong>：</p>
+<div class="flow">time() → ctime()
+ 秒        字符串</div>
+<div class="flow">/* ctime_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t = time(NULL);
+    printf("%s", ctime(&amp;t));
+    return 0;
+}</div>
+  <p>输出：</p>
+<div class="flow">Wed Oct 21 11:47:52 2026      ← 本地时间，正确</div>
+  <h3>10.3 asctime vs ctime</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th><code>asctime</code></th><th><code>ctime</code></th></tr>
+      <tr><td>输入</td><td><code>struct tm *</code></td><td><code>time_t *</code></td></tr>
+      <tr><td>步骤</td><td>三步（time → gmtime → asctime）</td><td>两步（time → ctime）</td></tr>
+      <tr><td>时区</td><td>由传入的 <code>tm</code> 决定（配 <code>gmtime</code> 就是 UTC）</td><td>固定本地时间</td></tr>
+      <tr><td>输出格式</td><td><code>Wed Oct 21 03:47:52 2026</code></td><td>同左（但时间值差 8 小时）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师说：这两个函数"格式一样、差 8 小时"，对比时一眼就能看出区别。</p></div>
+</div>
+
+<div class="card" id="l9-summary">
+  <h2>十一、八个函数总览与对比 ★</h2>
+  <h3>11.1 一张表看懂</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>方向</th><th>输入</th><th>输出</th><th>时区</th><th>步骤</th></tr>
+      <tr><td><code>time</code></td><td>系统 → 秒</td><td><code>time_t *</code> 或 <code>NULL</code></td><td><code>time_t</code> 秒</td><td>UTC 基准</td><td>1</td></tr>
+      <tr><td><code>gmtime</code></td><td>秒 → 结构体</td><td><code>time_t *</code></td><td><code>struct tm *</code></td><td><strong>格林威治</strong></td><td>2</td></tr>
+      <tr><td><code>localtime</code></td><td>秒 → 结构体</td><td><code>time_t *</code></td><td><code>struct tm *</code></td><td><strong>本地</strong></td><td>2</td></tr>
+      <tr><td><code>mktime</code></td><td>结构体 → 秒</td><td><code>struct tm *</code></td><td><code>time_t</code></td><td>本地解释</td><td>2</td></tr>
+      <tr><td><code>asctime</code></td><td>结构体 → 字符串</td><td><code>struct tm *</code></td><td><code>char *</code></td><td>随 tm</td><td>3</td></tr>
+      <tr><td><code>ctime</code></td><td>秒 → 字符串</td><td><code>time_t *</code></td><td><code>char *</code></td><td><strong>本地</strong></td><td>2</td></tr>
+      <tr><td><code>gettimeofday</code></td><td>系统 → timeval</td><td><code>timeval *</code>, <code>timezone *</code></td><td>秒 + 微秒</td><td>带时区信息</td><td>1</td></tr>
+      <tr><td><code>settimeofday</code></td><td>timeval → 系统</td><td><code>timeval *</code>, <code>timezone *</code></td><td>0 / −1</td><td>需要 root</td><td>1</td></tr>
+  </table>
+  </div>
+  <h3>11.2 转换关系图</h3>
+<div class="flow">        time()                 gmtime()              asctime()
+系统时钟 ──────→ 秒数 ────────────────→ struct tm ──────────→ 字符串(UTC)
+                    │                   │
+                    │  localtime()      │  strftime()
+                    └──────────────→ struct tm ──────────→ 自定义格式字符串
+                                        │
+                                        │  mktime()
+                                        └──────────→ 秒数
+                    │
+                    └─ ctime() ──────────────────────────→ 字符串(本地)</div>
+  <h3>11.3 怎么选（老师的总结）</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>需求</th><th>用哪个</th></tr>
+      <tr><td>只要秒数</td><td><code>time</code></td></tr>
+      <tr><td>要格林威治时间的年月日时分秒</td><td><code>gmtime</code></td></tr>
+      <tr><td>要本地（北京时间）的年月日时分秒</td><td><code>localtime</code></td></tr>
+      <tr><td>把年月日时分秒还原成秒</td><td><code>mktime</code></td></tr>
+      <tr><td>要字符串、且是格林威治时间</td><td><code>asctime</code>（配 <code>gmtime</code>）</td></tr>
+      <tr><td>要字符串、且是本地时间</td><td><code>ctime</code></td></tr>
+      <tr><td>要微秒级精度</td><td><code>gettimeofday</code></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l9-convert">
+  <h2>十二、本地时间 ↔ 格林威治时间互转 ★</h2>
+  <h3>12.1 两种思路</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>思路</th><th>做法</th><th>适用</th></tr>
+      <tr><td>① 用函数（<strong>推荐</strong>）</td><td><code>localtime</code> / <code>gmtime</code> 直接给出两种时区的 <code>struct tm</code></td><td>日常、程序</td></tr>
+      <tr><td>② 手工加减 8 小时</td><td>本地 − 8h = 格林威治；格林威治 + 8h = 本地</td><td>教材课后题、理解原理</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师特别说明：<strong>本地时间领先 8 小时</strong>，所以"本地 → 格林威治"要<strong>减 8</strong>，"格林威治 → 本地"要<strong>加 8</strong>。</p></div>
+  <h3>12.2 方法一：函数互转（同时打印两种时间）</h3>
+<div class="flow">/* local_utc.c —— 打印同一时刻的本地时间与格林威治时间 */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t = time(NULL);
+    struct tm local_tm = *localtime(&amp;t);   /* 拷贝，避免静态缓冲区被覆盖 */
+    struct tm utc_tm   = *gmtime(&amp;t);
+
+    printf("本地时间      : %04d-%02d-%02d %02d:%02d:%02d\n",
+           1900 + local_tm.tm_year, local_tm.tm_mon + 1, local_tm.tm_mday,
+           local_tm.tm_hour, local_tm.tm_min, local_tm.tm_sec);
+
+    printf("格林威治时间  : %04d-%02d-%02d %02d:%02d:%02d\n",
+           1900 + utc_tm.tm_year, utc_tm.tm_mon + 1, utc_tm.tm_mday,
+           utc_tm.tm_hour, utc_tm.tm_min, utc_tm.tm_sec);
+
+    printf("时差          : %ld 小时\n",
+           ((long)local_tm.tm_hour - utc_tm.tm_hour + 24) % 24);
+
+    return 0;
+}</div>
+  <p>输出：</p>
+<div class="flow">本地时间      : 2026-10-21 11:25:03
+格林威治时间  : 2026-10-21 03:25:03
+时差          : 8 小时</div>
+  <h3>12.3 方法二：手工加减 8 小时（教材习题思路）</h3>
+  <p><strong>题目</strong>：将当前时间转换为格林威治时间。</p>
+<div class="flow">/* local2utc.c —— 本地时间 → 格林威治时间（手工减 8 小时） */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t = time(NULL);
+    struct tm *p = localtime(&amp;t);
+
+    p-&gt;tm_hour -= 8;          /* 本地领先 8 小时，减掉就是格林威治 */
+    mktime(p);                /* 让 mktime 规范化（跨天/跨月会自动进位） */
+    printf("%s", asctime(p)); /* 也可以自己 printf 年月日 */
+
+    return 0;
+}</div>
+  <p>反方向同理，<code>p-&gt;tm_hour += 8;</code> 即可。</p>
+  <div class="note"><p>⚠️ 这种写法<strong>只适用于固定时区、且不考虑夏令时的场景</strong>（中国现已无夏令时）。真实项目请用 <code>localtime</code>/<code>gmtime</code> 或 <code>TZ</code> 环境变量，因为不同国家历史夏令时规则不同。</p></div>
+  <h3>12.4 教材课后题</h3>
+  <ul>
+    <li>题目：<strong>编译时间转换程序，将当前时间转换为格林威治时间</strong>。</li>
+    <li>思路：<code>time</code> 拿秒 → <code>localtime</code> 拿本地结构体 → <strong>减 8 小时</strong> → 输出，或用 <code>gmtime</code> 一步到位。</li>
+    <li>老师留的作业：<strong>课后第 4、5、6、7 题</strong>，写在作业本上，后续课讲评。</li>
+  </ul>
+</div>
+
+<div class="card" id="l9-code">
+  <h2>十三、完整可编译代码合集</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>文件</th><th>功能</th><th>关键函数</th></tr>
+      <tr><td><code>time_demo.c</code></td><td>打印当前秒数</td><td><code>time</code></td></tr>
+      <tr><td><code>gmtime_demo.c</code></td><td>秒 → 格林威治年月日时分秒</td><td><code>gmtime</code></td></tr>
+      <tr><td><code>localtime_demo.c</code></td><td>秒 → 本地年月日时分秒</td><td><code>localtime</code></td></tr>
+      <tr><td><code>mktime_demo.c</code></td><td>结构体 → 秒（往返验证）</td><td><code>mktime</code></td></tr>
+      <tr><td><code>gettimeofday_demo.c</code></td><td>秒 + 微秒 + 时区</td><td><code>gettimeofday</code></td></tr>
+      <tr><td><code>asctime_demo.c</code></td><td>格林威治时间字符串</td><td><code>gmtime</code> + <code>asctime</code></td></tr>
+      <tr><td><code>ctime_demo.c</code></td><td>本地时间字符串</td><td><code>ctime</code></td></tr>
+      <tr><td><code>local_utc.c</code></td><td>同时打印本地与格林威治</td><td><code>localtime</code> + <code>gmtime</code></td></tr>
+      <tr><td><code>local2utc.c</code></td><td>本地 → 格林威治（手减 8h）</td><td><code>localtime</code> + <code>mktime</code></td></tr>
+  </table>
+  </div>
+  <p>统一编译：</p>
+<div class="flow">gcc 文件名.c -o 文件名
+./文件名</div>
+</div>
+
+<div class="card" id="l9-pitfall">
+  <h2>十四、易错点复盘 ★</h2>
+  <ol>
+    <li><strong>微秒换算</strong>：1 秒 = <strong>10⁶</strong> 微秒；<code>10³</code> 是毫秒。课堂口误说成 1000 微秒，考试别照抄。</li>
+    <li><strong><code>tm_year</code> 加 1900</strong>：不是加 1970，也不是直接就是年份。</li>
+    <li><strong><code>tm_mon</code> 加 1</strong>：<code>tm_mon</code> 是 0–11。</li>
+    <li><strong><code>tm_wday</code> 0 是星期日</strong>：数组若从"周一"开始，要用 <code>(tm_wday + 6) % 7</code>。</li>
+    <li><strong>静态缓冲区</strong>：<code>gmtime</code> / <code>localtime</code> / <code>asctime</code> / <code>ctime</code> 返回值会互相覆盖，同时用要先 <code>*</code> 拷贝。</li>
+    <li><strong><code>mktime</code> 的返回值</strong>：成功是秒数，失败是 <code>(time_t)-1</code>；别把 0 当失败。</li>
+    <li><strong><code>time()</code> 的参数</strong>：传 <code>NULL</code> 完全合法，别以为一定要传地址。</li>
+    <li><strong>打印 <code>time_t</code></strong>：用 <code>(long)</code> 强转配合 <code>%ld</code>，不同平台 <code>time_t</code> 宽度不同。</li>
+    <li><strong><code>tz_minuteswest</code> 符号</strong>：西为正，东八区是 <strong>−480</strong>，别写成 +480。</li>
+    <li><strong><code>gettimeofday</code> 的 <code>tz</code></strong>：已废弃，新代码传 <code>NULL</code>。</li>
+    <li><strong><code>settimeofday</code> 需要 root</strong>：普通用户必然失败，测试时别以为函数写错了。</li>
+    <li><strong><code>asctime</code> 自带 <code>\n</code></strong>：<code>printf("%s", ...)</code> 即可，再加 <code>\n</code> 会出现空行。</li>
+    <li><strong>2038 问题</strong>：32 位 <code>time_t</code> 在 2038-01-19 溢出；嵌入式设备要确认位宽。</li>
+    <li><strong><code>mktime</code> 会修改入参</strong>：它就地规范化结构体，需要保留原值就传副本。</li>
+  </ol>
+</div>
+
+<div class="card" id="l9-practice">
+  <h2>十五、课堂操作复盘</h2>
+  <ol>
+    <li>编译运行 <code>time_demo</code>，看到 16 亿 → 17 亿的秒数，理解"从 1970 年推过来的累积值"。</li>
+    <li>运行 <code>gmtime_demo</code>，输出 <code>03:16:27</code>，与手机上 <code>11:16</code> 对比，发现<strong>差 8 小时</strong>。</li>
+    <li>运行 <code>localtime_demo</code>，输出 <code>11:25:03</code>，与本地时间<strong>完全一致</strong>。</li>
+    <li>对比两者，得出<strong>东八区 = UTC+8</strong>。</li>
+    <li>运行 <code>mktime_demo</code>，<code>time</code> 与 <code>mktime</code> 两个秒数<strong>完全相同</strong>，验证互逆。</li>
+    <li>运行 <code>gettimeofday_demo</code>，读到时区差 <code>−480</code> 分钟、夏令时 <code>0</code>。</li>
+    <li>运行 <code>asctime_demo</code>（<code>03:47:52</code>）与 <code>ctime_demo</code>（<code>11:47:52</code>），对比同格式不同时区。</li>
+    <li>做课后第 4、5、6、7 题。</li>
+  </ol>
+</div>
+
+<div class="card" id="l9-quiz">
+  <h2>十六、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>协调世界时和日历时间分别是什么？两者的关系是什么？</li>
+    <li><code>time_t</code> 是什么类型？<code>time()</code> 的参数可以传什么？</li>
+    <li><code>struct tm</code> 中 <code>tm_year</code>、<code>tm_mon</code>、<code>tm_wday</code> 各有什么特殊约定？</li>
+    <li><code>gmtime</code> 与 <code>localtime</code> 有什么区别？返回值类型是什么？</li>
+    <li><code>mktime</code> 的作用是什么？与 <code>time</code> 是什么关系？</li>
+    <li><code>asctime</code> 和 <code>ctime</code> 的输入分别是什么？各自需要几步？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>协调世界时 UTC 是"世界标准时/格林威治时间"；日历时间是从 1970-01-01 00:00:00 UTC 起经过的秒数。日历时间 + 时区换算 = 我们看到的年月日时分秒。</li>
+    <li><code>time_t</code> 通常是 <code>long</code>（64 位系统为 64 位整数）。<code>time()</code> 的参数是 <code>time_t *</code>，可以传 <code>NULL</code>。</li>
+    <li><code>tm_year</code> 是自 1900 年起的年数（要 +1900）；<code>tm_mon</code> 是 0–11（要 +1）；<code>tm_wday</code> 是 0–6 且 <strong>0 表示星期日</strong>。</li>
+    <li>参数相同（<code>time_t *</code>）、返回类型相同（<code>struct tm *</code>），唯一区别是时区：<code>gmtime</code> 返回格林威治时间，<code>localtime</code> 返回本地时间（比 UTC 多 8 小时）。</li>
+    <li><code>mktime</code> 把 <code>struct tm</code> 按本地时区转换成日历时间秒数，是 <code>localtime</code> 的逆运算；<code>time</code> 是从系统时钟取秒数。</li>
+    <li><code>asctime</code> 输入 <code>struct tm *</code>，三步（<code>time → gmtime → asctime</code>）；<code>ctime</code> 输入 <code>time_t *</code>，两步（<code>time → ctime</code>），输出本地时间。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li>为什么课堂代码里 <code>gmtime</code> 比 <code>localtime</code> 少 8 小时？<code>tz_minuteswest</code> 为什么是 −480？</li>
+    <li>1 秒等于多少微秒？<code>gettimeofday</code> 的 <code>tv_usec</code> 取值范围是多少？</li>
+    <li>不调用 <code>gmtime</code>，如何把本地时间手工转换成格林威治时间？这种做法的隐患是什么？</li>
+    <li>写一段代码，判断两个时间点相差多少秒。</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li>因为 <code>gmtime</code> 返回 UTC，我们在东八区（UTC+8），本地比 UTC 快 8 小时。<code>tz_minuteswest</code> 以"向西为正"记，东八区在西的负方向，所以是 −480 分钟（= −8 小时）。</li>
+    <li>1 秒 = <strong>1,000,000</strong> 微秒；<code>tv_usec</code> 范围 0–999999。</li>
+    <li>用 <code>localtime</code> 取到结构体后 <code>tm_hour -= 8</code>，再 <code>mktime</code> 规范化。隐患：只对固定时区成立，忽略历史夏令时与跨天进位细节，真实项目应使用 <code>gmtime</code>。</li>
+    <li>用 <code>difftime(time_t t1, time_t t0)</code> 返回相差秒数（double）；或直接 <code>t1 - t0</code>。</li>
+  </ol>
+</div>
+
+<div class="card" id="l9-appendix">
+  <h2>十七、函数速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>成功 / 失败</th></tr>
+      <tr><td><code>time</code></td><td><code>time_t time(time_t *tloc)</code></td><td>秒数 / <code>(time_t)-1</code></td></tr>
+      <tr><td><code>gmtime</code></td><td><code>struct tm *gmtime(const time_t *timep)</code></td><td><code>struct tm *</code> / <code>NULL</code></td></tr>
+      <tr><td><code>localtime</code></td><td><code>struct tm *localtime(const time_t *timep)</code></td><td><code>struct tm *</code> / <code>NULL</code></td></tr>
+      <tr><td><code>mktime</code></td><td><code>time_t mktime(struct tm *tm)</code></td><td>秒数 / <code>(time_t)-1</code></td></tr>
+      <tr><td><code>asctime</code></td><td><code>char *asctime(const struct tm *tm)</code></td><td>字符串 / <code>NULL</code></td></tr>
+      <tr><td><code>ctime</code></td><td><code>char *ctime(const time_t *timep)</code></td><td>字符串 / <code>NULL</code></td></tr>
+      <tr><td><code>gettimeofday</code></td><td><code>int gettimeofday(struct timeval *tv, struct timezone *tz)</code></td><td>0 / −1</td></tr>
+      <tr><td><code>settimeofday</code></td><td><code>int settimeofday(const struct timeval *tv, const struct timezone *tz)</code></td><td>0 / −1</td></tr>
+      <tr><td><code>strftime</code></td><td><code>size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm)</code></td><td>字符数 / 0（扩充）</td></tr>
+      <tr><td><code>difftime</code></td><td><code>double difftime(time_t t1, time_t t0)</code></td><td>相差秒数（扩充）</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>结构体 / 常量</th><th>说明</th></tr>
+      <tr><td><code>struct tm</code></td><td>年月日时分秒 + 星期 + 年内天数 + 夏令时标志</td></tr>
+      <tr><td><code>struct timeval</code></td><td><code>tv_sec</code>（秒）+ <code>tv_usec</code>（微秒）</td></tr>
+      <tr><td><code>struct timezone</code></td><td><code>tz_minuteswest</code>（西为正）+ <code>tz_dsttime</code>（夏令时）</td></tr>
+      <tr><td>1970-01-01 00:00:00 UTC</td><td>日历时间纪元（Epoch）</td></tr>
+      <tr><td><code>UTC+8</code></td><td>北京时间，比格林威治快 8 小时 / 480 分钟</td></tr>
+      <tr><td>1 秒</td><td>= 10³ 毫秒 = 10⁶ 微秒</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理（本课录音分上下两段，内容连续，已合并为一篇）并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>，并补充了 <code>strftime</code>、<code>difftime</code>、静态缓冲区陷阱、2038 问题等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>time</code> → "态度/派"、<code>gmtime</code> → "GM派/规律时间"、<code>localtime</code> → "logo time/logo"、<code>mktime</code> → "mate派/md开幕"、<code>asctime</code> → "ASC time"、"格林威治" 被识别为 "隔离位置/规定位置"），内容以规范表述为准。</p></div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–8 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-19</p>
+  <p>第 1–9 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-21</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 

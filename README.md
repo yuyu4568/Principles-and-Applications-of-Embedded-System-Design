@@ -4,13 +4,13 @@
 
 ## 在线阅读
 
-- [课程笔记（第 1–8 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
+- [课程笔记（第 1–9 课 合一页）](https://yuyu4568.github.io/Principles-and-Applications-of-Embedded-System-Design/)
 
 ## 文件说明
 
 | 文件 | 说明 |
 | --- | --- |
-| `index.html` | 移动端网页，包含全部课程笔记（第 1–8 课） |
+| `index.html` | 移动端网页，包含全部课程笔记（第 1–9 课） |
 | `嵌入式系统设计原理与应用-第1课笔记.md` | 第 1 课 Markdown 笔记（扩展版） |
 | `嵌入式系统设计原理与应用-第2课笔记.md` | 第 2 课 Markdown 笔记 |
 | `嵌入式系统设计原理与应用-第3课笔记.md` | 第 3 课 Markdown 笔记（详细版） |
@@ -19,6 +19,7 @@
 | `嵌入式系统设计原理与应用-第6课笔记.md` | 第 6 课 Markdown 笔记（Samba 服务器与 Shell 编程） |
 | `嵌入式系统设计原理与应用-第7课笔记.md` | 第 7 课 Markdown 笔记（条件测试与流程控制） |
 | `嵌入式系统设计原理与应用-第8课笔记.md` | 第 8 课 Markdown 笔记（Linux 文件 I/O 函数，含完整可编译代码） |
+| `嵌入式系统设计原理与应用-第9课笔记.md` | 第 9 课 Markdown 笔记（C 语言时间编程与本地/格林威治时间转换） |
 
 ## 内容概览
 
@@ -108,3 +109,17 @@
 9. 权限陷阱 ★：`umask` 削权——`0777 & ~022 = 0755`
 10. 课本例题逐行解析 + 8 个完整可编译程序（mkdir / getcwd / stat / creat / 存在判断 / 读写 / 文件复制 / 目录遍历）
 11. 易错点复盘、课堂操作复盘、自测题含答案、函数速查表
+
+### 第 9 课：C 语言时间编程——本地时间与格林威治时间转换（更详细）
+
+1. 课前复习：目录操作（`mkdir/rmdir/getcwd/stat`）与文件操作标准链（`access → creat/open → read/write → close`）
+2. 两个时间概念 ★：协调世界时 UTC（格林威治时间）vs 日历时间（1970-01-01 起的秒数，2026 年约 17.9 亿）
+3. `time` ★：`time_t time(time_t *tloc)`；参数可传 `NULL`；32 位 `time_t` 的 2038 问题
+4. `struct tm` ★：九个成员与取值范围；`tm_year` +1900、`tm_mon` +1、`tm_wday` 0=周日
+5. `gmtime` ★：秒 → 格林威治时间；`->` 与 `.` 的区别；输出比本地少 8 小时
+6. `localtime` ★：秒 → 本地时间；东八区 UTC+8；**静态缓冲区陷阱**（同时用要先拷贝）
+7. `mktime` ★：结构体 → 秒（`localtime` 的逆运算）；会规范化越界字段
+8. `gettimeofday` / `settimeofday` ★：`tv_sec` + `tv_usec`（1 秒 = 10⁶ 微秒）、`tz_minuteswest = −480`、夏令时 DST（中国 1986—1991）
+9. `asctime` / `ctime` ★：时间 → 字符串；三步 vs 两步；固定格式 `Wed Oct 21 03:47:52 2026`
+10. 八个函数总览与转换关系图；本地 ↔ 格林威治的两种转换思路（函数法 / 手减 8 小时）
+11. 9 个完整可编译程序；易错点复盘（含课上"1 秒 = 1000 微秒"的口误纠正）、课堂操作复盘、自测题含答案、函数速查表
