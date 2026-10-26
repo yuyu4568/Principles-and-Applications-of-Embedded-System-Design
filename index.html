@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–9 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–10 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换 · 第 10 课：进程控制：fork 与 vfork 进程创建</p>
 </header>
 
 <div class="toc">
@@ -265,6 +265,31 @@ footer a { color: var(--accent); }
     <li><a href="#l9-practice">课堂操作复盘</a></li>
     <li><a href="#l9-quiz">复习自测题（含答案）</a></li>
     <li><a href="#l9-appendix">函数速查表</a></li>
+  </ol>
+
+  <h3>第 10 课：进程控制：fork 与 vfork 进程创建</h3>
+  <ol>
+    <li><a href="#l10-quick">本课重点速览</a></li>
+    <li><a href="#l10-review">课前复习：第 9 课时间编程</a></li>
+    <li><a href="#l10-what">进程是什么：从任务管理器说起 ★</a></li>
+    <li><a href="#l10-def">进程的定义与特征 ★</a></li>
+    <li><a href="#l10-vs">进程 vs 程序 ★</a></li>
+    <li><a href="#l10-class">进程的分类</a></li>
+    <li><a href="#l10-pcb">PCB 进程控制块 ★</a></li>
+    <li><a href="#l10-create">进程创建的四个步骤 ★</a></li>
+    <li><a href="#l10-state">进程的六种状态 ★</a></li>
+    <li><a href="#l10-sched">进程调度与时间片 ★</a></li>
+    <li><a href="#l10-lock">文件锁（了解）</a></li>
+    <li><a href="#l10-system">启动进程：system ★</a></li>
+    <li><a href="#l10-exec">exec 函数族 ★</a></li>
+    <li><a href="#l10-fork">fork：创建子进程 ★★</a></li>
+    <li><a href="#l10-vfork">vfork：共享地址空间的创建 ★</a></li>
+    <li><a href="#l10-compare">fork 与 vfork 对比总表 ★</a></li>
+    <li><a href="#l10-code">完整可编译代码合集</a></li>
+    <li><a href="#l10-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l10-practice">课堂操作复盘</a></li>
+    <li><a href="#l10-quiz">复习自测题（含答案）</a></li>
+    <li><a href="#l10-appendix">进程相关函数速查表</a></li>
   </ol>
 </div>
 
@@ -4154,12 +4179,719 @@ int main(void)
   <div class="note"><p>本笔记依据课堂录音转写整理（本课录音分上下两段，内容连续，已合并为一篇）并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>，并补充了 <code>strftime</code>、<code>difftime</code>、静态缓冲区陷阱、2038 问题等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>time</code> → "态度/派"、<code>gmtime</code> → "GM派/规律时间"、<code>localtime</code> → "logo time/logo"、<code>mktime</code> → "mate派/md开幕"、<code>asctime</code> → "ASC time"、"格林威治" 被识别为 "隔离位置/规定位置"），内容以规范表述为准。</p></div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 10 课 · 进程控制：fork 与 vfork 进程创建</h2><p style="color:#dff3ea;margin:0;">从任务管理器里的 PID 讲起：进程的定义与特征、进程与程序的区别、三种分类、PCB 进程控制块、创建四步与六种状态、时间片调度，最后进入 system、exec 函数族、fork 与 vfork 的完整代码与对比。</p></div>
+
+<div class="card" id="l10-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>本课进入教材 <strong>第六章：进程控制</strong>。前十分钟快速回顾第 9 课的时间编程，然后从"任务管理器里的 PID"切入：进程的定义与特征、进程与程序的区别、三种进程分类、PCB 进程控制块、进程创建的四个步骤、六种状态与状态转换、时间片调度、文件锁，最后落到本章核心——<strong>启动进程（<code>system</code>）</strong>、<strong>装载程序（<code>exec</code> 族）</strong>、<strong>创建进程（<code>fork</code> / <code>vfork</code>）</strong>。</p><p>这一课的难点不在语法，而在<strong>理解"一个 <code>fork</code> 之后代码被两个进程同时执行"</strong>这件事。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td>进程定义 ★</td><td>程序关于某数据集合的一次活动</td><td>资源分配与调度的基本单元</td></tr>
+      <tr><td>进程 vs 程序 ★</td><td>程序静态、进程动态</td><td>硬盘上的文件 vs 内存里的运行实例</td></tr>
+      <tr><td>进程分类</td><td>用户进程 / 守护进程 / 批处理进程</td><td>终端、开机后台、脚本</td></tr>
+      <tr><td>PCB ★</td><td>进程控制块，结构体 + 双向队列</td><td>pid、state、counter、priority、context</td></tr>
+      <tr><td>创建四步 ★</td><td>初始化 PCB → 分配内存 → 入队 → 设状态</td><td>无到有</td></tr>
+      <tr><td>六种状态 ★</td><td>运行 / 可中断 / 不可中断 / 僵死 / 停止 / 销毁</td><td>僵尸进程：资源回收、PCB 保留</td></tr>
+      <tr><td>时间片</td><td><code>counter</code> 用完即收回</td><td>分时并发，不是真并行</td></tr>
+      <tr><td><code>system</code> ★</td><td>执行 shell 命令</td><td>返回值有坑（见易错点）</td></tr>
+      <tr><td><code>exec</code> 族 ★</td><td>六个函数，成功不返回</td><td><code>l</code> 列表、<code>v</code> 数组、<code>p</code> 找 PATH、<code>e</code> 环境变量</td></tr>
+      <tr><td><code>fork</code> ★★</td><td>创建子进程</td><td><strong>子进程返回 0，父进程返回子 PID</strong></td></tr>
+      <tr><td><code>vfork</code> ★</td><td>与父进程共享地址空间</td><td>子先跑、父挂起、必须 <code>_exit</code></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l10-review">
+  <h2>二、课前复习：第 9 课时间编程</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>问题</th><th>结论</th></tr>
+      <tr><td>格林威治时间与本地时间差多少？</td><td><strong>8 小时</strong>（东八区 UTC+8，480 分钟）</td></tr>
+      <tr><td>最常用的取时间是哪个函数？</td><td><code>localtime</code>（本地时间），配 <code>time</code> 取秒</td></tr>
+      <tr><td>秒与年月日如何互换？</td><td><code>gmtime</code>/<code>localtime</code>（秒 → 结构体），<code>mktime</code>（结构体 → 秒）</td></tr>
+      <tr><td>八个函数的核心区别？</td><td>三个维度：<strong>要不要秒、要不要结构体、要不要字符串</strong></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>一句话总结第 9 课：<code>time</code> 是根，<code>gmtime</code>/<code>localtime</code> 分时区，<code>mktime</code> 反过来，<code>asctime</code>/<code>ctime</code> 出字符串，<code>gettimeofday</code>/<code>settimeofday</code> 管微秒。</p></div>
+</div>
+
+<div class="card" id="l10-what">
+  <h2>三、进程是什么：从任务管理器说起 ★</h2>
+  <h3>3.1 一个日常场景</h3>
+  <p>Windows 上某个软件卡死了，点右上角"×"半天没反应，我们会 <strong>Ctrl+Alt+Del → 任务管理器</strong>，在"进程"页里找到它，点"结束任务"。</p>
+  <p>在任务管理器里能看到两列关键信息：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>列</th><th>含义</th></tr>
+      <tr><td>进程名</td><td>wps、浏览器、微信……</td></tr>
+      <tr><td><strong>PID</strong></td><td><strong>Process ID，进程标识号</strong></td></tr>
+  </table>
+  </div>
+  <h3>3.2 两个先记住的结论</h3>
+  <ol>
+    <li><strong>PID 是系统分配的，用户无法干预</strong>：程序里只能读到它，不能自己指定。</li>
+    <li><strong>PID 不一定连续</strong>：先开 WPS 再开浏览器，两个 PID 未必是相邻的两个数（中间可能被系统进程占掉）。</li>
+  </ol>
+  <div class="note"><p>这一点在 <code>fork</code> 那节会再次出现：父子进程的 PID 是"147744"和"147745"这样挨着的情况，也可能差得很远。</p></div>
+  <h3>3.3 为什么进程是操作系统的核心</h3>
+  <ul>
+    <li>电脑里所有<strong>资源分配</strong>（CPU、内存、文件、I/O 设备）<strong>都以进程为单位</strong>。</li>
+    <li>你一边听歌、一边写文档、后台还挂着游戏和微信——每个应用都是一个或多个进程，各自抢占资源。</li>
+    <li>进程开太多会卡：8G 内存被占到 70%～80%，流畅度立刻下降。游戏本贵，一部分就贵在<strong>主频高、散热强</strong>，处理快。</li>
+  </ul>
+</div>
+
+<div class="card" id="l10-def">
+  <h2>四、进程的定义与特征 ★</h2>
+  <h3>4.1 标准定义</h3>
+  <div class="note"><p><strong>进程是程序关于某数据集合的一次活动</strong>，是<strong>进行资源分配和调度的基本单元</strong>。</p></div>
+  <p>拆开看两半：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>半句</th><th>含义</th></tr>
+      <tr><td>"关于某数据集合的一次活动"</td><td>应用程序本质是 0/1 机器码，是<strong>数据</strong>；它"跑起来"就是一次活动</td></tr>
+      <tr><td>"资源分配和调度的基本单元"</td><td>内核按进程分配 CPU 时间、内存、文件句柄</td></tr>
+  </table>
+  </div>
+  <h3>4.2 进程不只是"一段可执行代码"</h3>
+  <p>一个进程除了代码，还包含：</p>
+  <ul>
+    <li>打开的文件（<code>fd</code> 表）</li>
+    <li>挂起的信号</li>
+    <li>内核里的各种状态信息</li>
+    <li>内存空间（代码段、数据段、堆、栈）</li>
+  </ul>
+  <div class="note"><p>所以"打开一个 Word 文档"和进程一定有关：Word/WPS 本身就是进程，它打开文件时又占用了文件资源。</p></div>
+  <h3>4.3 进程是"执行中的程序"</h3>
+  <p>定义的后半句强调：进程是<strong>处于执行阶段</strong>的程序。没运行的只是一个文件，运行起来才成为进程。</p>
+</div>
+
+<div class="card" id="l10-vs">
+  <h2>五、进程 vs 程序 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比项</th><th>程序</th><th>进程</th></tr>
+      <tr><td>状态</td><td><strong>静态</strong></td><td><strong>动态</strong></td></tr>
+      <tr><td>存在形式</td><td>保存在<strong>硬盘</strong>上的文件</td><td>运行在<strong>内存</strong>中</td></tr>
+      <tr><td>是否有生命周期</td><td>没有（存着就在）</td><td>有（创建 → 就绪 → 运行 → 退出）</td></tr>
+      <tr><td>是否占资源</td><td>只占磁盘空间</td><td>占 CPU、内存、文件等</td></tr>
+      <tr><td>数量关系</td><td>一个程序</td><td>可对应<strong>多个</strong>进程实例</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师的比喻：程序是"乐谱"，进程是"乐队正在演奏"。同一份乐谱可以被演奏很多次。</p></div>
+  <h3>扩展：进程与线程</h3>
+  <ul>
+    <li><strong>进程</strong>是<strong>资源分配</strong>的基本单元；</li>
+    <li><strong>线程</strong>是 <strong>CPU 调度</strong>的基本单元（同一进程内的多个线程共享地址空间）。</li>
+    <li>课上老师提到"多线程技术"（Java 里常见），本课程后面才会深入。</li>
+  </ul>
+</div>
+
+<div class="card" id="l10-class">
+  <h2>六、进程的分类</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类型</th><th>别名</th><th>产生方式</th><th>例子</th></tr>
+      <tr><td><strong>用户进程</strong></td><td>终端进程</td><td>用户在终端里敲命令/运行程序</td><td><code>ls</code>、<code>./a.out</code>、<code>su</code> 切换后的 shell</td></tr>
+      <tr><td><strong>守护进程</strong></td><td>精良/后台进程</td><td><strong>开机时由启动脚本拉起</strong>，长期在后台</td><td>系统服务、<code>sshd</code>、<code>crond</code></td></tr>
+      <tr><td><strong>批处理进程</strong></td><td>批处理文件</td><td>执行脚本/批处理文件</td><td>Shell 脚本、<code>crontab</code> 任务</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>用户进程离不开<strong>账户</strong>：普通用户权限不够时会 "Permission denied"，需要 <code>su</code> 切到 root。</li>
+    <li>守护进程（daemon）在 Windows 里就是那堆你看不懂名字的后台服务；Linux 里常以 <code>d</code> 结尾（<code>sshd</code>、<code>httpd</code>）。</li>
+    <li>批处理进程会在<strong>本周实验</strong>里用到（用脚本批量创建进程）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l10-pcb">
+  <h2>七、PCB 进程控制块 ★</h2>
+  <h3>7.1 什么是 PCB</h3>
+  <p><strong>PCB = Process Control Block，进程控制块</strong>（注意：不是印刷电路板 PCB）。</p>
+  <p>内核用<strong>双向链表</strong>把所有进程串成一个"任务队列"（task queue），链表每一项就是某个进程的 PCB。</p>
+<div class="flow">      ┌──────┐    ┌──────┐    ┌──────┐
+  ───→│ PCB1 │───→│ PCB2 │───→│ PCB3 │───→
+  ←───│      │←───│      │←───│      │←───
+      └──────┘    └──────┘    └──────┘
+       双向链表：既能从头往后走，也能从后往前走</div>
+  <p>双向的意义：调度器可以<strong>把某个进程往前调（提高优先级）或往后调（降低优先级）</strong>。</p>
+  <h3>7.2 PCB 里的主要成员</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>成员</th><th>含义</th><th>作用</th></tr>
+      <tr><td><code>pid</code></td><td>进程 ID</td><td>唯一标识</td></tr>
+      <tr><td><code>state</code></td><td>状态</td><td>运行/就绪/等待…（无符号长整型）</td></tr>
+      <tr><td><code>counter</code></td><td><strong>时间片</strong></td><td>本轮还能运行多久</td></tr>
+      <tr><td><code>timer</code></td><td>休眠时间</td><td>睡眠/延时</td></tr>
+      <tr><td><code>priority</code></td><td><strong>优先级</strong></td><td>决定调度先后</td></tr>
+      <tr><td><code>context</code></td><td><strong>现场保护区</strong></td><td>保存寄存器等现场，切换后能恢复</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>这六个成员就是"进程的身份档案"。创建进程时，内核主要就是在填这张表。</p></div>
+</div>
+
+<div class="card" id="l10-create">
+  <h2>八、进程创建的四个步骤 ★</h2>
+<div class="flow">① 初始化 PCB          填 pid / state / timer / priority 等
+        ↓
+② 分配内存空间         给进程分配地址空间（不是硬盘！）
+        ↓
+③ 加入任务队列         挂到 PCB 双向链表里
+        ↓
+④ 设置状态             就绪 / 运行 / 可中断 / 不可中断…</div>
+  <ul>
+    <li>第 ② 步强调<strong>内存</strong>：8G/16G 那个是内存；进程运行才占内存，退出即释放。</li>
+    <li>第 ④ 步决定它接下来被不被调度。</li>
+  </ul>
+</div>
+
+<div class="card" id="l10-state">
+  <h2>九、进程的六种状态 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>状态</th><th>含义</th><th>说明</th></tr>
+      <tr><td><strong>运行（RUNNING）</strong></td><td>占用 CPU 正在执行</td><td>资源齐备、调度到了</td></tr>
+      <tr><td><strong>可中断等待</strong></td><td>等某事件，被挂起</td><td>可被信号唤醒，类似单片机的中断</td></tr>
+      <tr><td><strong>不可中断等待</strong></td><td>深度睡眠</td><td><strong>不响应异步信号</strong>，用于硬件 I/O 保护</td></tr>
+      <tr><td><strong>僵死（ZOMBIE）</strong></td><td>已退出但 PCB 未释放</td><td>资源已回收，只留结构体给父进程读</td></tr>
+      <tr><td><strong>停止（STOPPED）</strong></td><td>暂停</td><td>等待其他进程操作（调试、<code>SIGSTOP</code>）</td></tr>
+      <tr><td><strong>销毁（DEAD）</strong></td><td>彻底退出</td><td>资源全部释放，PCB 也没了</td></tr>
+  </table>
+  </div>
+  <h3>9.1 可中断 vs 不可中断（同步 vs 异步）</h3>
+  <ul>
+    <li><strong>同步</strong>：一切响应都跟着时钟信号走（打铃上课、打铃下课）。</li>
+    <li><strong>异步</strong>：不依赖时钟，随时可能来（提前 5 分钟上课）。</li>
+    <li><strong>不可中断状态</strong>常用于<strong>进程操作硬件</strong>时做保护：避免与设备交互被信号打断，保证数据一致。</li>
+  </ul>
+  <h3>9.2 僵死（僵尸）进程</h3>
+  <ul>
+    <li>进程退出时，内存等资源<strong>全部回收</strong>，但 <strong>PCB 结构体保留</strong>。</li>
+    <li>保留的原因：里面存着<strong>现场保护信息 / 寄存器 / 状态寄存器</strong>，<strong>父进程要读取子进程的退出信息</strong>。</li>
+    <li>所以"僵尸进程"不是"没死透"，而是"死后的收据还没人领"。</li>
+    <li>大量僵尸会耗尽 PID → 需要用 <code>wait()</code> / <code>waitpid()</code> 回收（下节课讲）。</li>
+  </ul>
+  <h3>9.3 状态转换图</h3>
+<div class="flow">              创建
+               ↓
+            ┌──────┐   调度    ┌──────┐
+            │ 就绪 │ ────────→ │ 运行 │
+            └──────┘ ←──────── └──────┘
+               ↑      时间片到     │
+               │                  ├──→ 等待（可中断/不可中断）──→ 唤醒回就绪
+               │                  ├──→ 停止（SIGSTOP）──→ 继续回就绪
+               │                  └──→ 退出 → 僵死 → 销毁</div>
+</div>
+
+<div class="card" id="l10-sched">
+  <h2>十、进程调度与时间片 ★</h2>
+  <h3>10.1 时间片机制</h3>
+  <ul>
+    <li>每个进程被分配一个<strong>时间片 <code>counter</code></strong>（如 60ms）。</li>
+    <li>两种情况，内核都会<strong>收回</strong> CPU：</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+      <tr><th>情况</th><th>处理</th></tr>
+      <tr><td>时间片用满（60ms 还没算完）</td><td>强制收回，放回就绪队列，下次再分</td></tr>
+      <tr><td>提前完成（只用 45ms）</td><td>剩余 15ms 也收回，分给别人</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>结论：<strong>不管用满没用满，时间片都会被收回</strong>，保证每个进程都能拿到 CPU。</p></div>
+  <h3>10.2 所以"多任务"不是真并行</h3>
+  <ul>
+    <li>单核 CPU 上，进程是<strong>轮流</strong>跑的，切换极快，人感觉不到。</li>
+    <li>这也解释了<strong>主频</strong>为什么重要：主频高 → 单位时间切换和处理更快 → 更流畅。</li>
+  </ul>
+</div>
+
+<div class="card" id="l10-lock">
+  <h2>十一、文件锁（了解）</h2>
+  <ul>
+    <li><strong>作用</strong>：防止<strong>多个进程同时</strong>读写同一个文件造成混乱。</li>
+    <li>实现：进程给文件加锁，其他进程访问时被阻塞或报错。</li>
+    <li>释放时机：</li>
+    <li>进程 <code>close</code> 该文件描述符时，锁释放；</li>
+    <li>进程终止时，它建立的所有锁释放；</li>
+    <li><strong>父进程的锁不会被子进程继承</strong>（<code>fork</code> 出来的子进程不带有父的锁）。</li>
+  </ul>
+  <div class="note"><p>实操建议：实验时如果提示"文件被占用"，用 <code>ps -ef</code> 找到 PID，再 <code>kill -9 PID</code> 杀掉，资源即释放。</p></div>
+</div>
+
+<div class="card" id="l10-system">
+  <h2>十二、启动进程：system ★</h2>
+  <h3>12.1 函数原型</h3>
+<div class="flow">#include &lt;stdlib.h&gt;
+
+int system(const char *command);</div>
+  <ul>
+    <li>参数：<strong>一条 shell 命令字符串</strong>（不是路径、不是模式——这是它和前面所有函数最大的不同）。</li>
+    <li>原理：<code>system</code> 内部会 <strong>fork 一个子进程去执行 <code>/bin/sh -c command</code></strong>，然后等它结束。</li>
+  </ul>
+  <h3>12.2 完整代码</h3>
+<div class="flow">/* system_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    int result;
+
+    printf("this is a system demo\n");
+
+    result = system("ls -l");          /* 参数就是一条命令 */
+    if (result == -1) {
+        printf("system error: %s\n", strerror(errno));
+    }
+
+    return result;
+}</div>
+  <p>编译运行：</p>
+<div class="flow">gcc system_demo.c -o system_demo
+./system_demo
+# this is a system demo
+# -rwxr-xr-x 1 user user ... （ls -l 的完整输出）</div>
+  <h3>12.3 返回值（有坑，见易错点）</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>返回值</th><th>教材/课堂说法</th><th>实际含义</th></tr>
+      <tr><td><code>-1</code></td><td>出错</td><td>确实出错（<code>fork</code> 失败等）</td></tr>
+      <tr><td><code>0</code></td><td>调用成功但没产生子进程</td><td>命令为空时的情形</td></tr>
+      <tr><td><code>&gt; 0</code></td><td>"成功退出子进程的 id"</td><td><strong>实际是子进程的终止状态</strong>（wait status），不是 PID</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>⚠️ 这一点考试按教材写，实际开发要按标准：想拿退出码用 <code>WEXITSTATUS(result)</code>。</p></div>
+</div>
+
+<div class="card" id="l10-exec">
+  <h2>十三、exec 函数族 ★</h2>
+  <h3>13.1 六个函数</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型（简化）</th><th>后缀含义</th></tr>
+      <tr><td><code>execl</code></td><td><code>int execl(const char *path, const char *arg, ..., NULL)</code></td><td><strong>l</strong> = list，参数列表</td></tr>
+      <tr><td><code>execv</code></td><td><code>int execv(const char *path, char *const argv[])</code></td><td><strong>v</strong> = vector，数组</td></tr>
+      <tr><td><code>execle</code></td><td><code>int execle(const char *path, const char *arg, ..., NULL, char *const envp[])</code></td><td><strong>e</strong> = environment</td></tr>
+      <tr><td><code>execve</code></td><td><code>int execve(const char *path, char *const argv[], char *const envp[])</code></td><td><strong>ve</strong></td></tr>
+      <tr><td><code>execlp</code></td><td><code>int execlp(const char *file, const char *arg, ..., NULL)</code></td><td><strong>p</strong> = PATH 查找</td></tr>
+      <tr><td><code>execvp</code></td><td><code>int execvp(const char *file, char *const argv[])</code></td><td><strong>vp</strong></td></tr>
+  </table>
+  </div>
+  <ul>
+    <li>共同点：<strong>执行成功不返回</strong>（进程映像被新程序替换）；<strong>失败返回 −1</strong> 并设置 <code>errno</code>。</li>
+    <li>参数命名规律：<code>path</code> = 路径（如 <code>/bin/ls</code>），<code>file</code> = 文件名（靠 <code>PATH</code> 找），<code>arg/argv</code> = 参数，<code>envp</code> = 环境变量列表。</li>
+  </ul>
+  <h3>13.2 例一：execl</h3>
+<div class="flow">/* execl_demo.c —— 用 execl 执行 ls -l */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    /* 参数 1：程序路径；参数 2：argv[0]；其后逐个参数；最后必须是 NULL */
+    if (execl("/bin/ls", "ls", "-l", "-a", NULL) &lt; 0) {
+        printf("execl error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    /* 成功的话不会执行到这里 */
+    printf("this line never prints\n");
+    return 0;
+}</div>
+  <h3>13.3 例二：execv（数组形式）</h3>
+<div class="flow">/* execv_demo.c —— 用数组传递参数 */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    char *argv[] = {"ls", "-l", "-a", NULL};   /* 字符串指针数组 */
+
+    if (execv("/bin/ls", argv) &lt; 0) {
+        printf("execv error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}</div>
+  <div class="note"><p><code>execl</code> 与 <code>execv</code> 只是<strong>参数组织方式不同</strong>：前者"一个个列出来"，后者"打包成数组"。</p></div>
+</div>
+
+<div class="card" id="l10-fork">
+  <h2>十四、fork：创建子进程 ★★</h2>
+  <h3>14.1 函数原型</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+pid_t fork(void);</div>
+  <ul>
+    <li>参数：<code>void</code> —— <strong>不需要任何参数</strong>。</li>
+    <li>作用是"<strong>分叉</strong>"（fork 本义）：父进程复制出与自己几乎一样的子进程。</li>
+  </ul>
+  <h3>14.2 返回值——本课最重要的一句话 ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>在谁那里</th><th>返回值</th></tr>
+      <tr><td><strong>子进程</strong></td><td><strong>0</strong></td></tr>
+      <tr><td><strong>父进程</strong></td><td><strong>子进程的 PID（&gt; 0）</strong></td></tr>
+      <tr><td>创建失败</td><td><strong>−1</strong>（只在父进程里返回）</td></tr>
+  </table>
+  </div>
+<div class="flow">pid = fork();
+   ├─ pid == -1  → 创建失败
+   ├─ pid == 0   → 我是子进程（靠这个 0 判断自己）
+   └─ pid &gt; 0    → 我是父进程（这个值就是子进程的 PID）</div>
+  <div class="note"><p>记忆口诀：<strong>"子零父子"</strong>——子进程得到 0，父进程得到子的 PID。</p></div>
+  <h3>14.3 获取 PID</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>作用</th></tr>
+      <tr><td><code>getpid()</code></td><td>获取<strong>自己</strong>的 PID</td></tr>
+      <tr><td><code>getppid()</code></td><td>获取<strong>父进程</strong>的 PID（ppid = parent pid）</td></tr>
+  </table>
+  </div>
+  <h3>14.4 父子进程共享什么、不共享什么</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>资源</th><th>是否共享</th><th>说明</th></tr>
+      <tr><td><strong>代码段</strong></td><td><strong>共享</strong></td><td>所以父子都从 <code>fork</code> 之后继续往下执行同一段代码</td></tr>
+      <tr><td>数据段 / 堆 / 栈</td><td>各自独立</td><td>现代实现用<strong>写时复制（COW）</strong>：先共享，谁写谁复制</td></tr>
+      <tr><td>文件描述符表</td><td>复制</td><td>继承父的已打开文件，但锁不继承</td></tr>
+      <tr><td>PID / PPID</td><td>各不相同</td><td>各自独立</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师说"代码段共享"，这就是为什么 <code>fork</code> 之后<strong>父子都会执行后面的代码</strong>——靠返回值区分身份。</p></div>
+  <h3>14.5 最小可用示例</h3>
+<div class="flow">/* fork_basic.c */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+int main(void)
+{
+    pid_t pid;
+
+    pid = fork();
+
+    if (pid == -1) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+        printf("我是子进程：pid = %d, ppid = %d\n", getpid(), getppid());
+    } else {
+        printf("我是父进程：pid = %d, 子进程 pid = %d\n", getpid(), pid);
+    }
+
+    printf("这句话父子都会打印（代码段共享）\n");
+    return 0;
+}</div>
+  <p>典型输出（顺序不固定）：</p>
+<div class="flow">我是父进程：pid = 147744, 子进程 pid = 147745
+这句话父子都会打印（代码段共享）
+我是子进程：pid = 147745, ppid = 147744
+这句话父子都会打印（代码段共享）</div>
+  <div class="note"><p>注意最后两行的重复：<strong>同一个 <code>printf</code> 被执行了两次</strong>，因为两个进程各有一份控制流。</p></div>
+  <h3>14.6 教材例题：父子各打印五轮</h3>
+<div class="flow">/* fork_demo.c —— 教材 6.2.1-4 的逻辑 */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/types.h&gt;
+
+int main(void)
+{
+    pid_t pid;
+    char buf[256];
+    int i;
+
+    pid = fork();
+
+    if (pid == -1) {
+        perror("fork");
+        return 0;
+    } else if (pid == 0) {
+        /* 子进程：0~4，每轮 1 秒 */
+        strcpy(buf, "我是子进程");
+        for (i = 0; i &lt; 5; i++) {
+            printf("%s, i = %d\n", buf, i);
+            sleep(1);
+        }
+    } else {
+        /* 父进程：5~9，每轮 3 秒（课堂代码） */
+        strcpy(buf, "我是父进程");
+        for (i = 5; i &lt; 10; i++) {
+            printf("%s, i = %d\n", buf, i);
+            sleep(3);
+        }
+    }
+
+    return 0;
+}</div>
+  <p>运行效果：</p>
+<div class="flow">我是子进程, i = 0
+我是父进程, i = 5
+我是子进程, i = 1
+我是子进程, i = 2
+我是子进程, i = 3
+我是父进程, i = 6
+...</div>
+  <p>要点：</p>
+  <ol>
+    <li><code>buf</code> 在子进程里被写成"我是子进程"，在父进程里被写成"我是父进程"——<strong>两边各有一份，互不影响</strong>（这就是数据段不共享的证明）。</li>
+    <li><code>sleep</code> 长短只是让交替更明显，<strong>输出顺序本身不可预期</strong>（调度决定）。</li>
+    <li>父子 PID 可能相邻（147744/147745），也可能差很远。</li>
+  </ol>
+  <h3>14.7 扩展：一次 fork 出多个子进程</h3>
+  <p><code>fork()</code> 调 n 次，进程数变成 <strong>2ⁿ</strong>。经典面试题：</p>
+<div class="flow">fork(); fork(); fork();   /* 3 次 → 8 个进程（含最初的父） */</div>
+</div>
+
+<div class="card" id="l10-vfork">
+  <h2>十五、vfork：共享地址空间的创建 ★</h2>
+  <h3>15.1 函数原型</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+pid_t vfork(void);</div>
+  <ul>
+    <li>返回值规则与 <code>fork</code> <strong>完全一样</strong>：子进程 0、父进程子 PID、失败 −1。</li>
+    <li>区别在<strong>执行方式</strong>与<strong>内存</strong>：</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th><code>fork</code></th><th><code>vfork</code></th></tr>
+      <tr><td>地址空间</td><td>复制（COW）</td><td><strong>共享</strong>，不复制</td></tr>
+      <tr><td>谁先运行</td><td>不确定，由调度决定</td><td><strong>子进程先运行</strong>，父进程被挂起</td></tr>
+      <tr><td>数据修改变量</td><td>互不影响</td><td><strong>子改父也变</strong>（同一份内存）</td></tr>
+      <tr><td>退出方式</td><td><code>return</code> / <code>exit</code> 都行</td><td><strong>必须 <code>_exit()</code> 或 <code>exec</code></strong></td></tr>
+      <tr><td>现状</td><td>推荐使用</td><td>已废弃（POSIX.1-2008 标记）</td></tr>
+  </table>
+  </div>
+  <h3>15.2 完整代码（对应课堂示例）</h3>
+<div class="flow">/* vfork_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+int main(void)
+{
+    pid_t child;
+    int count = 1;
+
+    printf("before create: count = %d\n", count);   /* 1 */
+
+    child = vfork();
+
+    if (child == -1) {
+        perror("vfork");
+        return -1;
+    } else if (child == 0) {
+        count++;                                     /* 修改的是共享内存 */
+        printf("child : pid = %d, count = %d\n", getpid(), count);  /* 2 */
+        _exit(0);                                    /* 必须 _exit */
+    } else {
+        printf("parent: pid = %d, count = %d, child = %d\n",
+               getpid(), count, child);              /* 也是 2！ */
+    }
+
+    return 0;
+}</div>
+  <p>运行结果：</p>
+<div class="flow">before create: count = 1
+child : pid = 147745, count = 2
+parent: pid = 147744, count = 2     ← 父进程看到的也是 2</div>
+  <div class="note"><p>这就是 <code>vfork</code> 与 <code>fork</code> 的分水岭：<strong>子进程改的 <code>count</code>，父进程也受影响</strong>，因为两者用的是<strong>同一块地址空间</strong>。</p></div>
+  <h3>15.3 ⚠️ vfork 的三条铁律</h3>
+  <ol>
+    <li><strong>子进程必须先运行</strong>，父进程挂起等待（所以输出顺序是确定的）。</li>
+    <li>子进程里**只能用 <code>_exit()</code> 或 <code>exec*()</code> 退出**，不能 <code>return</code>、不能 <code>exit()</code>——否则会刷新父进程的 stdio 缓冲区，导致输出重复。</li>
+    <li>子进程里<strong>不要调用复杂库函数</strong>（<code>printf</code> 也在灰色地带），因为栈是共享的，可能破坏父进程现场。</li>
+  </ol>
+  <div class="note"><p>实战结论：<strong>新代码一律用 <code>fork</code></strong>，<code>vfork</code> 只在读老代码/考试时认识它。</p></div>
+</div>
+
+<div class="card" id="l10-compare">
+  <h2>十六、fork 与 vfork 对比总表 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>维度</th><th><code>fork()</code></th><th><code>vfork()</code></th></tr>
+      <tr><td>是否创建进程</td><td>是</td><td>是</td></tr>
+      <tr><td>返回规则</td><td>子 0 / 父子 PID / 失败 −1</td><td>同左</td></tr>
+      <tr><td>地址空间</td><td>独立（写时复制）</td><td><strong>共享</strong></td></tr>
+      <tr><td>执行顺序</td><td>竞争，不确定</td><td><strong>子先父后</strong></td></tr>
+      <tr><td>父进程状态</td><td>正常并发运行</td><td><strong>挂起（可中断等待）</strong></td></tr>
+      <tr><td>变量影响</td><td>互不影响</td><td>子改进程，父也变</td></tr>
+      <tr><td>典型用途</td><td>常规多进程</td><td>立即 <code>exec</code> 一个程序（省一次拷贝）</td></tr>
+      <tr><td>推荐度</td><td>★★★★★</td><td>★（已废弃）</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l10-code">
+  <h2>十七、完整可编译代码合集</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>文件</th><th>功能</th><th>关键函数</th></tr>
+      <tr><td><code>system_demo.c</code></td><td>执行 <code>ls -l</code></td><td><code>system</code></td></tr>
+      <tr><td><code>execl_demo.c</code></td><td>列表方式执行命令</td><td><code>execl</code></td></tr>
+      <tr><td><code>execv_demo.c</code></td><td>数组方式执行命令</td><td><code>execv</code></td></tr>
+      <tr><td><code>fork_basic.c</code></td><td>最小 fork 示例，打印父子 PID</td><td><code>fork</code>、<code>getpid</code>、<code>getppid</code></td></tr>
+      <tr><td><code>fork_demo.c</code></td><td>父子各打印五轮</td><td><code>fork</code>、<code>sleep</code></td></tr>
+      <tr><td><code>fork_tree.c</code></td><td>连续 fork 展示进程数翻倍</td><td><code>fork</code></td></tr>
+      <tr><td><code>vfork_demo.c</code></td><td>vfork 共享变量</td><td><code>vfork</code>、<code>_exit</code></td></tr>
+  </table>
+  </div>
+  <p><code>fork_tree.c</code>（扩充，用来直观感受进程数）：</p>
+<div class="flow">/* fork_tree.c —— 连续 fork，观察进程数变化 */
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void)
+{
+    pid_t p1, p2;
+
+    p1 = fork();
+    p2 = fork();
+
+    /* 3 个进程（父 + 两个子）都会执行到这里 */
+    printf("pid = %d, ppid = %d, p1 = %d, p2 = %d\n",
+           getpid(), getppid(), (int)p1, (int)p2);
+
+    sleep(1);   /* 别让父先退出，否则子进程变孤儿 */
+    return 0;
+}</div>
+  <p>统一编译：</p>
+<div class="flow">gcc 文件名.c -o 文件名
+./文件名</div>
+</div>
+
+<div class="card" id="l10-pitfall">
+  <h2>十八、易错点复盘 ★</h2>
+  <ol>
+    <li><strong><code>fork</code> 返回值记反</strong>：子进程是 <strong>0</strong>，父进程是<strong>子 PID</strong>。靠返回值区分身份，不是靠 <code>getpid()</code> 比大小。</li>
+    <li><strong>以为"代码只执行一次"</strong>：<code>fork</code> 之后父子<strong>都</strong>会往下执行，<code>printf</code> 会打印两遍。</li>
+    <li><strong>以为父子数据共享</strong>：<code>fork</code> 后数据段独立（COW），子改进程变量，父不变。真正共享的是 <code>vfork</code>。</li>
+    <li><strong><code>vfork</code> 子进程用 <code>return</code>/<code>exit</code></strong>：会造成父进程 stdio 缓冲区重复刷新、输出两遍。必须 <code>_exit()</code>。</li>
+    <li><strong>忘记判 <code>-1</code></strong>：<code>fork</code> 失败必须处理，否则后续用错 PID。</li>
+    <li><strong><code>system</code> 返回值当 PID 用</strong>：标准里它是<strong>终止状态</strong>，取退出码要 <code>WEXITSTATUS()</code>；教材表述是"子进程 id"，考试按教材、开发按标准。</li>
+    <li><strong><code>execl</code> 参数列表忘写 <code>NULL</code></strong>：参数列表必须以 <code>NULL</code> 结尾，否则会读到野指针崩溃。</li>
+    <li><strong>以为 <code>exec</code> 会返回</strong>：成功时<strong>永不返回</strong>（进程映像已被替换），写 <code>printf("done")</code> 之后不会执行。</li>
+    <li><strong><code>exec</code> 用了相对路径</strong>：<code>execl("ls", ...)</code> 不带 <code>p</code> 后缀就找不到（没有 PATH 搜索），要写 <code>/bin/ls</code> 或用 <code>execlp("ls", ...)</code>。</li>
+    <li><strong>僵尸进程不回收</strong>：子进程退出后父进程不 <code>wait</code>，PCB 一直留着，久了耗尽 PID。</li>
+    <li><strong>忘了 <code>#include &lt;sys/types.h&gt;</code></strong>：<code>pid_t</code> 在部分环境上需要它。</li>
+    <li><strong>PID 相邻是巧合</strong>：父子 PID 不保证连续，别拿 PID 大小判断父子关系。</li>
+  </ol>
+</div>
+
+<div class="card" id="l10-practice">
+  <h2>十九、课堂操作复盘</h2>
+  <ol>
+    <li>打开任务管理器，观察进程列表与 <strong>PID</strong>，确认 PID 不连续。</li>
+    <li>编译运行 <code>system_demo</code>，看到 <code>ls -l</code> 的输出，理解"函数参数可以是 shell 命令"。</li>
+    <li>对比 <code>execl_demo</code> 与 <code>execv_demo</code>，体会"列表 vs 数组"两种参数写法。</li>
+    <li>编译运行 <code>fork_basic</code>，观察父子 PID 与"同一句 printf 打印两次"。</li>
+    <li>运行 <code>fork_demo</code>，观察 <code>buf</code> 在父子中内容不同 → 数据段独立；观察交替输出 → 调度不确定。</li>
+    <li>运行 <code>vfork_demo</code>，观察 <code>count</code> 在父进程中变成 2 → 地址空间共享。</li>
+    <li>记录：父 PID 147744、子 PID 147745（相邻是巧合）。</li>
+  </ol>
+</div>
+
+<div class="card" id="l10-quiz">
+  <h2>二十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>进程的完整定义是什么？"这次活动"指的是什么？</li>
+    <li>进程与程序的三点区别。</li>
+    <li>PCB 是什么？它主要的六个成员是什么？</li>
+    <li>创建一个进程分哪四步？</li>
+    <li>进程有哪六种状态？僵死状态为什么保留 PCB？</li>
+    <li><code>fork</code> 在父子进程中的返回值分别是什么？失败返回什么？</li>
+    <li><code>vfork</code> 与 <code>fork</code> 最本质的区别是什么？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>进程是程序关于某数据集合的一次活动，是资源分配和调度的基本单元。"这次活动"指程序被加载到内存、占用 CPU 运行的过程。</li>
+    <li>①程序静态、进程动态；②程序存于硬盘、进程运行于内存；③程序无生命周期、进程有创建到退出的生命周期（且一个程序可对应多个进程）。</li>
+    <li>PCB = 进程控制块，内核用它描述进程并组织成双向链表任务队列。六个成员：<code>pid</code>、<code>state</code>、<code>counter</code>（时间片）、<code>timer</code>（休眠）、<code>priority</code>（优先级）、<code>context</code>（现场保护区）。</li>
+    <li>初始化 PCB → 分配内存空间 → 加入任务队列 → 设置状态。</li>
+    <li>运行、可中断等待、不可中断等待、僵死、停止、销毁。僵死保留 PCB 是为了让<strong>父进程读取子进程的退出信息</strong>（现场保护、寄存器、状态寄存器）。</li>
+    <li>子进程返回 <strong>0</strong>，父进程返回<strong>子进程的 PID</strong>（&gt;0），失败返回 <strong>−1</strong>。</li>
+    <li><code>vfork</code> 的父子<strong>共享地址空间</strong>（不复制），且<strong>子进程先运行、父进程挂起</strong>；<code>fork</code> 是复制（写时复制）、父子竞争执行。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li>为什么说"单核 CPU 上多进程不是真并行"？时间片用不完会怎样？</li>
+    <li>连续执行 3 次 <code>fork()</code> 后共有几个进程？</li>
+    <li><code>system()</code> 返回值为 0 和大于 0 分别可能是什么情况？</li>
+    <li><code>vfork</code> 的子进程为什么不能用 <code>exit()</code>？</li>
+    <li>写出用 <code>execvp</code> 执行 <code>ls -l</code> 的代码。</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li>进程是<strong>轮流</strong>占用 CPU 的，切换极快造成"同时"的错觉。时间片没用完也会被内核收回，分给其他进程，保证公平与响应。</li>
+    <li>2³ = <strong>8</strong> 个进程（含最初的父进程）。</li>
+    <li>0：调用成功但没有创建子进程（如空命令）；大于 0：命令已执行结束，返回值是其<strong>终止状态</strong>（教材表述为子进程 id）。</li>
+    <li>因为 <code>vfork</code> 共享父进程的地址空间与 stdio 缓冲区，<code>exit()</code> 会刷新并关闭共享缓冲区，父进程再输出时会出现重复/异常；应使用 <code>_exit()</code>（只终止进程、不做清理）。</li>
+    <li>示例：</li>
+  </ol>
+<div class="flow">#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+int main(void)
+{
+    char *argv[] = {"ls", "-l", NULL};
+    execvp("ls", argv);      /* 带 p：自动在 PATH 中查找 */
+    perror("execvp");
+    return -1;
+}</div>
+</div>
+
+<div class="card" id="l10-appendix">
+  <h2>二十一、进程相关函数速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>作用</th><th>成功 / 失败</th></tr>
+      <tr><td><code>system</code></td><td><code>int system(const char *cmd)</code></td><td>启动 shell 执行命令</td><td>终止状态 / −1</td></tr>
+      <tr><td><code>execl</code></td><td><code>int execl(const char *path, const char *arg, ..., NULL)</code></td><td>列表方式装载程序</td><td>不返回 / −1</td></tr>
+      <tr><td><code>execv</code></td><td><code>int execv(const char *path, char *const argv[])</code></td><td>数组方式装载程序</td><td>不返回 / −1</td></tr>
+      <tr><td><code>execle</code></td><td><code>int execle(path, arg, ..., NULL, char *const envp[])</code></td><td>带环境变量（列表）</td><td>不返回 / −1</td></tr>
+      <tr><td><code>execve</code></td><td><code>int execve(path, argv, envp)</code></td><td>带环境变量（数组）</td><td>不返回 / −1</td></tr>
+      <tr><td><code>execlp</code></td><td><code>int execlp(const char *file, const char *arg, ..., NULL)</code></td><td>按 PATH 查找（列表）</td><td>不返回 / −1</td></tr>
+      <tr><td><code>execvp</code></td><td><code>int execvp(const char *file, char *const argv[])</code></td><td>按 PATH 查找（数组）</td><td>不返回 / −1</td></tr>
+      <tr><td><code>fork</code></td><td><code>pid_t fork(void)</code></td><td>创建子进程（复制）</td><td>子 0 / 父子 PID / 失败 −1</td></tr>
+      <tr><td><code>vfork</code></td><td><code>pid_t vfork(void)</code></td><td>创建子进程（共享地址空间）</td><td>同上</td></tr>
+      <tr><td><code>getpid</code></td><td><code>pid_t getpid(void)</code></td><td>取自身 PID</td><td>PID</td></tr>
+      <tr><td><code>getppid</code></td><td><code>pid_t getppid(void)</code></td><td>取父进程 PID</td><td>PPID</td></tr>
+      <tr><td><code>sleep</code></td><td><code>unsigned int sleep(unsigned int s)</code></td><td>延时秒数</td><td>剩余秒数</td></tr>
+      <tr><td><code>wait</code> / <code>waitpid</code></td><td>—</td><td>回收子进程、取退出状态（下节课）</td><td>—</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>概念</th><th>数值 / 含义</th></tr>
+      <tr><td>子进程 fork 返回值</td><td>0</td></tr>
+      <tr><td>父进程 fork 返回值</td><td>子进程 PID</td></tr>
+      <tr><td><code>fork</code> 失败</td><td>−1</td></tr>
+      <tr><td>n 次 fork 后进程数</td><td>2ⁿ</td></tr>
+      <tr><td>僵尸进程</td><td>已退出、PCB 未回收</td></tr>
+      <tr><td>PID</td><td>系统分配、用户不可干预、可不连续</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>（<code>system</code>、<code>execl</code>、<code>execv</code>、<code>fork</code>、<code>vfork</code> 各一份），并补充了 <code>fork</code> 的写时复制机制、<code>vfork</code> 必须 <code>_exit</code> 的原因、<code>system</code> 返回值与教材表述的差异（教材说"子进程 id"，标准是"终止状态"）等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>fork</code> → "放函数/后函数/box"、<code>vfork</code> → "微for/we for"、<code>exec</code> → "函数图/EXECR"、<code>pid</code> → "偏低/编辑"、<code>PCB</code> → "控制段"、<code>counter</code> → "抗的/抗流"），内容以规范表述为准。</p></div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–9 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-21</p>
+  <p>第 1–10 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-26</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
