@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–10 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–11 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换 · 第 10 课：进程控制：fork 与 vfork 进程创建</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换 · 第 10 课：进程控制：fork 与 vfork 进程创建 · 第 11 课：进程等待与退出 / 管道通信</p>
 </header>
 
 <div class="toc">
@@ -290,6 +290,31 @@ footer a { color: var(--accent); }
     <li><a href="#l10-practice">课堂操作复盘</a></li>
     <li><a href="#l10-quiz">复习自测题（含答案）</a></li>
     <li><a href="#l10-appendix">进程相关函数速查表</a></li>
+  </ol>
+
+  <h3>第 11 课：进程等待与退出 / 管道通信</h3>
+  <ol>
+    <li><a href="#l11-quick">本课重点速览</a></li>
+    <li><a href="#l11-review">课前复习：第 10 课进程控制</a></li>
+    <li><a href="#l11-wait">进程等待：wait ★</a></li>
+    <li><a href="#l11-waitpid">waitpid：更灵活的等待 ★</a></li>
+    <li><a href="#l11-exit">进程退出的 8 种方式 ★</a></li>
+    <li><a href="#l11-example">教材例题：exit(111) 与 status >> 8 详解</a></li>
+    <li><a href="#l11-ipc">进程间通信（IPC）概述 ★</a></li>
+    <li><a href="#l11-ipctype">五种 IPC 方式对比</a></li>
+    <li><a href="#l11-pipe">管道的概念与特点 ★</a></li>
+    <li><a href="#l11-pipeapi">匿名管道：pipe ★</a></li>
+    <li><a href="#l11-piperw">匿名管道的读写与阻塞规则 ★</a></li>
+    <li><a href="#l11-pipeex">匿名管道例题：父写子读</a></li>
+    <li><a href="#l11-fifo">命名管道（FIFO）★</a></li>
+    <li><a href="#l11-fifoex">命名管道例题：server / client 两个终端</a></li>
+    <li><a href="#l11-compare">匿名管道 vs 命名管道 对比总表 ★</a></li>
+    <li><a href="#l11-code">完整可编译代码合集</a></li>
+    <li><a href="#l11-homework">课后习题讲解（第五章 4/5/6/7 题）</a></li>
+    <li><a href="#l11-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l11-practice">课堂操作复盘</a></li>
+    <li><a href="#l11-quiz">复习自测题（含答案）</a></li>
+    <li><a href="#l11-appendix">进程通信与等待速查表</a></li>
   </ol>
 </div>
 
@@ -4886,12 +4911,994 @@ int main(void)
   <div class="note"><p>本笔记依据课堂录音转写整理并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>（<code>system</code>、<code>execl</code>、<code>execv</code>、<code>fork</code>、<code>vfork</code> 各一份），并补充了 <code>fork</code> 的写时复制机制、<code>vfork</code> 必须 <code>_exit</code> 的原因、<code>system</code> 返回值与教材表述的差异（教材说"子进程 id"，标准是"终止状态"）等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>fork</code> → "放函数/后函数/box"、<code>vfork</code> → "微for/we for"、<code>exec</code> → "函数图/EXECR"、<code>pid</code> → "偏低/编辑"、<code>PCB</code> → "控制段"、<code>counter</code> → "抗的/抗流"），内容以规范表述为准。</p></div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 11 课 · 进程等待与退出 / 管道通信</h2><p style="color:#dff3ea;margin:0;">先补完第六章：wait 与 waitpid（status 高 8 位、WNOHANG）、进程退出的 8 种方式；再进入进程间通信：五种 IPC 对比、匿名管道 pipe 与命名管道 mkfifo 的完整代码、阻塞规则，最后讲解第五章课后 4/5/6/7 题。</p></div>
+
+<div class="card" id="l11-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>本课分两大块：先补完<strong>第六章</strong>的尾巴——<strong>进程等待（<code>wait</code> / <code>waitpid</code>）</strong> 与 <strong>进程退出（8 种方式）</strong>，用教材例题讲清 <code>status &gt;&gt; 8</code> 为什么要右移；随后进入<strong>第四章 进程间通信（IPC）</strong>，先总览五种通信方式，再重点讲 <strong>管道</strong>：匿名管道 <code>pipe()</code> 与命名管道 <code>mkfifo()</code>，含父子通信、读写阻塞规则和 server/client 两个终端的例子。最后半小时讲<strong>第五章课后习题 4/5/6/7 题</strong>。</p><p>本课的知识点很"实"：几乎每个结论都能用一段代码验证。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td><code>wait</code> ★</td><td>父进程阻塞等待任一子进程结束</td><td>必须配合 <code>fork</code>；返回子 PID</td></tr>
+      <tr><td><code>waitpid</code> ★</td><td>可指定等谁、可不阻塞</td><td>pid 四种取值、<code>status</code>、<code>options</code></td></tr>
+      <tr><td><code>status</code> ★</td><td>16 位：高 8 位退出码，低 8 位系统占用</td><td><code>status &gt;&gt; 8</code> 才能拿到 111</td></tr>
+      <tr><td>退出 8 种方式 ★</td><td>5 种正常 + 3 种异常</td><td><code>return</code>、<code>exit</code>、<code>_exit</code>、<code>abort</code>、信号</td></tr>
+      <tr><td><code>exit</code> vs <code>_exit</code></td><td>清缓冲 vs 直接进内核</td><td><code>exit</code> 温柔、<code>_exit</code> 强硬</td></tr>
+      <tr><td>IPC 五种</td><td>管道、信号、消息队列、共享内存、信号量、socket</td><td>本课只考管道</td></tr>
+      <tr><td>管道特点 ★</td><td>半双工、FIFO、本质是文件</td><td>双向要建两个</td></tr>
+      <tr><td><code>pipe</code> ★</td><td><code>int pipe(int fd[2])</code></td><td><code>fd[0]</code> 读、<code>fd[1]</code> 写</td></tr>
+      <tr><td>顺序铁律 ★</td><td><strong>先 <code>pipe</code> 再 <code>fork</code></strong></td><td>否则子进程继承不到描述符</td></tr>
+      <tr><td>阻塞规则</td><td>读空管道阻塞、写满管道阻塞</td><td>写端全关后读返回 0</td></tr>
+      <tr><td><code>mkfifo</code> ★</td><td>命名管道，有磁盘节点</td><td>任意进程、靠路径名访问</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l11-review">
+  <h2>二、课前复习：第 10 课进程控制</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>问题</th><th>结论</th></tr>
+      <tr><td>进程的定义</td><td>程序关于某数据集合的一次活动，资源分配与调度的基本单元</td></tr>
+      <tr><td>进程 vs 程序</td><td>静态/动态、硬盘/内存、无/有生命周期</td></tr>
+      <tr><td>PCB 六成员</td><td><code>pid</code>、<code>state</code>、<code>counter</code>、<code>timer</code>、<code>priority</code>、<code>context</code></td></tr>
+      <tr><td>几种状态</td><td><strong>六种</strong>：运行、可中断、不可中断、僵死、停止、销毁</td></tr>
+      <tr><td>创建用哪两个函数</td><td><strong><code>fork</code></strong>（复制）与 <strong><code>vfork</code></strong>（共享地址空间）</td></tr>
+      <tr><td><code>fork</code> 返回值</td><td>子进程 <strong>0</strong>、父进程 <strong>子 PID</strong>、失败 <strong>−1</strong></td></tr>
+      <tr><td>取 PID</td><td><code>getpid()</code> 自己，<code>getppid()</code> 父进程</td></tr>
+      <tr><td>启动/装载</td><td><code>system</code>（执行命令）、<code>exec</code> 族（替换映像）</td></tr>
+      <tr><td><code>vfork</code> 的坑</td><td>共享同一份内存，<code>count</code> 子改父也变；必须 <code>_exit</code></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l11-wait">
+  <h2>三、进程等待：wait ★</h2>
+  <h3>3.1 为什么需要等待</h3>
+  <p>父进程 <code>fork</code> 出子进程后，两者各跑各的。父进程想知道：</p>
+  <ul>
+    <li>子进程<strong>什么时候结束</strong>？</li>
+    <li>子进程<strong>怎么结束的</strong>（正常退出还是异常）？</li>
+    <li>子进程的<strong>退出码</strong>是多少？</li>
+  </ul>
+  <p>这些信息只能通过 <code>wait</code> / <code>waitpid</code> 拿到。<strong>不等待就会产生僵尸进程</strong>（子进程 PCB 留着没人回收）。</p>
+  <h3>3.2 函数原型</h3>
+<div class="flow">#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+pid_t wait(int *status);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>参数 <code>status</code></td><td>存放子进程退出状态。<strong>不需要就传 <code>NULL</code></strong></td></tr>
+      <tr><td>返回值</td><td>成功：<strong>被回收子进程的 PID</strong>；失败：<strong>−1</strong></td></tr>
+      <tr><td>副作用</td><td>父进程<strong>阻塞</strong>（休眠），直到有子进程结束</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师用"交通堵塞"比喻阻塞：车停在那儿不动了，父进程也不再往下执行。</p></div>
+  <h3>3.3 两条使用铁律</h3>
+  <ol>
+    <li><strong>必须与 <code>fork</code> 配套</strong>：没有子进程，<code>wait</code> 等不到任何人（返回 −1，<code>errno = ECHILD</code>）。</li>
+    <li><strong>顺序不能反</strong>：先 <code>fork</code> 再 <code>wait</code>。如果先 <code>wait</code> 后 <code>fork</code>，此时还没有子进程，直接返回 <strong>−1</strong>。</li>
+  </ol>
+<div class="flow">pid = fork();      /* 先创建 */
+...
+wait(&amp;status);     /* 再等待 */</div>
+  <h3>3.4 完整代码</h3>
+<div class="flow">/* wait_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+int main(void)
+{
+    pid_t pid, ret;
+    int status;
+
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+        printf("子进程 pid = %d 开始工作\n", getpid());
+        sleep(2);
+        printf("子进程 pid = %d 结束，退出码 111\n", getpid());
+        exit(111);
+    } else {
+        printf("父进程 pid = %d 等待子进程\n", getpid());
+        ret = wait(&amp;status);                    /* 阻塞等待 */
+        if (ret == -1) {
+            perror("wait");
+            return -1;
+        }
+        printf("已回收子进程 pid = %d\n", ret);
+        printf("status = %d, 退出码 = %d\n", status, status &gt;&gt; 8);
+    }
+
+    return 0;
+}</div>
+  <p>运行结果：</p>
+<div class="flow">父进程 pid = 14935 等待子进程
+子进程 pid = 14936 开始工作
+子进程 pid = 14936 结束，退出码 111
+已回收子进程 pid = 14936
+status = 28416, 退出码 = 111</div>
+  <div class="note"><p>注意：<code>status</code> 的值是 28416，不是 111。因为 <strong>111 存在高 8 位</strong>：<code>111 &lt;&lt; 8 = 28416</code>。想拿到退出码必须 <code>status &gt;&gt; 8</code>。</p></div>
+</div>
+
+<div class="card" id="l11-waitpid">
+  <h2>四、waitpid：更灵活的等待 ★</h2>
+  <h3>4.1 函数原型</h3>
+<div class="flow">#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+pid_t waitpid(pid_t pid, int *status, int options);</div>
+  <p><code>wait</code> 是 <code>waitpid</code> 的<strong>特例</strong>（等价于 <code>waitpid(-1, &amp;status, 0)</code>），<code>waitpid</code> 多出两个能力：<strong>指定等谁</strong>、<strong>可以不等（非阻塞）</strong>。</p>
+  <h3>4.2 第一个参数 <code>pid</code> 的四种取值 ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th><code>pid</code> 取值</th><th>含义</th><th>使用频率</th></tr>
+      <tr><td><code>&gt; 0</code></td><td>只等待<strong>指定 PID</strong> 的那个子进程</td><td><strong>最常用</strong></td></tr>
+      <tr><td><code>-1</code></td><td>等待<strong>任意一个</strong>子进程</td><td><strong>最常用</strong>（等价 <code>wait</code>）</td></tr>
+      <tr><td><code>0</code></td><td>等待<strong>同一进程组</strong>中的任意子进程</td><td>较少</td></tr>
+      <tr><td><code>&lt; -1</code></td><td>等待<strong>指定进程组</strong>（组 ID = <code>-pid</code>）中的任意子进程</td><td>较少</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>为什么会有"任意一个"？因为 <code>fork</code> 一次可以创建多个子进程（比如放在循环里），父进程往往只关心"谁先结束"。</p></div>
+  <h3>4.3 第二个参数 <code>status</code> 的位布局 ★</h3>
+  <p><code>status</code> 是 <code>int</code>（32 位），但只有<strong>低 16 位</strong>有效：</p>
+<div class="flow"> 31                      16 15        8 7         0
+┌─────────────────────────┬───────────┬───────────┐
+│        未使用           │  高 8 位  │  低 8 位  │
+│                         │  退出状态 │ 系统占用  │
+└─────────────────────────┴───────────┴───────────┘
+                              退出码      信号/其他</div>
+  <ul>
+    <li><strong>高 8 位</strong>：子进程的<strong>退出状态码</strong>（<code>exit(111)</code> 里的 111）。</li>
+    <li><strong>低 8 位</strong>：系统占用（记录是否被信号终止、哪个信号等）。</li>
+    <li>所以取退出码：<code>status &gt;&gt; 8</code>（右移 8 位，把低 8 位挤掉）。</li>
+  </ul>
+  <div class="note"><p>更规范的做法是用宏，不需要自己移位：</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>宏</th><th>作用</th></tr>
+      <tr><td><code>WIFEXITED(status)</code></td><td>是否正常退出</td></tr>
+      <tr><td><code>WEXITSTATUS(status)</code></td><td>取退出码（等价 <code>status &gt;&gt; 8</code>）</td></tr>
+      <tr><td><code>WIFSIGNALED(status)</code></td><td>是否被信号终止</td></tr>
+      <tr><td><code>WTERMSIG(status)</code></td><td>取终止它的信号编号</td></tr>
+      <tr><td><code>WIFSTOPPED(status)</code></td><td>是否处于暂停状态</td></tr>
+  </table>
+  </div>
+  <h3>4.4 第三个参数 <code>options</code> ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>取值</th><th>含义</th></tr>
+      <tr><td><code>0</code></td><td><strong>阻塞</strong>等待（和 <code>wait</code> 一样）</td></tr>
+      <tr><td><code>WNOHANG</code></td><td><strong>不阻塞</strong>：没有子进程退出就立即返回 0</td></tr>
+      <tr><td><code>WUNTRACED</code></td><td>子进程<strong>暂停</strong>时也返回（不只是退出）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>"阻塞/不阻塞"还是交通的比喻：阻塞 = 路封了只能等；不阻塞 = 车流正常，没有车就直接过。</p></div>
+  <h3>4.5 <code>waitpid</code> 的三种返回值</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>返回值</th><th>含义</th></tr>
+      <tr><td><code>&gt; 0</code></td><td>成功，返回被回收子进程的 PID</td></tr>
+      <tr><td><code>0</code></td><td>只有配 <code>WNOHANG</code> 才出现：<strong>有子进程但都还没结束</strong></td></tr>
+      <tr><td><code>-1</code></td><td>出错（没有子进程等）</td></tr>
+  </table>
+  </div>
+  <h3>4.6 完整代码</h3>
+<div class="flow">/* waitpid_demo.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+int main(void)
+{
+    pid_t pid, ret;
+    int status;
+
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+        sleep(1);
+        printf("子进程 %d 退出（码 111）\n", getpid());
+        exit(111);
+    }
+
+    /* 等指定 PID 的子进程 */
+    ret = waitpid(pid, &amp;status, 0);
+    if (ret == -1) {
+        perror("waitpid");
+        return -1;
+    }
+
+    if (WIFEXITED(status)) {
+        printf("回收子进程 %d，正常退出，退出码 = %d\n",
+               ret, WEXITSTATUS(status));
+    }
+
+    return 0;
+}</div>
+</div>
+
+<div class="card" id="l11-exit">
+  <h2>五、进程退出的 8 种方式 ★</h2>
+  <p>教材把退出方式分成 <strong>5 种正常 + 3 种异常</strong>：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类别</th><th>方式</th><th>说明</th></tr>
+      <tr><td>正常 ①</td><td><code>main</code> 中 <code>return</code></td><td>等价于 <code>exit(n)</code></td></tr>
+      <tr><td>正常 ②</td><td>调用 <code>exit(n)</code></td><td>会<strong>刷新 stdio 缓冲、关闭文件</strong>、执行 <code>atexit</code></td></tr>
+      <tr><td>正常 ③</td><td>调用 <code>_exit(n)</code> / <code>_Exit(n)</code></td><td><strong>直接进内核</strong>，不做任何清理</td></tr>
+      <tr><td>正常 ④</td><td>最后一个线程从其启动例程返回</td><td>线程场景（后续章节）</td></tr>
+      <tr><td>正常 ⑤</td><td>最后一个线程调用 <code>pthread_exit</code></td><td>线程场景</td></tr>
+      <tr><td>异常 ⑥</td><td>调用 <code>abort()</code></td><td>产生 <code>SIGABRT</code>，可能生成 core 文件</td></tr>
+      <tr><td>异常 ⑦</td><td>收到信号（如 <code>SIGINT</code>、<code>SIGKILL</code>）</td><td><code>Ctrl+C</code>、<code>kill -9</code></td></tr>
+      <tr><td>异常 ⑧</td><td>最后一个线程对取消请求作出响应</td><td><code>pthread_cancel</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>退出状态约定：<strong>0 表示正常退出，非 0 表示异常退出</strong>。</p></div>
+  <h3>5.1 exit 与 _exit 的区别 ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th><code>exit(0)</code></th><th><code>_exit(0)</code></th></tr>
+      <tr><td>stdio 缓冲区</td><td><strong>会刷新</strong>（内容一定写出去）</td><td><strong>不刷新</strong>（可能丢数据）</td></tr>
+      <tr><td>关闭打开的文件</td><td>会</td><td>不会</td></tr>
+      <tr><td>执行 <code>atexit</code> 注册的函数</td><td>会</td><td>不会</td></tr>
+      <tr><td>进入内核</td><td>通过库函数间接进</td><td><strong>直接进</strong></td></tr>
+      <tr><td>类比</td><td>下课关灯锁门</td><td>直接走人</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>这就是 <code>vfork</code> 的子进程<strong>必须用 <code>_exit</code></strong> 的原因：共享父进程的缓冲区，<code>exit</code> 会刷新两次导致重复输出。</p></div>
+  <h3>5.2 异常退出示例</h3>
+<div class="flow">/* exit_abnormal.c —— 两种异常退出 */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void)
+{
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        printf("子进程异常退出演示\n");
+        if (getpid() % 2 == 0) {
+            abort();                       /* 方式⑥：产生 SIGABRT */
+        } else {
+            kill(getpid(), SIGKILL);       /* 方式⑦：自我终止信号 */
+        }
+    }
+
+    if (pid &gt; 0) {
+        int status;
+        wait(&amp;status);
+        if (WIFSIGNALED(status)) {
+            printf("子进程被信号 %d 终止\n", WTERMSIG(status));
+        }
+    }
+    return 0;
+}</div>
+</div>
+
+<div class="card" id="l11-example">
+  <h2>六、教材例题：exit(111) 与 status &gt;&gt; 8 详解</h2>
+  <h3>6.1 代码</h3>
+<div class="flow">/* global_exit.c —— 教材 6.2.1-2 的逻辑 */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+int a = 10;                     /* 全局变量 */
+
+int main(void)
+{
+    pid_t pid;
+    int i = 0, status;
+
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+        /* ---- 子进程 ---- */
+        printf("子进程 pid = %d, 全局变量 a = %d\n", getpid(), a);
+        for (i = 0; i &lt; 5; i++) {
+            printf("child: i = %d, a = %d\n", i, a);
+            sleep(1);
+            a++;
+            if (i == 5) {
+                return 111;     /* 永远走不到：i 最大到 4 */
+            }
+        }
+        exit(111);              /* 真正生效的退出 */
+    } else {
+        /* ---- 父进程 ---- */
+        printf("父进程 pid = %d\n", getpid());
+        wait(&amp;status);          /* 阻塞等子进程 */
+        printf("子进程退出码 = %d\n", status &gt;&gt; 8);
+    }
+
+    return 0;
+}</div>
+  <h3>6.2 输出顺序为什么是这样</h3>
+<div class="flow">父进程 pid = 14935
+子进程 pid = 14936, 全局变量 a = 10
+child: i = 0, a = 10
+child: i = 1, a = 11
+child: i = 2, a = 12
+child: i = 3, a = 13
+child: i = 4, a = 14
+子进程退出码 = 111</div>
+  <p>三个要点：</p>
+  <ol>
+    <li><strong><code>a</code> 在子进程里从 10 变到 14</strong>，但父进程完全看不到——<code>fork</code> 后数据段独立。</li>
+    <li><strong><code>if (i == 5) return 111;</code> 是死代码</strong>：<code>for</code> 循环条件 <code>i &lt; 5</code>，<code>i</code> 最大是 4，永远进不去。这就是老师说"这句话永远跑不到"。</li>
+    <li><strong>父进程的输出在最后</strong>：因为 <code>wait</code> 阻塞在那里，子进程跑完父才继续。</li>
+  </ol>
+  <div class="note"><p>这正是老师反复强调的"你可能以为的输出 ≠ 实际输出"——因为<strong>阻塞</strong>改变了执行顺序。</p></div>
+</div>
+
+<div class="card" id="l11-ipc">
+  <h2>七、进程间通信（IPC）概述 ★</h2>
+  <h3>7.1 为什么需要进程间通信</h3>
+  <ul>
+    <li>每个进程有独立地址空间，<strong>不能直接读写对方的变量</strong>。</li>
+    <li>数据必须通过<strong>内核提供的中转机制</strong>传递。</li>
+  </ul>
+  <h3>7.2 历史来源</h3>
+  <p>前面课程的 <code>system/exec</code> 来自 Unix 的 System V 接口；IPC 机制同样是从 Unix 继承而来：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>来源</th><th>贡献</th></tr>
+      <tr><td>AT&amp;T <strong>贝尔实验室</strong></td><td>System V IPC：消息队列、信号量、共享内存</td></tr>
+      <tr><td><strong>BSD</strong>（加州伯克利）</td><td>socket（网络编程基础）</td></tr>
+      <tr><td><strong>POSIX</strong>（可移植操作系统接口）</td><td>标准化管道等接口</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l11-ipctype">
+  <h2>八、五种 IPC 方式对比</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>方式</th><th>特点</th><th>典型用途</th></tr>
+      <tr><td><strong>管道</strong>（本课）</td><td>半双工、FIFO、本质是文件</td><td>父子进程传数据</td></tr>
+      <tr><td><strong>信号</strong></td><td>异步通知，只传"发生了什么"</td><td>进程控制（<code>SIGINT</code>、<code>SIGKILL</code>）</td></tr>
+      <tr><td><strong>消息队列</strong></td><td>按队列排队，支持异步</td><td>多进程解耦</td></tr>
+      <tr><td><strong>共享内存</strong></td><td>最快、最占内存</td><td>大数据量传输</td></tr>
+      <tr><td><strong>信号量</strong></td><td>计数器，本质是锁</td><td>进程间同步</td></tr>
+      <tr><td><strong>套接字 socket</strong></td><td>可跨机器</td><td>网络编程（第九章）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本课程只讲<strong>管道</strong>，其余名称认识即可。</p></div>
+</div>
+
+<div class="card" id="l11-pipe">
+  <h2>九、管道的概念与特点 ★</h2>
+  <h3>9.1 管道是什么</h3>
+  <p>管道是<strong>两个进程之间的连接器</strong>，本质是内核维护的一块<strong>缓冲区</strong>。</p>
+<div class="flow">  进程 A（写）  ──────→  [ 内核缓冲区 FIFO ]  ──────→  进程 B（读）</div>
+  <h3>9.2 三大特点 ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>特点</th><th>含义</th><th>例子</th></tr>
+      <tr><td><strong>半双工</strong></td><td>同一时刻只能<strong>单向</strong>传输</td><td>对讲机（不能同时说）</td></tr>
+      <tr><td><strong>FIFO 先进先出</strong></td><td>先写进去的先被读出来</td><td>排队问"今晚有时间吗"</td></tr>
+      <tr><td><strong>本质是文件</strong></td><td>用 <code>read</code>/<code>write</code>/<code>close</code> 操作</td><td>但<strong>不是磁盘文件</strong></td></tr>
+  </table>
+  </div>
+  <h3>9.3 三种"通信方式"的类比</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>方式</th><th>类比</th><th>能否同时双向</th></tr>
+      <tr><td>单工</td><td>广播</td><td>只能单向</td></tr>
+      <tr><td><strong>半双工</strong></td><td><strong>对讲机</strong></td><td>轮流说</td></tr>
+      <tr><td>全双工</td><td>手机</td><td>同时说</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>想要双向通信？<strong>建两个管道</strong>，一个负责 A→B，一个负责 B→A。</p></div>
+  <h3>9.4 管道分类</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类型</th><th>是否有名字</th><th>是否有磁盘节点</th><th>通信范围</th></tr>
+      <tr><td><strong>匿名管道</strong></td><td>无</td><td>无（只在内存）</td><td><strong>具有亲缘关系</strong>的进程（父子、兄弟）</td></tr>
+      <tr><td><strong>命名管道（FIFO）</strong></td><td>有（路径名）</td><td><strong>有</strong></td><td><strong>任意进程</strong></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l11-pipeapi">
+  <h2>十、匿名管道：pipe ★</h2>
+  <h3>10.1 函数原型</h3>
+<div class="flow">#include &lt;unistd.h&gt;
+
+int pipe(int fd[2]);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th></tr>
+      <tr><td><code>fd[0]</code></td><td><strong>读端</strong>（read）</td></tr>
+      <tr><td><code>fd[1]</code></td><td><strong>写端</strong>（write）</td></tr>
+      <tr><td>返回值</td><td>成功 0，失败 −1</td></tr>
+  </table>
+  </div>
+<div class="flow">        fd[0] 读端          fd[1] 写端
+           ↑                    │
+           └────────────────────┘
+              同一块内核缓冲区</div>
+  <h3>10.2 标准流程（背下来）★</h3>
+<div class="flow">① pipe(fd)          创建管道
+        ↓
+② fork()            创建子进程（子进程继承 fd[0] / fd[1]）
+        ↓
+③ 关闭不用的一端     只读 → close(fd[1])；只写 → close(fd[0])
+        ↓
+④ read / write      读写数据
+        ↓
+⑤ close             用完关闭</div>
+  <h3>10.3 为什么必须先 pipe 再 fork ★</h3>
+  <p>子进程通过 <code>fork</code> <strong>继承父进程的文件描述符表</strong>。如果先 <code>fork</code> 再 <code>pipe</code>，子进程手上没有 <code>fd[0]/fd[1]</code>，就够不到这个管道。</p>
+  <div class="note"><p>这是本课<strong>最容易考的顺序题</strong>。</p></div>
+</div>
+
+<div class="card" id="l11-piperw">
+  <h2>十一、匿名管道的读写与阻塞规则 ★</h2>
+  <h3>11.1 读规则</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>情况</th><th>结果</th></tr>
+      <tr><td>管道有数据</td><td>读出数据，返回字节数</td></tr>
+      <tr><td><strong>管道为空</strong></td><td><strong>阻塞</strong>，直到有数据写入</td></tr>
+      <tr><td>写端<strong>全部关闭</strong></td><td><code>read</code> 返回 <strong>0</strong>（表示 EOF）</td></tr>
+  </table>
+  </div>
+  <h3>11.2 写规则</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>情况</th><th>结果</th></tr>
+      <tr><td>缓冲区未满</td><td>正常写入</td></tr>
+      <tr><td><strong>缓冲区已满</strong></td><td><strong>阻塞</strong>，直到有人读走数据</td></tr>
+      <tr><td>读端<strong>全部关闭</strong></td><td>进程收到 <code>SIGPIPE</code>（默认终止）</td></tr>
+  </table>
+  </div>
+  <h3>11.3 关闭规则</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>只做读</th><th>只做写</th></tr>
+      <tr><td><code>close(fd[1])</code> 关写端</td><td><code>close(fd[0])</code> 关读端</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>不关闭程序也能跑，但会<strong>浪费文件描述符资源</strong>（内存里一直占着）。数据量大、fd 多时才会明显卡顿。考试若问"必须关闭吗"——<strong>代码正确，但不严谨</strong>。</p></div>
+</div>
+
+<div class="card" id="l11-pipeex">
+  <h2>十二、匿名管道例题：父写子读</h2>
+<div class="flow">/* pipe_demo.c —— 父进程写入 1234567890，子进程读出 */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+int main(void)
+{
+    int fd[2];
+    pid_t pid;
+    char buf[256] = {0};
+    char *msg = "1234567890";
+    ssize_t n;
+
+    if (pipe(fd) == -1) {              /* ① 先建管道 */
+        perror("pipe");
+        return -1;
+    }
+
+    pid = fork();                      /* ② 再创建子进程 */
+    if (pid == -1) {
+        perror("fork");
+        return -1;
+    } else if (pid == 0) {
+        /* ---- 子进程：只读 ---- */
+        close(fd[1]);                  /* 关闭写端 */
+        n = read(fd[0], buf, sizeof(buf) - 1);
+        if (n &gt; 0) {
+            printf("子进程读到 %ld 字节：%s\n", (long)n, buf);
+        } else if (n == 0) {
+            printf("子进程：写端已关闭（EOF）\n");
+        } else {
+            perror("read");
+        }
+        close(fd[0]);
+        exit(0);
+    } else {
+        /* ---- 父进程：只写 ---- */
+        close(fd[0]);                  /* 关闭读端 */
+        printf("父进程写入：%s\n", msg);
+        write(fd[1], msg, strlen(msg));
+        sleep(5);                      /* 让子进程有时间读 */
+        close(fd[1]);
+        wait(NULL);                    /* 回收子进程 */
+    }
+
+    return 0;
+}</div>
+  <p>运行结果：</p>
+<div class="flow">父进程写入：1234567890
+子进程读到 10 字节：1234567890</div>
+  <div class="note"><p>课堂代码里 <code>sleep(5)</code> 就是为了让"写完"与"读走"之间有个明显的时间差。</p></div>
+  <h3>12.1 第二个例子：hello</h3>
+<div class="flow">/* pipe_hello.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void)
+{
+    int fd[2];
+    pid_t pid;
+    char buf[80] = {0};
+
+    pipe(fd);
+    pid = fork();
+
+    if (pid &gt; 0) {
+        close(fd[0]);
+        write(fd[1], "hello", 5);
+        close(fd[1]);
+    } else if (pid == 0) {
+        close(fd[1]);
+        read(fd[0], buf, sizeof(buf));
+        printf("收到：%s\n", buf);
+        close(fd[0]);
+        exit(0);
+    }
+
+    return 0;
+}</div>
+  <div class="note"><p>注意 <code>"hello"</code> 后面的 <code>\n</code> 是<strong>字符串结束标志</strong>，不是"回车"。缓冲区 80 字节只用了 5 字节。</p></div>
+</div>
+
+<div class="card" id="l11-fifo">
+  <h2>十三、命名管道（FIFO）★</h2>
+  <h3>13.1 与匿名管道的区别</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th>匿名管道</th><th>命名管道</th></tr>
+      <tr><td>名字</td><td>无</td><td><strong>有路径名</strong></td></tr>
+      <tr><td>磁盘节点</td><td>无（内存中）</td><td><strong>有</strong>（文件系统里能看到）</td></tr>
+      <tr><td>通信范围</td><td>必须有亲缘关系</td><td><strong>任意进程</strong></td></tr>
+      <tr><td>创建函数</td><td><code>pipe()</code></td><td><strong><code>mkfifo()</code></strong></td></tr>
+      <tr><td>标识方式</td><td>文件描述符（虚）</td><td><strong>路径名</strong>（实）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师说得好：匿名管道"是虚的"——你看不见摸不着，只能通过内核给的文件描述符访问；命名管道"是实的"——<code>ls</code> 就能看到一个 <code>p</code> 类型的文件。</p></div>
+  <h3>13.2 函数原型</h3>
+<div class="flow">#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+
+int mkfifo(const char *pathname, mode_t mode);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th></tr>
+      <tr><td><code>pathname</code></td><td><strong>路径名</strong>（如 <code>/tmp/myfifo</code>）</td></tr>
+      <tr><td><code>mode</code></td><td>权限，如 <code>0666</code>（读写不可执行，受 <code>umask</code> 影响）</td></tr>
+      <tr><td>返回值</td><td>成功 0，失败 −1</td></tr>
+  </table>
+  </div>
+  <h3>13.3 使用流程</h3>
+<div class="flow">① mkfifo 创建（只需一次，在写端或任一端建）
+        ↓
+② open 打开（O_RDONLY / O_WRONLY）
+        ↓
+③ read / write
+        ↓
+④ close 关闭
+        ↓
+⑤ unlink 移除（在写端移除即可）</div>
+  <h3>13.4 打开时的阻塞 ⚠️</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>打开方式</th><th>行为</th></tr>
+      <tr><td><code>open(path, O_RDONLY)</code></td><td><strong>阻塞</strong>，直到有进程以写方式打开</td></tr>
+      <tr><td><code>open(path, O_WRONLY)</code></td><td><strong>阻塞</strong>，直到有进程以读方式打开</td></tr>
+      <tr><td><code>O_NONBLOCK</code> 只读</td><td>立即返回；无数据时 <code>read</code> 返回 −1（<code>EAGAIN</code>）</td></tr>
+      <tr><td><code>O_NONBLOCK</code> 只写</td><td>无读者时立即返回错误（<code>ENXIO</code>）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>所以命名管道必须<strong>两个终端</strong>分别跑读端和写端，只开一个会卡在 <code>open</code>。</p></div>
+  <h3>13.5 本质仍是文件</h3>
+  <p><code>mkfifo</code> 创建出来的东西，可以用普通文件接口操作：</p>
+<div class="flow">mkfifo /tmp/myfifo       # 命令行也能建
+ls -l /tmp/myfifo        # 首字符是 p（管道文件）</div>
+</div>
+
+<div class="card" id="l11-fifoex">
+  <h2>十四、命名管道例题：server / client 两个终端</h2>
+  <p>需要<strong>两个程序、两个终端</strong>。</p>
+  <p><strong>server 端（先运行，负责创建并读取）</strong></p>
+<div class="flow">/* fifo_server.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+
+#define FIFO_PATH "/tmp/myfifo"
+
+int main(void)
+{
+    int fd;
+    char buf[256];
+    ssize_t n;
+
+    /* 已存在会失败，忽略即可 */
+    if (mkfifo(FIFO_PATH, 0666) == -1) {
+        /* 忽略 EEXIST */
+    }
+
+    printf("server: 等待客户端写入...\n");
+    fd = open(FIFO_PATH, O_RDONLY);        /* 阻塞，直到有写者 */
+    if (fd == -1) {
+        perror("open");
+        return -1;
+    }
+
+    while ((n = read(fd, buf, sizeof(buf) - 1)) &gt; 0) {
+        buf[n] = '\0';
+        printf("server 收到 %ld 字节：%s\n", (long)n, buf);
+    }
+
+    close(fd);
+    unlink(FIFO_PATH);                     /* 移除管道文件 */
+    return 0;
+}</div>
+  <p><strong>client 端（负责写入）</strong></p>
+<div class="flow">/* fifo_client.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;unistd.h&gt;
+
+#define FIFO_PATH "/tmp/myfifo"
+
+int main(void)
+{
+    int fd;
+    char *msg = "hello";
+
+    fd = open(FIFO_PATH, O_WRONLY);        /* 阻塞，直到有读者 */
+    if (fd == -1) {
+        perror("open");
+        return -1;
+    }
+
+    write(fd, msg, strlen(msg));
+    close(fd);
+
+    return 0;
+}</div>
+  <p>运行方式：</p>
+<div class="flow"># 终端 1
+./fifo_server
+# 终端 2
+./fifo_client</div>
+  <p>输出：</p>
+<div class="flow">server: 等待客户端写入...
+server 收到 5 字节：hello</div>
+  <div class="note"><p>课堂演示的第二组数据是 <code>how are you</code>：服务器发 10 字节，客户端也收到 10 字节——<strong>空格算在字节数里</strong>，但 <code>printf("%s")</code> 显示时空格不明显，容易误以为"空格没传"。</p></div>
+</div>
+
+<div class="card" id="l11-compare">
+  <h2>十五、匿名管道 vs 命名管道 对比总表 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>维度</th><th>匿名管道 <code>pipe</code></th><th>命名管道 <code>mkfifo</code></th></tr>
+      <tr><td>创建函数</td><td><code>pipe(fd)</code></td><td><code>mkfifo(path, mode)</code></td></tr>
+      <tr><td>标识</td><td><code>fd[0]</code> / <code>fd[1]</code></td><td>路径名</td></tr>
+      <tr><td>磁盘节点</td><td>无</td><td><strong>有</strong>（<code>p</code> 类型）</td></tr>
+      <tr><td>通信进程</td><td>必须亲缘关系</td><td><strong>任意进程</strong></td></tr>
+      <tr><td>创建次数</td><td>每个通信对一次</td><td>只需一次</td></tr>
+      <tr><td>打开方式</td><td>无需 open</td><td>需 <code>open</code>（有阻塞语义）</td></tr>
+      <tr><td>读写函数</td><td><code>read</code> / <code>write</code></td><td><code>read</code> / <code>write</code>（相同）</td></tr>
+      <tr><td>关闭</td><td><code>close</code></td><td><code>close</code> + <code>unlink</code></td></tr>
+      <tr><td>阻塞规则</td><td>读空阻塞、写满阻塞</td><td>相同，另有 open 阻塞</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l11-code">
+  <h2>十六、完整可编译代码合集</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>文件</th><th>功能</th><th>关键函数</th></tr>
+      <tr><td><code>wait_demo.c</code></td><td>父等子，取退出码</td><td><code>fork</code>、<code>wait</code></td></tr>
+      <tr><td><code>waitpid_demo.c</code></td><td>指定 PID 等待</td><td><code>waitpid</code>、<code>WEXITSTATUS</code></td></tr>
+      <tr><td><code>global_exit.c</code></td><td>教材例题：全局变量 + exit(111)</td><td><code>fork</code>、<code>exit</code>、<code>status &gt;&gt; 8</code></td></tr>
+      <tr><td><code>exit_abnormal.c</code></td><td>异常退出演示</td><td><code>abort</code>、<code>kill</code></td></tr>
+      <tr><td><code>pipe_demo.c</code></td><td>父写子读 10 个字符</td><td><code>pipe</code>、<code>fork</code>、<code>read</code>、<code>write</code></td></tr>
+      <tr><td><code>pipe_hello.c</code></td><td>最简单的管道示例</td><td><code>pipe</code></td></tr>
+      <tr><td><code>fifo_server.c</code></td><td>命名管道读端</td><td><code>mkfifo</code>、<code>open</code>、<code>read</code>、<code>unlink</code></td></tr>
+      <tr><td><code>fifo_client.c</code></td><td>命名管道写端</td><td><code>open</code>、<code>write</code></td></tr>
+  </table>
+  </div>
+  <p>编译运行：</p>
+<div class="flow">gcc 文件名.c -o 文件名
+./文件名</div>
+</div>
+
+<div class="card" id="l11-homework">
+  <h2>十七、课后习题讲解（第五章 4/5/6/7 题）</h2>
+  <h3>17.1 第 4 题：向文件写数据</h3>
+  <p>思路：判断文件是否存在 → 存在则 <code>open</code>（只写），不存在则 <code>creat</code> → <code>scanf</code> 输入 → <code>write</code> → <code>close</code>。</p>
+<div class="flow">/* ex4_write.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+#define PATH "/tmp/test.txt"
+
+int main(void)
+{
+    int fd;
+    char buf[10] = {0};
+
+    if (access(PATH, F_OK) == 0) {         /* 存在 → 打开 */
+        fd = open(PATH, O_WRONLY | O_TRUNC);
+        if (fd == -1) { perror("open"); return -1; }
+    } else {                                /* 不存在 → 创建 */
+        fd = creat(PATH, 0644);
+        if (fd == -1) { perror("creat"); return -1; }
+    }
+
+    printf("请输入要写入的字符串：");
+    if (scanf("%9s", buf) != 1) { close(fd); return -1; }
+
+    if (write(fd, buf, strlen(buf)) == -1) {
+        perror("write");
+        close(fd);
+        return -1;
+    }
+
+    close(fd);
+    printf("写入完成\n");
+    return 0;
+}</div>
+  <p>运行：输入 <code>123456</code>，再 <code>cat /tmp/test.txt</code> 验证。</p>
+  <h3>17.2 第 5 题：从文件读数据</h3>
+  <p>思路：<code>open</code>（只读）→ <code>read</code> 150 字节到 256 字节缓冲区 → <code>printf("%s")</code> → <code>close</code>。</p>
+<div class="flow">/* ex5_read.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+#define PATH "/tmp/test.txt"
+
+int main(void)
+{
+    int fd;
+    char buf[256] = {0};
+    ssize_t n;
+
+    fd = open(PATH, O_RDONLY);
+    if (fd == -1) { perror("open"); return -1; }
+
+    n = read(fd, buf, 150);                /* 最多读 150 字节 */
+    if (n &gt; 0) {
+        printf("读到 %ld 字节：%s\n", (long)n, buf);
+    } else if (n == 0) {
+        printf("文件为空\n");
+    } else {
+        perror("read");
+    }
+
+    close(fd);
+    return 0;
+}</div>
+  <h3>17.3 第 6 题：本地时间与格林威治时间转换</h3>
+  <p>思路：取当前秒 → <code>localtime</code> 得本地结构体 → <code>tm_hour -= 8</code> → 输出。</p>
+<div class="flow">/* ex6_time.c */
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main(void)
+{
+    time_t t = time(NULL);
+    struct tm *p = localtime(&amp;t);
+
+    printf("本地时间    : %02d:%02d:%02d\n", p-&gt;tm_hour, p-&gt;tm_min, p-&gt;tm_sec);
+
+    p-&gt;tm_hour -= 8;                       /* 本地 → 格林威治：减 8 小时 */
+    mktime(p);                             /* 规范化，跨天自动进位 */
+
+    printf("格林威治时间: %02d:%02d:%02d\n", p-&gt;tm_hour, p-&gt;tm_min, p-&gt;tm_sec);
+    return 0;
+}</div>
+  <div class="note"><p>注意：<strong>分、秒不受影响</strong>，只有小时要减 8。老师课上先说"差半小时"，随即更正为 <strong>8 小时</strong>。</p></div>
+  <h3>17.4 第 7 题：创建文件</h3>
+  <p>思路：<code>scanf</code> 输入文件名 → <code>access</code> 判断是否存在 → 不存在则 <code>creat</code>。</p>
+<div class="flow">/* ex7_create.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+int main(void)
+{
+    int fd;
+    char path[100] = {0};
+
+    printf("请输入文件名：");
+    if (scanf("%99s", path) != 1) return -1;
+
+    if (access(path, F_OK) == 0) {
+        printf("文件 %s 已存在\n", path);
+        return 0;
+    }
+
+    fd = creat(path, 0777);                /* 读写可执行 */
+    if (fd == -1) { perror("creat"); return -1; }
+
+    printf("已创建 %s，fd = %d\n", path, fd);
+    close(fd);
+    return 0;
+}</div>
+  <h3>17.5 第六章第 6 题：父子进程打印不同内容</h3>
+  <p>思路：<code>fork</code> 后用返回值分流，子进程打印一类内容、父进程打印另一类，父进程 <code>wait</code> 保证子先结束。</p>
+<div class="flow">/* ex6_fork.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/wait.h&gt;
+
+int main(void)
+{
+    pid_t pid;
+
+    pid = fork();
+    if (pid == -1) { perror("fork"); return -1; }
+
+    if (pid == 0) {
+        printf("我是子进程：pid = %d\n", getpid());
+        exit(0);
+    } else {
+        wait(NULL);
+        printf("我是父进程：pid = %d，子进程 pid = %d\n", getpid(), pid);
+    }
+
+    return 0;
+}</div>
+  <div class="note"><p>老师提到可以参考<strong>实验报告三</strong>。</p></div>
+</div>
+
+<div class="card" id="l11-pitfall">
+  <h2>十八、易错点复盘 ★</h2>
+  <ol>
+    <li><strong>先 <code>wait</code> 后 <code>fork</code></strong>：没有子进程，<code>wait</code> 直接返回 −1。顺序必须是先 <code>fork</code> 后 <code>wait</code>。</li>
+    <li><strong><code>status</code> 直接用</strong>：<code>status</code> 不是退出码！要 <code>status &gt;&gt; 8</code> 或用 <code>WEXITSTATUS(status)</code>。</li>
+    <li><strong>忘记 <code>wait</code> 造成僵尸</strong>：子进程退出后 PCB 不回收，久了耗尽 PID。</li>
+    <li><strong><code>exit</code> 与 <code>_exit</code> 混用</strong>：<code>_exit</code> 不刷新缓冲区，可能丢输出；<code>vfork</code> 子进程必须 <code>_exit</code>。</li>
+    <li><strong>先 <code>fork</code> 再 <code>pipe</code></strong>：子进程继承不到管道描述符，通信必然失败。</li>
+    <li><strong>只关一端</strong>：只读没关写端 → 永远等不到 EOF（<code>read</code> 一直阻塞）。<strong>读写两端都要关</strong>。</li>
+    <li><strong>读端全关还继续写</strong>：会收到 <code>SIGPIPE</code>，进程默认被终止。</li>
+    <li><strong>命名管道没开两个终端</strong>：<code>open</code> 会阻塞（等对端），看起来像"卡死"。</li>
+    <li><strong><code>mkfifo</code> 已存在返回 −1</strong>：这不是错误（<code>EEXIST</code>），忽略即可。</li>
+    <li><strong><code>how are you</code> 字节数</strong>：空格也算字节（10 字节 = 3+1+3+1+4）；显示时容易误判。</li>
+    <li><strong>管道不是普通文件</strong>：匿名管道没有磁盘节点，重启/退出就没了。</li>
+    <li><strong><code>fork</code> 后子进程数据独立</strong>：子进程把 <code>a</code> 改成 14，父进程的 <code>a</code> 还是 10。</li>
+  </ol>
+</div>
+
+<div class="card" id="l11-practice">
+  <h2>十九、课堂操作复盘</h2>
+  <ol>
+    <li>运行 <code>wait_demo</code>，观察父进程阻塞、子进程先输出、父进程最后打印退出码。</li>
+    <li>把 <code>wait</code> 挪到 <code>fork</code> 前面，验证返回 −1。</li>
+    <li>运行 <code>global_exit</code>，确认 <code>if (i == 5)</code> 是死代码、退出码 111 来自 <code>status &gt;&gt; 8</code>。</li>
+    <li>运行 <code>pipe_demo</code>，观察父写子读 10 个字节。</li>
+    <li>在 <code>pipe_demo</code> 里注释掉 <code>close(fd[1])</code>，观察子进程 <code>read</code> 一直阻塞。</li>
+    <li><code>mkfifo /tmp/myfifo</code> 后用 <code>ls -l</code> 确认首字符是 <code>p</code>。</li>
+    <li>开两个终端分别运行 <code>fifo_server</code> 与 <code>fifo_client</code>，观察数据传递。</li>
+    <li>讲解第五章 4/5/6/7 题与第六章第 6 题。</li>
+  </ol>
+</div>
+
+<div class="card" id="l11-quiz">
+  <h2>二十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li><code>wait</code> 与 <code>waitpid</code> 的关系是什么？<code>waitpid</code> 多了什么能力？</li>
+    <li><code>wait</code> 必须先 <code>fork</code> 吗？先 <code>wait</code> 会返回什么？</li>
+    <li><code>status</code> 为什么不能直接当退出码用？怎么取退出码？</li>
+    <li>进程退出的 5 种正常方式和 3 种异常方式分别是什么？</li>
+    <li><code>exit</code> 与 <code>_exit</code> 有什么区别？</li>
+    <li>管道有哪三个特点？为什么不叫"全双工"？</li>
+    <li><code>pipe(fd)</code> 中 <code>fd[0]</code> 和 <code>fd[1]</code> 分别是什么？为什么要先 <code>pipe</code> 再 <code>fork</code>？</li>
+    <li>匿名管道与命名管道最本质的区别是什么？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li><code>wait</code> 是 <code>waitpid(-1, &amp;status, 0)</code> 的特例；<code>waitpid</code> 可以<strong>指定等哪个子进程</strong>，还可以用 <code>WNOHANG</code> <strong>不阻塞</strong>。</li>
+    <li>必须先 <code>fork</code>。没有子进程时 <code>wait</code> 返回 <strong>−1</strong>（<code>errno = ECHILD</code>）。</li>
+    <li><code>status</code> 只有低 16 位有效，<strong>高 8 位才是退出码</strong>、低 8 位是信号等系统信息。取退出码用 <code>status &gt;&gt; 8</code> 或 <code>WEXITSTATUS(status)</code>。</li>
+    <li>正常：<code>main</code> 中 <code>return</code>、<code>exit()</code>、<code>_exit()</code>、最后一个线程返回、最后一个线程 <code>pthread_exit</code>。异常：<code>abort()</code>、收到信号、最后一个线程响应取消请求。</li>
+    <li><code>exit</code> 会刷新 stdio 缓冲、关闭文件、执行 <code>atexit</code> 注册的函数；<code>_exit</code> 直接进内核，什么都不做。</li>
+    <li><strong>半双工、FIFO、本质是文件</strong>。半双工指同一时刻只能单向传输，想双向必须建两个管道。</li>
+    <li><code>fd[0]</code> 读端、<code>fd[1]</code> 写端。子进程靠 <code>fork</code> 继承父的文件描述符表，先 <code>fork</code> 后 <code>pipe</code> 的话子进程没有这两个描述符。</li>
+    <li>命名管道有<strong>路径名和磁盘节点</strong>，任意进程都能访问；匿名管道无名无节点，只能用于<strong>有亲缘关系</strong>的进程。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li>读一个空管道会怎样？写一个已满管道会怎样？写端全关后读会怎样？</li>
+    <li><code>waitpid</code> 的 <code>pid</code> 取 0、−1、−5 分别是什么意思？</li>
+    <li>命名管道只开一端会怎样？怎么避免？</li>
+    <li>写一个程序：父进程用管道发一句话给子进程，子进程打印出来。</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li>读空管道<strong>阻塞</strong>直到有数据；写满管道<strong>阻塞</strong>直到有人读走；写端全关后 <code>read</code> 返回 <strong>0</strong>（EOF）。</li>
+    <li><code>0</code>：等待同进程组任意子进程；<code>−1</code>：等待任意子进程；<code>−5</code>：等待进程组 ID 为 5 的任意子进程。</li>
+    <li><code>open</code> 会<strong>阻塞</strong>等待对端。用 <code>O_NONBLOCK</code> 打开可立即返回，或保证两个终端一先一后启动。</li>
+    <li>参考 <code>pipe_demo.c</code>：<code>pipe</code> → <code>fork</code> → 子进程 <code>close(fd[1])</code> + <code>read</code> + <code>printf</code>，父进程 <code>close(fd[0])</code> + <code>write</code>。</li>
+  </ol>
+</div>
+
+<div class="card" id="l11-appendix">
+  <h2>二十一、进程通信与等待速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>成功 / 失败</th></tr>
+      <tr><td><code>wait</code></td><td><code>pid_t wait(int *status)</code></td><td>子进程 PID / −1</td></tr>
+      <tr><td><code>waitpid</code></td><td><code>pid_t waitpid(pid_t pid, int *status, int options)</code></td><td>子 PID / 0（WNOHANG 无退出）/ −1</td></tr>
+      <tr><td><code>pipe</code></td><td><code>int pipe(int fd[2])</code></td><td>0 / −1</td></tr>
+      <tr><td><code>mkfifo</code></td><td><code>int mkfifo(const char *path, mode_t mode)</code></td><td>0 / −1</td></tr>
+      <tr><td><code>exit</code></td><td><code>void exit(int status)</code></td><td>不返回</td></tr>
+      <tr><td><code>_exit</code></td><td><code>void _exit(int status)</code></td><td>不返回</td></tr>
+      <tr><td><code>abort</code></td><td><code>void abort(void)</code></td><td>不返回（SIGABRT）</td></tr>
+      <tr><td><code>kill</code></td><td><code>int kill(pid_t pid, int sig)</code></td><td>0 / −1</td></tr>
+      <tr><td><code>raise</code></td><td><code>int raise(int sig)</code></td><td>0 / −1</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>常量 / 宏</th><th>含义</th></tr>
+      <tr><td><code>WNOHANG</code></td><td>不阻塞：无子进程退出就返回 0</td></tr>
+      <tr><td><code>WUNTRACED</code></td><td>子进程暂停时也返回</td></tr>
+      <tr><td><code>WIFEXITED</code> / <code>WEXITSTATUS</code></td><td>是否正常退出 / 取退出码</td></tr>
+      <tr><td><code>WIFSIGNALED</code> / <code>WTERMSIG</code></td><td>是否被信号终止 / 信号编号</td></tr>
+      <tr><td><code>status &gt;&gt; 8</code></td><td>手动取高 8 位退出码</td></tr>
+      <tr><td><code>fd[0]</code> / <code>fd[1]</code></td><td>管道读端 / 写端</td></tr>
+      <tr><td><code>SIGPIPE</code></td><td>读端全关后写数据触发的信号</td></tr>
+      <tr><td><code>O_NONBLOCK</code></td><td>非阻塞打开</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>（wait / waitpid / 管道 / 命名管道 / 课后 4 道题各一份），并补充了 <code>status</code> 位布局图、<code>WIFEXITED</code> 等标准宏、命名管道 <code>open</code> 的阻塞语义、<code>SIGPIPE</code> 与 EOF 规则等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>wait</code> → "位的/被的"、<code>waitpid</code> → "位的 pid"、<code>pipe</code> → "派/广告/管道"、<code>mkfifo</code> → "mk/make"、<code>status</code> → "岗位/状态"、<code>exec</code> → "函数图"），内容以规范表述为准。</p></div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–10 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-26</p>
+  <p>第 1–11 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-28</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
