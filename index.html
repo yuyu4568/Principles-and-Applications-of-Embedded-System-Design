@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b6e4f">
-<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–11 课）</title>
+<title>嵌入式系统设计原理与应用 · 课程笔记（第 1–13 课）</title>
 <style>
 :root {
   --bg: #f6f8f7;
@@ -121,7 +121,7 @@ footer a { color: var(--accent); }
 <header class="hero">
   <h1>嵌入式系统设计原理与应用 · 课程笔记</h1>
   <p>课程录音转写整理 · 已大幅扩充解析 · 适配手机阅读</p>
-  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换 · 第 10 课：进程控制：fork 与 vfork 进程创建 · 第 11 课：进程等待与退出 / 管道通信</p>
+  <p>第 1 课：概述与开发入门 · 第 2 课：用户管理与文件管理 · 第 3 课：文件操作进阶（mv/rm/权限/链接） · 第 4 课：网络配置 / 压缩打包 / 进程查看 / vi 编辑器 · 第 5 课：gcc 编译与 Makefile · 第 6 课：Samba 服务器与 Shell 编程 · 第 7 课：Shell 条件测试与流程控制 · 第 8 课：Linux 文件 I/O 函数 · 第 9 课：C 语言时间编程与格林威治时间转换 · 第 10 课：进程控制：fork 与 vfork 进程创建 · 第 11 课：进程等待与退出 / 管道通信 · 第 12 课：多线程技术：线程创建、退出与参数传递 · 第 13 课：网络编程基础：TCP/IP 协议与网络配置 · 第 13 课：网络编程基础：TCP/IP 协议与网络配置</p>
 </header>
 
 <div class="toc">
@@ -333,6 +333,57 @@ footer a { color: var(--accent); }
     <li><a href="#l11-appendix">进程通信与等待速查表</a></li>
     <li><a href="#l11-extra1">课件补充：第七章 PPT 原版管道程序与其他 IPC</a></li>
   </ol>
+
+  <h3>第 12 课：多线程技术：线程创建、退出与参数传递</h3>
+  <ol>
+    <li><a href="#l12-quick">本课重点速览</a></li>
+    <li><a href="#l12-review">课前复习：管道</a></li>
+    <li><a href="#l12-why">为什么需要线程 ★</a></li>
+    <li><a href="#l12-def">线程的定义与特点 ★</a></li>
+    <li><a href="#l12-vs">程序 vs 进程 vs 线程 ★</a></li>
+    <li><a href="#l12-rel">进程与线程的四条关系 ★</a></li>
+    <li><a href="#l12-tcb">TCB 与线程状态 ★</a></li>
+    <li><a href="#l12-app">应用场景</a></li>
+    <li><a href="#l12-create">pthread_create：创建线程 ★</a></li>
+    <li><a href="#l12-ex1">例 8.2.1-1：创建线程打印 pid 与 tid</a></li>
+    <li><a href="#l12-ex2">例 8.2.1-2：交替创建两个线程</a></li>
+    <li><a href="#l12-exit">pthread_exit：线程退出 ★</a></li>
+    <li><a href="#l12-argex">例 8.2.2-1：参数传递（重点）★</a></li>
+    <li><a href="#l12-join">pthread_join：线程等待 ★</a></li>
+    <li><a href="#l12-self">pthread_self：获取线程 ID</a></li>
+    <li><a href="#l12-cleanup">线程清除与取消（了解）</a></li>
+    <li><a href="#l12-code">完整可编译代码合集</a></li>
+    <li><a href="#l12-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l12-practice">课堂操作复盘</a></li>
+    <li><a href="#l12-quiz">复习自测题（含答案）</a></li>
+    <li><a href="#l12-appendix">线程函数速查表</a></li>
+  </ol>
+
+  <h3>第 13 课：网络编程基础：TCP/IP 协议与网络配置</h3>
+  <ol>
+    <li><a href="#l13-quick">本课重点速览</a></li>
+    <li><a href="#l13-diff">网络编程与普通程序的区别</a></li>
+    <li><a href="#l13-proto">协议：通信的"共同语言"</a></li>
+    <li><a href="#l13-osi">OSI 七层模型 ★</a></li>
+    <li><a href="#l13-tcpip">TCP/IP 四层与五层模型 ★</a></li>
+    <li><a href="#l13-layers">每一层到底在干什么 ★</a></li>
+    <li><a href="#l13-encap">数据封装与解封装 ★</a></li>
+    <li><a href="#l13-cmd">网络配置命令</a></li>
+    <li><a href="#l13-ip">IP 地址与 IPv4 / IPv6 ★</a></li>
+    <li><a href="#l13-class">IP 地址的五类划分 ★</a></li>
+    <li><a href="#l13-mask">子网掩码 ★</a></li>
+    <li><a href="#l13-basic">广播地址 / 网关 / MAC / DNS ★</a></li>
+    <li><a href="#l13-port">端口与常见服务 ★</a></li>
+    <li><a href="#l13-family">TCP/IP 协议族 ★</a></li>
+    <li><a href="#l13-handshake">三次握手（了解）</a></li>
+    <li><a href="#l13-socket">socket 编程流程（扩展，课件有、课堂略）</a></li>
+    <li><a href="#l13-pitfall">易错点复盘 ★</a></li>
+    <li><a href="#l13-practice">课堂操作复盘</a></li>
+    <li><a href="#l13-quiz">复习自测题（含答案）</a></li>
+    <li><a href="#l13-appendix">网络知识速查表</a></li>
+  </ol>
+
+  
 </div>
 
 <div class="card" id="quick">
@@ -7702,12 +7753,1075 @@ int main(int argc, char **argv)
   <div class="note"><p>本笔记依据课堂录音转写整理并扩充解析：<strong>转写中只念到的代码片段已补全为可直接编译运行的完整程序</strong>（wait / waitpid / 管道 / 命名管道 / 课后 4 道题各一份），并补充了 <code>status</code> 位布局图、<code>WIFEXITED</code> 等标准宏、命名管道 <code>open</code> 的阻塞语义、<code>SIGPIPE</code> 与 EOF 规则等老师未展开但考试与实战常考的内容。转写存在口语化与同音字误差（如 <code>wait</code> → "位的/被的"、<code>waitpid</code> → "位的 pid"、<code>pipe</code> → "派/广告/管道"、<code>mkfifo</code> → "mk/make"、<code>status</code> → "岗位/状态"、<code>exec</code> → "函数图"），内容以规范表述为准。</p></div>
 </div>
 
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 12 课 · 多线程技术：线程创建、退出与参数传递</h2><p style="color:#dff3ea;margin:0;">从为什么需要线程讲起：进程与线程的四条关系、TCB 与四种状态，再到 pthread_create、pthread_exit、pthread_join、pthread_self、pthread_cancel，五个课件原版例子含参数强转与交替创建。</p></div>
+
+<div class="card" id="l12-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>本课进入教材 <strong>第八章：多线程技术</strong>。先用十分钟复习上一章的管道（分类、特点、读写流程），然后回答一个根本问题：<strong>为什么有了进程还要线程</strong>？接着是本章的四组关系、线程的 TCB 与四状态、三种创建/退出/等待/取消函数，以及课件里五个完整例子——其中包括最容易考的<strong>参数传递</strong>（<code>argc/argv</code> + 强制类型转换）。</p><p>本课的核心结论只有一句：<strong>同一进程内的线程共享代码段、数据段和打开的文件，但各自拥有独立的寄存器和栈</strong>。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td>线程定义 ★</td><td>进程中的一条执行流程</td><td>CPU 调度的基本单位</td></tr>
+      <tr><td>程序/进程/线程 ★</td><td>静态 / 动态 / 更小的执行单元</td><td>硬盘文件 / 资源分配 / 调度执行</td></tr>
+      <tr><td>四条关系 ★</td><td>包含、资源共享、调度执行、稳定安全</td><td>线程崩→进程亡</td></tr>
+      <tr><td>线程状态 ★</td><td>就绪、运行、阻塞、终止</td><td>比进程的六状态简单</td></tr>
+      <tr><td>TCB</td><td>线程控制块，与 PCB 类似</td><td>tid vs pid</td></tr>
+      <tr><td><code>pthread_create</code> ★</td><td>四参数</td><td>第一个出 tid，第三个传函数名</td></tr>
+      <tr><td>编译</td><td>必须加 <code>-lpthread</code></td><td>pthread 不是 Linux 系统库</td></tr>
+      <tr><td><code>pthread_exit</code> ★</td><td>线程退出</td><td>参数是返回值</td></tr>
+      <tr><td><code>pthread_join</code> ★</td><td>阻塞等待线程结束</td><td>比 <code>sleep</code> 严谨</td></tr>
+      <tr><td><code>pthread_self</code></td><td>获取自己的 tid</td><td>配 <code>getpid</code> 一起打印</td></tr>
+      <tr><td><code>pthread_cancel</code></td><td>取消（杀死）线程</td><td>强制终止</td></tr>
+      <tr><td>参数传递 ★</td><td><code>(void *)i</code> → <code>long int</code> 强转</td><td>指针当整数用</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l12-review">
+  <h2>二、课前复习：管道</h2>
+  <h3>2.1 分类与特点</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类型</th><th>通信范围</th><th>是否可见</th></tr>
+      <tr><td>匿名管道 <code>pipe</code></td><td>有亲缘关系的进程</td><td>内存中，用完即毁</td></tr>
+      <tr><td>命名管道 <code>mkfifo</code></td><td>任意进程</td><td>文件系统里有节点</td></tr>
+  </table>
+  </div>
+  <p><strong>三个特点</strong>：</p>
+  <ol>
+    <li><strong>半双工</strong>：同一时刻数据只能一个方向流动（老师画的箭头：这一时刻左写右读，下一时刻可能反过来）。</li>
+    <li><strong>要双向就建两个管道</strong>。</li>
+    <li><strong>本质是文件</strong>：用 <code>read</code>/<code>write</code>/<code>close</code> 操作，但不是普通文件。</li>
+  </ol>
+  <h3>2.2 读写流程（老师提问的要点）</h3>
+<div class="flow">① pipe(fd)          先创建管道
+② fork()            再创建进程（子进程才能继承 fd）
+③ 关闭不用的一端     写 → close(fd[0])；读 → close(fd[1])
+④ write / read
+⑤ close 两端</div>
+  <div class="note"><p>关闭不是必须的（程序照样能跑），但<strong>不关就占着文件描述符</strong>，属于"能用但不严谨"。老师用"教室没人就把门打开，谁用谁进"来比喻资源释放。</p></div>
+</div>
+
+<div class="card" id="l12-why">
+  <h2>三、为什么需要线程 ★</h2>
+  <p>早期操作系统里<strong>没有线程概念</strong>，资源分配和调度都以<strong>进程</strong>为最小单位。但用进程做调度单位有两个弊端：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>弊端</th><th>说明</th></tr>
+      <tr><td><strong>切换开销大</strong></td><td>进程切换要换地址空间、页表、文件描述符表</td></tr>
+      <tr><td><strong>资源浪费</strong></td><td>同一份代码要并发执行时，多进程要复制多份资源</td></tr>
+  </table>
+  </div>
+  <p>于是<strong>线程</strong>应运而生：把"<strong>资源</strong>"和"<strong>执行调度</strong>"分开——</p>
+  <ul>
+    <li><strong>进程</strong>负责资源（内存、文件、设备）；</li>
+    <li><strong>线程</strong>负责执行（CPU 时间片）。</li>
+  </ul>
+</div>
+
+<div class="card" id="l12-def">
+  <h2>四、线程的定义与特点 ★</h2>
+  <h3>4.1 定义</h3>
+  <div class="note"><p><strong>线程是进程当中的一条执行流程</strong>，是比进程更轻量级的调度执行单位，是 <strong>CPU 调度的基本单位</strong>。</p></div>
+  <h3>4.2 共享什么、独立什么 ★</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>共享（同一进程内的线程）</th><th>独立（每个线程私有）</th></tr>
+      <tr><td>代码段</td><td><strong>寄存器</strong></td></tr>
+      <tr><td>数据段（全局变量）</td><td><strong>栈</strong></td></tr>
+      <tr><td>打开的文件（fd 表）</td><td>程序计数器（PC）</td></tr>
+      <tr><td>内存地址空间</td><td>线程 ID（tid）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>独立的寄存器和栈，保证了线程的<strong>控制流相对独立</strong>——就像 51 单片机里每个中断都有自己的现场。</p></div>
+  <h3>4.3 主线程</h3>
+  <p><strong>每个进程至少有一个线程</strong>，这个线程称为<strong>主线程</strong>。当进程创建一个线程时，原来的进程就"变成"了主线程，新线程与它共用一段地址空间。</p>
+<div class="flow">进程（主线程 tid=A） ──pthread_create──→ 线程（tid=B）
+        └──────── 共用同一地址空间 ────────┘</div>
+</div>
+
+<div class="card" id="l12-vs">
+  <h2>五、程序 vs 进程 vs 线程 ★</h2>
+  <p>课件里这张对比表是必背的：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比项</th><th>程序</th><th>进程</th><th>线程</th></tr>
+      <tr><td>本质</td><td><strong>静态</strong>的指令集合</td><td><strong>动态</strong>的一次执行</td><td>进程内的执行单元</td></tr>
+      <tr><td>存放</td><td>硬盘（存储器）</td><td>内存</td><td>内存（进程地址空间内）</td></tr>
+      <tr><td>资源</td><td>不占内存资源</td><td><strong>资源分配</strong>的基本单位</td><td><strong>CPU 调度</strong>的基本单位</td></tr>
+      <tr><td>独立性</td><td>—</td><td>有独立地址空间、fd</td><td>共享进程资源，仅少量私有</td></tr>
+      <tr><td>开销</td><td>—</td><td>大（切换贵）</td><td>小（切换便宜）</td></tr>
+      <tr><td>别称</td><td>—</td><td>—</td><td><strong>轻量级进程</strong></td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l12-rel">
+  <h2>六、进程与线程的四条关系 ★</h2>
+  <p>课件里没有，这是老师自己总结的，考试很爱考：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>关系</th><th>含义</th></tr>
+      <tr><td><strong>① 包含</strong></td><td>进程包含线程；线程由进程创建，<strong>依赖进程存在</strong>；进程终止，线程随之终止</td></tr>
+      <tr><td><strong>② 资源共享</strong></td><td>同进程内线程共享代码段、数据段、打开文件；但每个线程有自己的栈和 PC</td></tr>
+      <tr><td><strong>③ 调度与执行</strong></td><td><strong>进程分配资源，线程被调度执行</strong>（先分配、再调度、后执行）</td></tr>
+      <tr><td><strong>④ 稳定性与安全</strong></td><td><strong>一个线程崩溃可能导致整个进程终止</strong>；而多进程之间互不影响</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师的分班类比：一个专业（进程）招 90 人、分 3 个班（线程组），班内再分 6 人小组（线程）——<strong>分班是"分配"，组内分工是"调度"</strong>。</p></div>
+</div>
+
+<div class="card" id="l12-tcb">
+  <h2>七、TCB 与线程状态 ★</h2>
+  <h3>7.1 TCB（线程控制块）</h3>
+  <ul>
+    <li>进程有 <strong>PCB</strong>，线程有 <strong>TCB</strong>（Thread Control Block）。</li>
+    <li>TCB 的内容与 PCB 基本一致：优先级、时间片、休眠时间、现场保护区……</li>
+    <li><strong>内核视角看，线程和进程没有本质区别</strong>：CPU 都给它们分时间片，都通过 PCB 来调度。</li>
+  </ul>
+  <h3>7.2 四种状态（对比进程的六种）</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>线程状态</th><th>含义</th></tr>
+      <tr><td><strong>就绪</strong></td><td>已创建，进入线程队列等 CPU</td></tr>
+      <tr><td><strong>运行</strong></td><td>拿到时间片，正在跑（单核只能一个，多核可多个）</td></tr>
+      <tr><td><strong>阻塞</strong></td><td>因某原因放弃 CPU，暂时停止</td></tr>
+      <tr><td><strong>终止</strong></td><td>从线程函数返回 / <code>pthread_exit</code> / 被取消 / 随进程终止</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>进程是<strong>六种</strong>（运行、可中断、不可中断、僵死、停止、销毁），线程简化成<strong>四种</strong>——没有僵死和停止。</p></div>
+</div>
+
+<div class="card" id="l12-app">
+  <h2>八、应用场景</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模式</th><th>适用</th><th>例子</th></tr>
+      <tr><td><strong>多线程</strong></td><td>高并发、频繁数据共享</td><td>Web 服务器、GUI、多线程下载</td></tr>
+      <tr><td><strong>多进程</strong></td><td>高隔离、性能稳定</td><td>数据库、科学计算</td></tr>
+      <tr><td><strong>混合</strong></td><td>兼顾性能与稳定</td><td>多进程 + 线程池（实际开发最常见）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师举的例子：教务系统选课，白天访问量大就卡，晚上人少了就流畅——这就是<strong>并发量</strong>对服务器的影响。</p></div>
+</div>
+
+<div class="card" id="l12-create">
+  <h2>九、pthread_create：创建线程 ★</h2>
+  <h3>9.1 函数原型</h3>
+<div class="flow">#include &lt;pthread.h&gt;
+
+int pthread_create(pthread_t *thread,
+                   const pthread_attr_t *attr,
+                   void *(*start_routine)(void *),
+                   void *arg);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th><th>常用取值</th></tr>
+      <tr><td><code>thread</code></td><td><strong>传出参数</strong>，拿到新线程的 tid</td><td><code>&amp;tid</code></td></tr>
+      <tr><td><code>attr</code></td><td>线程属性（调度策略等）</td><td><strong>通常 <code>NULL</code></strong>（默认属性）</td></tr>
+      <tr><td><code>start_routine</code></td><td>线程执行函数的<strong>函数名</strong></td><td><code>tfn</code></td></tr>
+      <tr><td><code>arg</code></td><td>传给线程函数的参数</td><td><code>NULL</code> 或强转的指针</td></tr>
+      <tr><td>返回值</td><td>成功 0，失败返回错误码</td><td><code>ret != 0</code> 即失败</td></tr>
+  </table>
+  </div>
+  <h3>9.2 编译必须加 -lpthread ★</h3>
+<div class="flow">gcc Example8.2.1-1.c -o Example8.2.1-1 -lpthread</div>
+  <div class="note"><p>原因：<strong>pthread 库不属于 Linux 系统库</strong>，是独立的线程库，所以链接时要显式指定（<code>-l</code> 后面跟库名）。</p></div>
+</div>
+
+<div class="card" id="l12-ex1">
+  <h2>十、例 8.2.1-1：创建线程打印 pid 与 tid</h2>
+<div class="flow">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;string.h&gt;
+
+void *tfn(void *arg)
+{
+    printf("tfn--pid=%d,tid=%lu\n", getpid(), pthread_self());
+    return (void *)0;
+}
+
+int main()
+{
+    pthread_t tid;
+    printf("main--pid=%d,tid=%lu\n", getpid(), pthread_self());
+
+    int ret = pthread_create(&amp;tid, NULL, tfn, NULL);
+    if (ret != 0) {
+        fprintf(stderr, "pthread_create error:%s\n", strerror(ret));
+        exit(1);
+    }
+
+    sleep(1);      /* 让子线程有机会跑完 */
+    return 0;
+}</div>
+<div class="flow">main--pid=8519,tid=140659556202304
+tfn--pid=8519,tid=140659547682560</div>
+  <p><strong>三个观察点</strong>：</p>
+  <ol>
+    <li><strong>pid 相同</strong>：两个线程同属一个进程，<code>getpid()</code> 返回同一个值。</li>
+    <li><strong>tid 不同</strong>：主线程和子线程各有自己的 tid，都是很大的数（<code>unsigned long</code>）。</li>
+    <li><strong>为什么必须 <code>sleep(1)</code></strong>：主线程 <code>return 0</code> 会结束<strong>整个进程</strong>，若子线程还没跑就被销毁，什么也打印不出来。</li>
+  </ol>
+  <div class="note"><p>tid 用 <code>%lu</code> 打印，因为 <code>pthread_self()</code> 返回 <code>pthread_t</code>（本质是无符号长整型）。老师强调：<strong>tid 必须用 <code>long</code>，用 <code>int</code> 装不下</strong>。</p></div>
+</div>
+
+<div class="card" id="l12-ex2">
+  <h2>十一、例 8.2.1-2：交替创建两个线程</h2>
+<div class="flow">#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;unistd.h&gt;
+
+void *myThread1(void)
+{
+    int i;
+    for (i = 0; i &lt; 100; i++) {
+        printf("This is the 1st pthread, created by zieckey.\n");
+        sleep(1);
+    }
+    return NULL;
+}
+
+void *myThread2(void)
+{
+    int i;
+    for (i = 0; i &lt; 100; i++) {
+        printf("This is the 2st pthread, created by zieckey.\n");
+        sleep(1);
+    }
+    return NULL;
+}
+
+int main()
+{
+    int ret = 0;
+    pthread_t id1, id2;
+
+    ret = pthread_create(&amp;id1, NULL, (void *)myThread1, NULL);
+    if (ret) {
+        printf("Create pthread error!\n");
+        return 1;
+    }
+
+    ret = pthread_create(&amp;id2, NULL, (void *)myThread2, NULL);
+    if (ret) {
+        printf("Create pthread error!\n");
+        return 1;
+    }
+
+    pthread_join(id1, NULL);   /* 挂起等待线程 1 */
+    pthread_join(id2, NULL);   /* 挂起等待线程 2 */
+
+    return 0;
+}</div>
+<div class="flow">This is the 1st pthread, created by zieckey.
+This is the 2st pthread, created by zieckey.
+This is the 2st pthread, created by zieckey.
+This is the 1st pthread, created by zieckey.
+...</div>
+  <div class="note"><p><strong>注意输出并不严格交替</strong>（可能出现 1-2-2-1）。原因：<code>sleep(1)</code> 只是"让出 CPU 一段时间"，<strong>并不能保证调度顺序</strong>。要严格交替得用<strong>信号量/互斥锁</strong>同步，而不是靠 <code>sleep</code>。</p><p>删掉两个 <code>sleep(1)</code> 会怎样？两个线程疯狂抢 CPU，输出顺序完全随机，但<strong>总数不变</strong>（各 100 次）。</p></div>
+</div>
+
+<div class="card" id="l12-exit">
+  <h2>十二、pthread_exit：线程退出 ★</h2>
+<div class="flow">#include &lt;pthread.h&gt;
+
+void pthread_exit(void *rval_ptr);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>作用</td><td>终止<strong>调用它的那个线程</strong></td></tr>
+      <tr><td><code>rval_ptr</code></td><td>线程的返回值，可由 <code>pthread_join</code> 获取</td></tr>
+      <tr><td>返回值</td><td>无（不返回）</td></tr>
+  </table>
+  </div>
+  <p>线程的三种正常退出方式：</p>
+  <ol>
+    <li>从线程函数 <strong><code>return</code></strong>；</li>
+    <li>调用 <strong><code>pthread_exit</code></strong>；</li>
+    <li>被<strong>取消</strong>（<code>pthread_cancel</code>）或随进程终止。</li>
+  </ol>
+  <div class="note"><p>⚠️ <strong>不要在线程里调 <code>exit()</code></strong>：<code>exit</code> 结束的是<strong>整个进程</strong>，所有线程一起死。</p></div>
+</div>
+
+<div class="card" id="l12-argex">
+  <h2>十三、例 8.2.2-1：参数传递（重点）★</h2>
+<div class="flow">#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+
+void *tfn(void *arg)
+{
+    long int i;
+    i = (long int)arg;              /* 指针 → 整数，强转回来 */
+
+    if (i == 2)                     /* i=2 的线程直接退出 */
+        pthread_exit(NULL);
+
+    sleep(i);                       /* 用 i 区分每个线程 */
+    printf("I'm %ldth thread, Thread_ID = %lu\n", i + 1, pthread_self());
+    return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+    long int n = 5, i;
+    pthread_t tid;
+
+    if (argc == 2)
+        n = atoi(argv[1]);          /* 命令行参数指定线程数量 */
+
+    for (i = 0; i &lt; n; i++) {
+        /* 把 i 当指针传进去，在 tfn 中再强转回整型 */
+        pthread_create(&amp;tid, NULL, tfn, (void *)i);
+    }
+
+    sleep(n);
+    printf("I am main, I'm a thread!\n"
+           "main_thread_ID = %lu\n", pthread_self());
+    return 0;
+}</div>
+<div class="flow">gcc Example8.2.2-1.c -o Example8.2.2-1 -lpthread
+./Example8.2.2-1
+I'm 1th thread, Thread_ID = 140116169053952
+I'm 2th thread, Thread_ID = 140116160661248
+I'm 4th thread, Thread_ID = 140116143875840
+I'm 5th thread, Thread_ID = 140116135483136
+I am main, I'm a thread!
+main_thread_ID = 140116177573696</div>
+  <p><strong>要点</strong>：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>位置</th><th>做法</th><th>说明</th></tr>
+      <tr><td><code>main</code> 里</td><td><code>(void *)i</code></td><td>把整数 <code>i</code> <strong>当指针</strong>传进去</td></tr>
+      <tr><td><code>tfn</code> 里</td><td><code>(long int)arg</code></td><td>再<strong>强转回整数</strong></td></tr>
+      <tr><td><code>argc/argv</code></td><td><code>atoi(argv[1])</code></td><td>命令行决定创建几个线程</td></tr>
+      <tr><td><code>i == 2</code></td><td><code>pthread_exit</code></td><td>第 3 个线程直接退出，所以输出里没有 "3th"</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>为什么能这么传？因为 <code>void *</code> 和 <code>long</code> 在 64 位上宽度相同，把整数塞进指针再取出来是<strong>惯用法</strong>（虽然不优雅）。</p><p>更常见的做法是传<strong>结构体地址</strong>，但要注意生命周期——不能传局部变量的地址给线程。</p></div>
+</div>
+
+<div class="card" id="l12-join">
+  <h2>十四、pthread_join：线程等待 ★</h2>
+<div class="flow">#include &lt;pthread.h&gt;
+
+int pthread_join(pthread_t tid, void **rval_ptr);</div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>参数</th><th>含义</th></tr>
+      <tr><td><code>tid</code></td><td>要等待的线程 ID</td></tr>
+      <tr><td><code>rval_ptr</code></td><td>接收线程返回值；不需要就传 <code>NULL</code></td></tr>
+      <tr><td>作用</td><td><strong>阻塞</strong>调用线程，直到指定线程结束</td></tr>
+  </table>
+  </div>
+  <h3>为什么用 join 而不是 sleep</h3>
+  <p>之前例子用 <code>sleep(1)</code> 等子线程，<strong>不可靠</strong>——sleep 只是"大概等一会儿"，线程跑多久它并不管。</p>
+<div class="flow">/* 例 8.2.3-1：靠 sleep 不靠谱 */
+int main(void)
+{
+    pthread_t tid;
+    pthread_create(&amp;tid, NULL, run, NULL);
+    sleep(1);          /* 主线程只等 1 秒，然后进程结束，线程被强制终止 */
+    return 0;
+}
+/* 输出只有一行：i=0 */</div>
+<div class="flow">/* 例 8.2.3-2：改用 join，线程能完整跑 */
+int main(void)
+{
+    pthread_t tid;
+    pthread_create(&amp;tid, NULL, run, NULL);
+    pthread_join(tid, NULL);   /* 一直等到线程结束 */
+    return 0;
+}</div>
+  <div class="note"><p>这两个例子的对比就是本章的"考点"：<strong>主线程结束 → 整个进程结束 → 其他线程被强制终止</strong>。所以"线程随进程终止而终止"。</p></div>
+</div>
+
+<div class="card" id="l12-self">
+  <h2>十五、pthread_self：获取线程 ID</h2>
+<div class="flow">pthread_t pthread_self(void);</div>
+  <ul>
+    <li>无需参数，返回调用线程的 tid。</li>
+    <li>与 <code>getpid()</code> 配合：一个打进程号，一个打线程号。</li>
+  </ul>
+<div class="flow">printf("pid=%d, tid=%lu\n", getpid(), pthread_self());</div>
+</div>
+
+<div class="card" id="l12-cleanup">
+  <h2>十六、线程清除与取消（了解）</h2>
+  <h3>16.1 清除函数</h3>
+<div class="flow">void pthread_cleanup_push(void (*routine)(void *), void *arg);
+void pthread_cleanup_pop(int execute);</div>
+  <ul>
+    <li><code>push</code> 把清除函数<strong>压入清除栈</strong>，<code>pop</code> 弹出。</li>
+    <li>只有位于这对函数<strong>之间</strong>的代码，在线程退出（<code>pthread_exit</code>、被取消）时才会触发清除函数。</li>
+  </ul>
+  <h3>16.2 取消线程</h3>
+<div class="flow">int pthread_cancel(pthread_t tid);</div>
+<div class="flow">/* 例：5 秒后取消线程 */
+void *run(void *arg)
+{
+    int i = 0;
+    while (1) {                       /* 没有结束条件 */
+        printf("pthread i = %d\n", i++);
+        sleep(1);
+    }
+    return NULL;
+}
+
+int main(void)
+{
+    pthread_t tid;
+    pthread_create(&amp;tid, NULL, run, NULL);
+    sleep(5);                         /* 让线程跑 5 轮 */
+    pthread_cancel(tid);              /* 强制取消 */
+    return 0;
+}</div>
+  <div class="note"><p>输出 0–4 共五轮，第 5 秒被 <code>pthread_cancel</code> 强制结束。</p></div>
+</div>
+
+<div class="card" id="l12-code">
+  <h2>十七、完整可编译代码合集</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>文件</th><th>功能</th><th>关键函数</th></tr>
+      <tr><td><code>thread_basic.c</code></td><td>创建线程，打印 pid/tid</td><td><code>pthread_create</code>、<code>pthread_self</code></td></tr>
+      <tr><td><code>thread_circle.c</code></td><td>交替创建两个线程</td><td><code>pthread_join</code></td></tr>
+      <tr><td><code>thread_arg.c</code></td><td>命令行传参 + 强转</td><td><code>atoi</code>、<code>(void *)i</code></td></tr>
+      <tr><td><code>thread_exit.c</code></td><td>指定线程提前退出</td><td><code>pthread_exit</code></td></tr>
+      <tr><td><code>thread_join.c</code></td><td>join 等待线程完整运行</td><td><code>pthread_join</code></td></tr>
+      <tr><td><code>thread_cancel.c</code></td><td>5 秒后取消线程</td><td><code>pthread_cancel</code></td></tr>
+  </table>
+  </div>
+<div class="flow">gcc 文件名.c -o 文件名 -lpthread      # 一定带 -lpthread</div>
+</div>
+
+<div class="card" id="l12-pitfall">
+  <h2>十八、易错点复盘 ★</h2>
+  <ol>
+    <li><strong>编译忘加 <code>-lpthread</code></strong>：报 <code>undefined reference to pthread_create</code>。</li>
+    <li><strong>主线程提前 return</strong>：子线程还没跑就被销毁 → 什么也看不到。要么 <code>sleep</code>，要么 <code>join</code>。</li>
+    <li><strong>以为 <code>sleep</code> 能保证顺序</strong>：不能，只保证"让出 CPU 一段时间"，顺序仍由内核决定。</li>
+    <li><strong>线程里用 <code>exit()</code></strong>：会结束整个进程，所有线程一起死。要用 <code>pthread_exit</code>。</li>
+    <li><strong>tid 用 <code>int</code> 打印</strong>：<code>pthread_t</code> 是 64 位无符号，必须 <code>%lu</code>。</li>
+    <li><strong><code>pthread_create</code> 返回值判断错误</strong>：成功返回 <strong>0</strong>，失败返回<strong>错误码</strong>（不是 −1），所以写 <code>if (ret != 0)</code>。</li>
+    <li><strong>把局部变量地址传给线程</strong>：函数返回后地址失效，线程读到的是垃圾值。</li>
+    <li><strong><code>pthread_join</code> 前线程已退出</strong>：仍能回收，不会出错；但不 join 会造成资源泄漏（类似僵尸进程）。</li>
+    <li><strong>混淆 pid 与 tid</strong>：同一进程的所有线程 <strong>pid 相同</strong>，<strong>tid 不同</strong>。</li>
+    <li><strong>以为线程是独立运行的</strong>：线程共享进程的数据段，一个线程改了全局变量，其他线程立刻可见。</li>
+  </ol>
+</div>
+
+<div class="card" id="l12-practice">
+  <h2>十九、课堂操作复盘</h2>
+  <ol>
+    <li>复习管道：分类、半双工、读写流程、close 顺序。</li>
+    <li>写 <code>thread_basic.c</code>，编译加 <code>-lpthread</code>，观察 pid 相同、tid 不同。</li>
+    <li>删掉 <code>sleep(1)</code> 再跑一次，发现子线程输出消失 → 理解"主线程退出即进程退出"。</li>
+    <li>写 <code>thread_circle.c</code>，观察输出<strong>不严格交替</strong>，再改用 <code>pthread_join</code>。</li>
+    <li>写 <code>thread_arg.c</code>，用 <code>./a.out 3</code> 传参，观察只创建 3 个线程。</li>
+    <li>写 <code>thread_exit.c</code>，让 <code>i==2</code> 的线程提前退出，验证输出里没有 "3th"。</li>
+    <li>写 <code>thread_cancel.c</code>，5 秒后取消，观察只打印 0–4。</li>
+  </ol>
+</div>
+
+<div class="card" id="l12-quiz">
+  <h2>二十、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>为什么引入线程？它解决了进程的什么问题？</li>
+    <li>线程共享进程的哪些资源？各自独立拥有什么？</li>
+    <li>程序、进程、线程三者的区别是什么？</li>
+    <li>进程与线程的"四条关系"分别是什么？</li>
+    <li>线程有哪四种状态？</li>
+    <li><code>pthread_create</code> 的四个参数分别是什么？编译要注意什么？</li>
+    <li><code>pthread_exit</code> 与 <code>exit</code> 有什么区别？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>早期以进程为调度单位，切换开销大、资源浪费。线程把"资源"与"执行调度"分开，切换更轻量，提高 CPU 利用率与并发能力。</li>
+    <li>共享：代码段、数据段、打开的文件、地址空间。独立：寄存器、栈、程序计数器、线程 ID。</li>
+    <li>程序是静态的指令集合（存硬盘）；进程是程序的一次动态执行（资源分配单位）；线程是进程内的执行单元（CPU 调度单位），又称轻量级进程。</li>
+    <li>①包含（进程含线程，进程亡则线程亡）；②资源共享（线程共享进程资源，但有自己的栈/PC）；③调度与执行（进程分配资源、线程调度执行）；④稳定性（一个线程崩溃可能拖垮整个进程，多进程之间互不影响）。</li>
+    <li>就绪、运行、阻塞、终止。</li>
+    <li><code>pthread_t *thread</code>（出 tid）、<code>const pthread_attr_t *attr</code>（通常 NULL）、<code>void *(*start_routine)(void *)</code>（线程函数名）、<code>void *arg</code>（参数）。编译要加 <code>-lpthread</code>。</li>
+    <li><code>pthread_exit</code> 只结束<strong>当前线程</strong>；<code>exit</code> 结束<strong>整个进程</strong>，所有线程一起终止。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li>为什么例 8.2.1-1 里要写 <code>sleep(1)</code>？删掉会怎样？</li>
+    <li><code>pthread_join</code> 和 <code>sleep</code> 等待线程有什么区别？</li>
+    <li>例 8.2.2-1 为什么输出里没有 "3th thread"？</li>
+    <li>写一段程序：创建 3 个线程，每个线程打印自己的 tid，主线程用 <code>join</code> 等待全部结束。</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li>让子线程有机会执行。删掉后主线程立刻 <code>return 0</code>，进程结束，子线程被销毁，可能一条都不打印。</li>
+    <li><code>join</code> 是<strong>阻塞等待指定线程真正结束</strong>，可靠；<code>sleep</code> 只是固定延时，线程没跑完也会被进程带走。</li>
+    <li>因为 <code>tfn</code> 里 <code>if (i == 2) pthread_exit(NULL);</code>——第 3 个线程（i=2）直接退出，没有打印。</li>
+    <li>示例：</li>
+  </ol>
+<div class="flow">#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;unistd.h&gt;
+
+void *run(void *arg)
+{
+    printf("thread %ld, tid=%lu\n", (long)arg, pthread_self());
+    return NULL;
+}
+
+int main(void)
+{
+    pthread_t tid[3];
+    long i;
+    for (i = 0; i &lt; 3; i++)
+        pthread_create(&amp;tid[i], NULL, run, (void *)i);
+    for (i = 0; i &lt; 3; i++)
+        pthread_join(tid[i], NULL);
+    return 0;
+}</div>
+</div>
+
+<div class="card" id="l12-appendix">
+  <h2>二十一、线程函数速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>作用</th><th>成功 / 失败</th></tr>
+      <tr><td><code>pthread_create</code></td><td><code>int pthread_create(pthread_t *tid, const pthread_attr_t *attr, void *(*fn)(void *), void *arg)</code></td><td>创建线程</td><td>0 / 错误码</td></tr>
+      <tr><td><code>pthread_exit</code></td><td><code>void pthread_exit(void *rval_ptr)</code></td><td>退出当前线程</td><td>不返回</td></tr>
+      <tr><td><code>pthread_join</code></td><td><code>int pthread_join(pthread_t tid, void **rval_ptr)</code></td><td>阻塞等待线程结束</td><td>0 / 错误码</td></tr>
+      <tr><td><code>pthread_self</code></td><td><code>pthread_t pthread_self(void)</code></td><td>取自己的 tid</td><td>tid</td></tr>
+      <tr><td><code>pthread_cancel</code></td><td><code>int pthread_cancel(pthread_t tid)</code></td><td>取消线程</td><td>0 / 错误码</td></tr>
+      <tr><td><code>pthread_cleanup_push</code></td><td><code>void pthread_cleanup_push(void (*fn)(void *), void *arg)</code></td><td>压入清除函数</td><td>—</td></tr>
+      <tr><td><code>pthread_cleanup_pop</code></td><td><code>void pthread_cleanup_pop(int execute)</code></td><td>弹出清除函数</td><td>—</td></tr>
+      <tr><td><code>getpid</code></td><td><code>pid_t getpid(void)</code></td><td>取进程 PID</td><td>PID</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>概念</th><th>说明</th></tr>
+      <tr><td><code>pthread_t</code></td><td>线程 ID 类型（无符号长整型），打印用 <code>%lu</code></td></tr>
+      <tr><td><code>-lpthread</code></td><td>链接线程库，编译必加</td></tr>
+      <tr><td>主线程</td><td>进程创建时自带的那条线程</td></tr>
+      <tr><td>tid / pid</td><td>线程 ID / 进程 ID，同一进程内 pid 相同、tid 不同</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理，并按第 15 次课课件（第 8 章多线程技术）校对代码：<strong>课件里的五个例子已完整还原</strong>（8.2.1-1、8.2.1-2、8.2.2-1、8.2.3-1、8.2.3-2），输出与课件一致。转写存在口语化与同音字误差（如 <code>pthread</code> → "P three"、<code>tid</code> → "天体"、<code>join</code> → "正"、<code>cancel</code> → "pencil"），内容以规范表述为准。</p></div>
+</div>
+
+<div class="card" style="background:#0b6e4f;color:#fff;"><h2 style="color:#fff;border-color:#fff;margin-top:0;">第 13 课 · 网络编程基础：TCP/IP 协议与网络配置</h2><p style="color:#dff3ea;margin:0;">从网络程序与普通程序的区别讲起，梳理 OSI 七层与 TCP/IP 四层/五层、数据封装解封装、netstat 与 ip 命令、IP 五类划分、子网掩码、网关/MAC/DNS、端口与协议族，最后补 socket 编程流程与三次握手。</p></div>
+
+<div class="card" id="l13-quick">
+  <h2>一、本课重点速览</h2>
+  <div class="note"><p>本课进入教材 <strong>第九章：网络编程</strong>，是理论课的最后一块。老师没有直接讲 socket 代码，而是先把"地基"打牢：<strong>网络程序与普通程序的区别 → 协议为什么存在 → OSI 七层 / TCP-IP 四层 / 五层模型 → 数据封装与解封装 → 网络配置命令 → IP 地址分类 → 子网掩码、网关、MAC、DNS、端口 → TCP/IP 协议族 → 三次握手</strong>。</p><p>一句话总结本课：<strong>网络编程 = 两个进程隔着网线、按同一套协议、通过端口对话</strong>。★ 为课堂重点，其余为扩展解析。</p></div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>模块</th><th>关键内容</th><th>记忆关键词</th></tr>
+      <tr><td>网络程序特点 ★</td><td>客户端 + 服务器，靠<strong>端口</strong>通信</td><td>先启动服务器，再启动客户端</td></tr>
+      <tr><td>协议</td><td>通信双方共同遵守的"语言"</td><td>说中文的和说英语的聊不起来</td></tr>
+      <tr><td>OSI 七层 ★</td><td>应用/表示/会话/传输/网络/链路/物理</td><td>从上到下</td></tr>
+      <tr><td>TCP/IP 四层 ★</td><td>应用/传输/网络/网络接口</td><td>七层合并而来</td></tr>
+      <tr><td>五层模型</td><td>应用/传输/网络/链路/物理</td><td>教学最常用</td></tr>
+      <tr><td>封装与解封装 ★</td><td>每层加一个头，收方逐层剥掉</td><td>APP→TCP→IP→以太网</td></tr>
+      <tr><td>网络命令</td><td><code>netstat</code>、<code>ip</code>、<code>who</code>、<code>telnet</code></td><td><code>-a -i -r -s -t -u</code></td></tr>
+      <tr><td>IPv4/IPv6 ★</td><td>32 位点分十进制 / 128 位</td><td>4 段×8 位 / 8 组×16 位</td></tr>
+      <tr><td>五类地址 ★</td><td>A/B/C/D/E，靠<strong>前几位</strong>区分</td><td>0 开头 A、10 开头 B、110 开头 C</td></tr>
+      <tr><td>私有地址 ★</td><td>10.x、172.16–31.x、192.168.x</td><td>内网专用，不外网路由</td></tr>
+      <tr><td>子网掩码 ★</td><td>网络位全 1，主机位全 0</td><td>A:255.0.0.0 / B:255.255.0.0 / C:255.255.255.0</td></tr>
+      <tr><td>端口 ★</td><td>0–1023 公认、1024–49151 注册、49152–65535 动态</td><td>80/21/22/25/445</td></tr>
+      <tr><td>协议族</td><td>TCP、UDP、IP、ICMP、ARP</td><td>各自负责一件事</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l13-diff">
+  <h2>二、网络编程与普通程序的区别</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>对比</th><th>普通程序</th><th>网络程序</th></tr>
+      <tr><td>运行位置</td><td>本机（PC 或单片机）</td><td><strong>至少两台机器</strong>：客户端 + 服务器</td></tr>
+      <tr><td>通信方式</td><td>函数调用、变量传递</td><td><strong>通过网络、按协议、走端口</strong></td></tr>
+      <tr><td>启动顺序</td><td>直接运行</td><td><strong>先启动服务器（监听），再启动客户端（连接）</strong></td></tr>
+      <tr><td>数据方向</td><td>内存内</td><td>上传/下载（发送/接收）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师用"门"来比喻端口：门开着，室内外才能通气（通信）；门关着，数据进不来。</p><p>这和上一章的<strong>命名管道</strong>很像：都是"先起服务端，再起客户端"，只是管道走本机内存，网络走网线。</p></div>
+</div>
+
+<div class="card" id="l13-proto">
+  <h2>三、协议：通信的"共同语言"</h2>
+  <p><strong>协议（Protocol）就是通信双方约定好的一套规则。</strong></p>
+  <p>老师说得很直白：只会中文的人和只会英语的人，不用共同语言就聊不到一起。计算机也一样——服务器和客户端必须用<strong>同一套协议</strong>，才能正确解析对方发来的 0/1。</p>
+  <div class="note"><p>所以"TCP/IP 协议"其实<strong>不是一个协议，而是一个协议族</strong>（TCP、UDP、IP、ICMP、ARP……），只是习惯上用最核心的两个来命名。</p></div>
+</div>
+
+<div class="card" id="l13-osi">
+  <h2>四、OSI 七层模型 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>层</th><th>名称</th><th>主要职责</th><th>典型例子</th></tr>
+      <tr><td>7</td><td><strong>应用层</strong></td><td>面向用户的网络服务</td><td>HTTP、FTP、SMTP、DNS</td></tr>
+      <tr><td>6</td><td><strong>表示层</strong></td><td>数据格式化、<strong>加密解密</strong>、压缩</td><td>编码转换、SSL</td></tr>
+      <tr><td>5</td><td><strong>会话层</strong></td><td>建立、管理、终止会话</td><td>会话控制</td></tr>
+      <tr><td>4</td><td><strong>传输层</strong></td><td><strong>端到端</strong>通信、端口管理</td><td><strong>TCP</strong>、UDP</td></tr>
+      <tr><td>3</td><td><strong>网络层</strong></td><td><strong>路由选择</strong>、逻辑地址（IP）、分组转发</td><td><strong>IP</strong>、ICMP</td></tr>
+      <tr><td>2</td><td><strong>数据链路层</strong></td><td>把比特流<strong>封装成帧</strong>、物理地址（MAC）、差错校验</td><td>以太网、ARP</td></tr>
+      <tr><td>1</td><td><strong>物理层</strong></td><td>在物理介质上传输<strong>比特流</strong>（0/1）</td><td>网线、光纤、无线电波</td></tr>
+  </table>
+  </div>
+  <h3>记忆口诀</h3>
+<div class="flow">应表会传网数物
+应用 表示 会话 传输 网络 数据链路 物理</div>
+  <div class="note"><p>老师强调：<strong>第 1 层是看得见摸得着的</strong>（电缆、光纤、电磁波），<strong>第 7 层才面向用户</strong>（微信、QQ），中间 2–6 层全是"看不见的底层逻辑"。</p></div>
+</div>
+
+<div class="card" id="l13-tcpip">
+  <h2>五、TCP/IP 四层与五层模型 ★</h2>
+  <h3>5.1 三种模型的对应关系</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>OSI 七层</th><th>TCP/IP 四层</th><th>五层（教学）</th></tr>
+      <tr><td>应用层 + 表示层 + 会话层</td><td><strong>应用层</strong></td><td>应用层</td></tr>
+      <tr><td>传输层</td><td><strong>传输层</strong></td><td>传输层</td></tr>
+      <tr><td>网络层</td><td><strong>网络层</strong>（互联网层）</td><td>网络层</td></tr>
+      <tr><td>数据链路层 + 物理层</td><td><strong>网络接口层</strong></td><td>数据链路层</td></tr>
+      <tr><td>—</td><td>—</td><td>物理层</td></tr>
+  </table>
+  </div>
+  <h3>5.2 合并规则</h3>
+  <ul>
+    <li><strong>四层模型</strong>：上三层（应用/表示/会话）合并为"应用层"；下两层（链路/物理）合并为"网络接口层"。</li>
+    <li><strong>五层模型</strong>：只合并上三层为"应用层"，下面四层保持独立（链路层、物理层分开），<strong>教学与考试最常用</strong>。</li>
+  </ul>
+</div>
+
+<div class="card" id="l13-layers">
+  <h2>六、每一层到底在干什么 ★</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>层</th><th>一句话职责</th><th>关键词</th></tr>
+      <tr><td>应用层</td><td>给用户提供网络服务</td><td>微信、浏览器、邮件</td></tr>
+      <tr><td>表示层</td><td>数据格式化、加解密、压缩</td><td>编码、调制解调</td></tr>
+      <tr><td>会话层</td><td>管会话的建立/维护/结束</td><td>一次对话的生命周期</td></tr>
+      <tr><td>传输层</td><td>端到端可靠传输、端口管理</td><td>TCP 保证不丢不乱</td></tr>
+      <tr><td>网络层</td><td>决定数据"怎么走"（路由）、IP 寻址</td><td>一层层跳转</td></tr>
+      <tr><td>数据链路层</td><td>把比特打成"帧"、MAC 寻址、差错校验</td><td>帧头帧尾、CRC</td></tr>
+      <tr><td>物理层</td><td>真的把 0/1 送出去</td><td>电信号、光信号</td></tr>
+  </table>
+  </div>
+  <h3>6.1 关于"帧"（数据链路层）</h3>
+  <ul>
+    <li>数据不是一位一位发的，而是<strong>打包成帧</strong>再发。</li>
+    <li>一帧包含：<strong>起始位 + 数据 + 校验位 + 停止位</strong>（具体取决于协议）。</li>
+    <li><strong>校验方式</strong>：</li>
+    <li>奇偶校验：只能发现"有错"，<strong>定位不到哪一位错</strong>；</li>
+    <li><strong>CRC（循环冗余校验）</strong>：检错能力更强，网络里更常用。</li>
+  </ul>
+  <div class="note"><p>类比串口通信：1 字节 = 8 位，加上起始/停止/校验，就是一帧。</p></div>
+  <h3>6.2 关于"路由"（网络层）</h3>
+  <p>这里的"路由"<strong>不是家里的路由器</strong>，而是指数据从 A 到 B 要<strong>经过哪些中转节点</strong>。</p>
+  <p>老师用打电话比喻：哈尔滨打给北京，信号不会一步跳过去，而是<strong>基站 → 基站</strong>一级级转——网络里的路由器也是这么一跳一跳转发分组。</p>
+</div>
+
+<div class="card" id="l13-encap">
+  <h2>七、数据封装与解封装 ★</h2>
+  <h3>7.1 发送：逐层加头</h3>
+<div class="flow">用户数据（微信消息）
+   ↓ + APP 头        （应用层给数据加应用协议头）
+   ↓ + TCP 头        （传输层加源端口/目的端口、序号）
+   ↓ + IP 头         （网络层加源 IP/目的 IP）
+   ↓ + 以太网头      （链路层加源 MAC/目的 MAC、帧校验）
+   ↓
+比特流 → 网线/无线 → 对端</div>
+  <h3>7.2 接收：逐层剥头</h3>
+<div class="flow">比特流 → 以太网头 ← 剥掉
+        → IP 头   ← 剥掉
+        → TCP 头  ← 剥掉
+        → APP 头  ← 剥掉
+        → 用户数据（交给微信显示）</div>
+  <div class="note"><p>老师用"冬天出门穿衣服"比喻：出门一层层穿，回寝室一层层脱。<strong>每一层只关心自己那一层的头</strong>，这就是分层的好处——<strong>解耦</strong>。</p></div>
+  <h3>7.3 为什么要分层</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>好处</th><th>说明</th></tr>
+      <tr><td>解耦</td><td>改应用层不影响传输层</td></tr>
+      <tr><td>复用</td><td>TCP 可以承载 HTTP/FTP/SSH 等多种应用</td></tr>
+      <tr><td>排错</td><td>出问题能定位到具体层（ping 通不通=网络层，端口通不通=传输层）</td></tr>
+  </table>
+  </div>
+</div>
+
+<div class="card" id="l13-cmd">
+  <h2>八、网络配置命令</h2>
+  <h3>8.1 netstat：网络状态</h3>
+<div class="flow">netstat -a        # 所有连接与监听端口
+netstat -t        # 只看 TCP
+netstat -u        # 只看 UDP
+netstat -ta       # 所有 TCP 连接（老师演示的）
+netstat -i        # 网络接口列表（类似 ifconfig 的精简版）
+netstat -r        # 路由表
+netstat -s        # 各协议统计（收发多少包、丢包率）</div>
+  <p><code>netstat -ta</code> 输出各列含义：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>列</th><th>含义</th></tr>
+      <tr><td><code>Proto</code></td><td>协议（TCP/UDP）</td></tr>
+      <tr><td><code>Recv-Q</code> / <code>Send-Q</code></td><td>接收/发送队列</td></tr>
+      <tr><td><code>Local Address</code></td><td>本地地址:端口</td></tr>
+      <tr><td><code>Foreign Address</code></td><td>对端地址:端口</td></tr>
+      <tr><td><code>State</code></td><td>状态：<code>LISTEN</code>（监听）、<code>ESTABLISHED</code>（已建立连接）</td></tr>
+  </table>
+  </div>
+  <h3>8.2 ip：新一代网络配置</h3>
+<div class="flow">ip link                 # 查看/管理链路（网卡）
+ip link set ens33 down  # 禁用网卡
+ip link set ens33 up    # 启用网卡
+ip addr                 # 查看 IP 地址
+ip route                # 查看路由表</div>
+  <div class="note"><p><code>ip</code> 命令正在取代老式的 <code>ifconfig</code>/<code>route</code>，功能一一对应。</p></div>
+  <h3>8.3 其他命令</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>命令</th><th>作用</th></tr>
+      <tr><td><code>who</code></td><td>查看当前登录的用户及其登录时间</td></tr>
+      <tr><td><code>telnet IP 端口</code></td><td>测试远程端口是否可达（也用于远程登录）</td></tr>
+      <tr><td><code>ping</code></td><td>测试网络连通性（ICMP）</td></tr>
+      <tr><td><code>ifconfig</code></td><td>查看/配置网卡（老命令）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>老师提到的<strong>心跳包</strong>：服务器每隔一段时间给设备发一条数据，设备能正常回复就说明"在线"。这和 <code>ping</code> 是一个思路。</p></div>
+</div>
+
+<div class="card" id="l13-ip">
+  <h2>九、IP 地址与 IPv4 / IPv6 ★</h2>
+  <h3>9.1 IPv4</h3>
+  <ul>
+    <li><strong>32 位</strong>，写成 <strong>4 段点分十进制</strong>，每段 8 位（0–255）。</li>
+  </ul>
+<div class="flow">192 . 168 . 1 . 1
+ 8位   8位  8位  8位   → 共 32 位</div>
+  <ul>
+    <li>因为计算机普及，IPv4 地址<strong>快用完了</strong>（这正是 NAT、私有地址存在的原因）。</li>
+  </ul>
+  <h3>9.2 IPv6</h3>
+  <ul>
+    <li><strong>128 位</strong>，写成 <strong>8 组、每组 16 位</strong>（十六进制，冒号分隔）。</li>
+    <li>地址空间比 IPv4 大得多，但<strong>造价高、设备要换</strong>，所以目前仍是 IPv4 为主、IPv6 逐步铺开。</li>
+    <li>老师举的例子很形象：QQ 号从 5 位涨到 11 位、车牌从纯数字到加字母——<strong>地址不够就加位</strong>。</li>
+  </ul>
+  <h3>9.3 私有地址（内网专用）</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类别</th><th>私有地址段</th></tr>
+      <tr><td>A</td><td><code>10.0.0.0</code> – <code>10.255.255.255</code></td></tr>
+      <tr><td>B</td><td><code>172.16.0.0</code> – <code>172.31.255.255</code></td></tr>
+      <tr><td>C</td><td><code>192.168.0.0</code> – <code>192.168.255.255</code></td></tr>
+  </table>
+  </div>
+  <div class="note"><p>校园网常用 <code>10.x.x.x</code>（A 类私有），家里路由器常用 <code>192.168.x.x</code>（C 类私有）。</p></div>
+</div>
+
+<div class="card" id="l13-class">
+  <h2>十、IP 地址的五类划分 ★</h2>
+  <p>IP 地址 = <strong>网络地址 + 主机地址</strong>，靠<strong>前几位的固定前缀</strong>分类：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类别</th><th>首位特征</th><th>网络位 / 主机位</th><th>地址范围</th><th>网络数</th><th>每网主机数</th></tr>
+      <tr><td><strong>A</strong></td><td><code>0</code> 开头</td><td>1 字节 / 3 字节</td><td><code>1.0.0.0</code> – <code>126.255.255.255</code></td><td>2⁷−2 = 126</td><td>2²⁴−2</td></tr>
+      <tr><td><strong>B</strong></td><td><code>10</code> 开头</td><td>2 字节 / 2 字节</td><td><code>128.0.0.0</code> – <code>191.255.255.255</code></td><td>2¹⁴−2</td><td>2¹⁶−2</td></tr>
+      <tr><td><strong>C</strong></td><td><code>110</code> 开头</td><td>3 字节 / 1 字节</td><td><code>192.0.0.0</code> – <code>223.255.255.255</code></td><td>2²¹−2</td><td>2⁸−2 = 254</td></tr>
+      <tr><td><strong>D</strong></td><td><code>1110</code> 开头</td><td>—</td><td><code>224.0.0.0</code> – <code>239.255.255.255</code></td><td>—</td><td><strong>组播/广播专用</strong></td></tr>
+      <tr><td><strong>E</strong></td><td><code>11110</code> 开头</td><td>—</td><td><code>240.0.0.0</code> – <code>255.255.255.255</code></td><td>—</td><td><strong>保留，实验室用</strong></td></tr>
+  </table>
+  </div>
+  <h3>记忆与判断技巧</h3>
+  <ul>
+    <li>看<strong>第一段数字</strong>就能判断类别：</li>
+    <li>1–126 → A 类</li>
+    <li>128–191 → B 类</li>
+    <li>192–223 → C 类</li>
+    <li>224–239 → D 类</li>
+    <li>240–255 → E 类</li>
+    <li><code>127.x.x.x</code> 是<strong>回环地址</strong>（<code>127.0.0.1</code> 就是 localhost），不属于普通 A 类。</li>
+  </ul>
+  <div class="note"><p>老师课堂练习：<code>192.168.1.1</code> 属于 <strong>C 类</strong>（第一段 192）；校园网 <code>10.x.x.x</code> 属于 <strong>A 类</strong>（第一段 10）。</p></div>
+</div>
+
+<div class="card" id="l13-mask">
+  <h2>十一、子网掩码 ★</h2>
+  <h3>11.1 作用</h3>
+  <p><strong>子网掩码用来"切分"IP 地址中的网络号和主机号</strong>：</p>
+  <ul>
+    <li><strong>网络号所在的位 = 1</strong></li>
+    <li><strong>主机号所在的位 = 0</strong></li>
+  </ul>
+  <h3>11.2 三类默认掩码</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>类别</th><th>子网掩码</th><th>二进制</th></tr>
+      <tr><td>A</td><td><code>255.0.0.0</code></td><td>11111111.00000000.00000000.00000000</td></tr>
+      <tr><td>B</td><td><code>255.255.0.0</code></td><td>11111111.11111111.00000000.00000000</td></tr>
+      <tr><td>C</td><td><code>255.255.255.0</code></td><td>11111111.11111111.11111111.00000000</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>一个 IP 属于哪一类，<strong>它的子网掩码就是对应的那一个</strong>，不会出现 C 类配 <code>255.0.0.0</code> 的情况（除非做子网划分，那是进阶内容）。</p></div>
+  <h3>11.3 判断"是否同一网段"</h3>
+<div class="flow">IP 与 掩码 做"按位与" → 得到网络号
+两个 IP 的网络号相同 → 同一网段，可直接通信
+不同 → 需要经网关转发</div>
+  <p>例：<code>192.168.1.10</code> 与 <code>192.168.1.20</code>，掩码 <code>255.255.255.0</code> → 网络号都是 <code>192.168.1.0</code>，同网段。</p>
+</div>
+
+<div class="card" id="l13-basic">
+  <h2>十二、广播地址 / 网关 / MAC / DNS ★</h2>
+  <h3>12.1 广播地址</h3>
+  <ul>
+    <li><strong>主机号全为 1</strong> 的地址，如 <code>192.168.1.255</code>。</li>
+    <li>作用：向<strong>同一网段内所有主机</strong>发送数据。</li>
+  </ul>
+  <h3>12.2 网关</h3>
+  <ul>
+    <li>又称网络连接器/协议转换器，是<strong>本网段通往其他网段的出口</strong>。</li>
+    <li>通常是网段的 <code>.1</code>（如 <code>192.168.1.1</code>）。</li>
+    <li>家用宽带路由器的网关、DNS 常由<strong>运营商（ISP）</strong>自动下发；校园网则是<strong>固定配置</strong>。</li>
+  </ul>
+  <h3>12.3 MAC 地址</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>项目</th><th>说明</th></tr>
+      <tr><td>别名</td><td>物理地址、硬件地址</td></tr>
+      <tr><td>长度</td><td><strong>48 位（6 字节）</strong>，写成 12 个十六进制数，如 <code>00-1A-2B-3C-4D-5E</code></td></tr>
+      <tr><td>来源</td><td>网卡出厂时烧录</td></tr>
+      <tr><td>能否修改</td><td>技术上可以（软件改），但<strong>不建议</strong></td></tr>
+      <tr><td>常见绑定</td><td>MAC 与 IP 绑定（校园网认证就是这样）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>⚠️ 课上老师说"MAC 以 16 位形式表示"是口误：它是<strong>48 位</strong>，习惯用<strong>十六进制</strong>书写。</p></div>
+  <h3>12.4 DNS</h3>
+  <ul>
+    <li><strong>域名系统</strong>：把 <code>www.baidu.com</code> 这样的域名翻译成 IP 地址。</li>
+    <li>由<strong>解析器 + 域名服务器</strong>组成。</li>
+    <li>域名是<strong>唯一</strong>的（所以有"域名抢注"）；但一个域名可以对应<strong>多个 IP</strong>（负载均衡）。</li>
+  </ul>
+  <div class="note"><p>老师现场对比过：直接输 IP 也能打开百度，说明<strong>域名和 IP 做的是同一件事</strong>，只是域名好记。</p></div>
+</div>
+
+<div class="card" id="l13-port">
+  <h2>十三、端口与常见服务 ★</h2>
+  <h3>13.1 端口的分类</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>范围</th><th>类别</th><th>说明</th></tr>
+      <tr><td><code>0–1023</code></td><td><strong>公认端口</strong></td><td>绑定常见服务，如 80、21、22</td></tr>
+      <tr><td><code>1024–49151</code></td><td><strong>注册端口</strong></td><td>厂商注册使用，如 3306、8080</td></tr>
+      <tr><td><code>49152–65535</code></td><td><strong>动态端口</strong></td><td>系统临时分配</td></tr>
+  </table>
+  </div>
+  <h3>13.2 必须记住的端口</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>端口</th><th>服务</th><th>说明</th></tr>
+      <tr><td><strong>80</strong></td><td>HTTP</td><td>网页（<code>http://</code>）</td></tr>
+      <tr><td><strong>443</strong></td><td>HTTPS</td><td>加密网页</td></tr>
+      <tr><td><strong>8080</strong></td><td>HTTP 备用</td><td>常用作代理/备用 Web</td></tr>
+      <tr><td><strong>21</strong></td><td>FTP</td><td>文件传输</td></tr>
+      <tr><td><strong>22</strong></td><td>SSH</td><td>远程登录（安全）</td></tr>
+      <tr><td><strong>23</strong></td><td>Telnet</td><td>远程登录（明文，不安全）</td></tr>
+      <tr><td><strong>25</strong></td><td>SMTP</td><td>发邮件</td></tr>
+      <tr><td><strong>53</strong></td><td>DNS</td><td>域名解析</td></tr>
+      <tr><td><strong>137/138/139</strong></td><td>NetBIOS</td><td>Windows 共享</td></tr>
+      <tr><td><strong>445</strong></td><td>SMB</td><td><strong>Samba 文件共享</strong>（第 6 课就是它）</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>校园网/教务系统就是"一个域名 + 不同端口 = 不同功能模块"：老师录成绩、学生选课，走的是不同端口。</p></div>
+</div>
+
+<div class="card" id="l13-family">
+  <h2>十四、TCP/IP 协议族 ★</h2>
+  <p>TCP/IP 是<strong>一族协议</strong>的总称：</p>
+  <div class="table-wrap">
+  <table>
+      <tr><th>协议</th><th>所在层</th><th>作用</th></tr>
+      <tr><td><strong>应用层</strong></td><td>HTTP、FTP、SMTP、DNS、SSH</td><td>面向具体应用</td></tr>
+      <tr><td><strong>TCP</strong></td><td>传输层</td><td><strong>面向连接、可靠</strong>传输（三次握手、确认重传）</td></tr>
+      <tr><td><strong>UDP</strong></td><td>传输层</td><td><strong>无连接、不可靠</strong>但快（视频、DNS）</td></tr>
+      <tr><td><strong>IP</strong></td><td>网络层</td><td>寻址与路由</td></tr>
+      <tr><td><strong>ICMP</strong></td><td>网络层</td><td>差错报告（<code>ping</code> 就是它）</td></tr>
+      <tr><td><strong>ARP</strong></td><td>链路层</td><td>由 IP 找 MAC</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>面试常问：<strong>TCP 与 UDP 的区别</strong>——TCP 可靠、有连接、慢；UDP 不可靠、无连接、快。</p></div>
+</div>
+
+<div class="card" id="l13-handshake">
+  <h2>十五、三次握手（了解）</h2>
+  <p>建立 TCP 连接要"握三次手"：</p>
+<div class="flow">客户端                     服务器
+   │  ── SYN ────────────→  │   ① 我想连你
+   │  ←── SYN + ACK ──────  │   ② 好，我也想连你
+   │  ── ACK ────────────→  │   ③ 收到，开始传数据
+   │                        │
+   │  ←──── 数据传输 ─────→  │</div>
+  <ul>
+    <li><strong>SYN</strong>：请求建立连接。</li>
+    <li><strong>ACK</strong>：确认收到。</li>
+    <li>三次的目的：<strong>双方都确认"我能发、你能收"</strong>，避免历史连接造成的混乱。</li>
+  </ul>
+  <div class="note"><p>老师只要求"知道有三次握手、知道 ACK 是确认"，细节代码不考。</p></div>
+</div>
+
+<div class="card" id="l13-socket">
+  <h2>十六、socket 编程流程（扩展，课件有、课堂略）</h2>
+  <p>课件第九章给了完整的 socket 示例（代码量大，老师建议自学）。核心流程记这张表就够：</p>
+  <h3>16.1 服务器端（4 步）</h3>
+<div class="flow">① socket()   创建套接字
+② bind()     绑定 IP + 端口
+③ listen()   进入监听
+④ accept()   接受连接（阻塞，直到有客户端）
+   ↓
+   read/recv ←→ write/send   （用 accept 返回的新 socket）</div>
+  <h3>16.2 客户端（2 步）</h3>
+<div class="flow">① socket()   创建套接字
+② connect()  连接服务器（IP + 端口）
+   ↓
+   write/send ←→ read/recv</div>
+  <h3>16.3 函数速查</h3>
+  <div class="table-wrap">
+  <table>
+      <tr><th>函数</th><th>原型</th><th>作用</th></tr>
+      <tr><td><code>socket</code></td><td><code>int socket(int domain, int type, int protocol)</code></td><td>创建通信端点，返回 socket 描述符</td></tr>
+      <tr><td><code>bind</code></td><td><code>int bind(int sockfd, struct sockaddr *my_addr, int addrlen)</code></td><td>绑定 IP 与端口（服务器）</td></tr>
+      <tr><td><code>listen</code></td><td><code>int listen(int sockfd, int backlog)</code></td><td>设为监听，<code>backlog</code> 是排队上限</td></tr>
+      <tr><td><code>accept</code></td><td><code>int accept(int sockfd, struct sockaddr *addr, int *addrlen)</code></td><td>取出一个连接，返回<strong>新 socket</strong></td></tr>
+      <tr><td><code>connect</code></td><td><code>int connect(int sockfd, struct sockaddr *serv_addr, int addrlen)</code></td><td>客户端发起连接</td></tr>
+      <tr><td><code>send</code> / <code>recv</code></td><td>—</td><td>发送 / 接收（也可用 <code>write</code>/<code>read</code>）</td></tr>
+  </table>
+  </div>
+<div class="flow">/* 创建套接字 */
+int socket_fd = socket(AF_INET, SOCK_STREAM, 0);</div>
+  <ul>
+    <li><code>AF_INET</code>：IPv4。</li>
+    <li><code>SOCK_STREAM</code>：<strong>TCP</strong>（面向连接、可靠）；<code>SOCK_DGRAM</code> 是 UDP。</li>
+    <li>第三个参数通常为 0（自动选协议）。</li>
+  </ul>
+  <div class="note"><p><code>socket()</code> 很像 <code>open()</code>：都返回一个"描述符"，后续用它读写；区别是 <code>socket</code> 的描述符走网络，<code>open</code> 的走文件系统。</p></div>
+</div>
+
+<div class="card" id="l13-pitfall">
+  <h2>十七、易错点复盘 ★</h2>
+  <ol>
+    <li><strong>把"TCP/IP 协议"当成一个协议</strong>：它是一族协议（TCP、UDP、IP、ICMP、ARP……）。</li>
+    <li><strong>混淆网络层"路由"与家用路由器</strong>：前者指数据转发路径，后者是设备。</li>
+    <li><strong>子网掩码写错</strong>：C 类必须配 <code>255.255.255.0</code>，写成 <code>255.0.0.0</code> 就跨网段了。</li>
+    <li><strong>MAC 地址位数记错</strong>：是 <strong>48 位</strong>（12 个十六进制字符），不是 16 位。</li>
+    <li><strong>IP 地址冲突</strong>：同一网段内 IP 不能重复，否则后接入的设备上不了网。</li>
+    <li><strong>广播地址与主机地址混淆</strong>：主机号全 1 才是广播地址（<code>x.x.x.255</code>）。</li>
+    <li><strong>先启动客户端</strong>：网络程序和命名管道一样，<strong>必须先起服务器</strong>，否则 <code>connect</code> 失败。</li>
+    <li><strong>端口号越界</strong>：端口范围 0–65535，程序里绑端口不能超过。</li>
+    <li><strong><code>accept</code> 返回的是新 socket</strong>：不是 <code>socket()</code> 返回的那个，收发要用新的。</li>
+    <li><strong>私有地址当公网用</strong>：<code>192.168.x.x</code> 之类不能在公网上路由，跨网必须 NAT。</li>
+  </ol>
+</div>
+
+<div class="card" id="l13-practice">
+  <h2>十八、课堂操作复盘</h2>
+  <ol>
+    <li>对比普通程序与网络程序：一个单机跑，一个要先起服务器。</li>
+    <li>画 OSI 七层 → 合并成四层 → 再拆成五层，理解对应关系。</li>
+    <li>用"穿衣服/脱衣服"演示数据封装与解封装。</li>
+    <li>终端运行 <code>netstat -ta</code>，观察 <code>LISTEN</code> 与 <code>ESTABLISHED</code>。</li>
+    <li>运行 <code>ip addr</code>、<code>ip route</code>、<code>netstat -i</code>，对比 <code>ifconfig</code>。</li>
+    <li>判断 <code>192.168.1.1</code>（C 类）、<code>10.1.2.3</code>（A 类私有）、<code>172.16.0.1</code>（B 类私有）的类别。</li>
+    <li>写出三类默认子网掩码，并判断两个 IP 是否同网段。</li>
+    <li>记住 80/443/21/22/25/53/445 这七个端口。</li>
+  </ol>
+</div>
+
+<div class="card" id="l13-quiz">
+  <h2>十九、复习自测题（含答案）</h2>
+  <h3>基础题</h3>
+  <ol>
+    <li>网络程序与普通程序最大的区别是什么？</li>
+    <li>为什么需要协议？TCP/IP 是一个协议还是一族协议？</li>
+    <li>写出 OSI 七层模型的名称（从上到下）。</li>
+    <li>七层如何合并成四层？五层模型又是怎么来的？</li>
+    <li>数据从发送到接收，封装与解封装的顺序是怎样的？</li>
+    <li>IPv4 与 IPv6 分别是多少位？怎么写？</li>
+    <li>如何只看第一段数字判断 IP 属于 A/B/C 类？</li>
+    <li>子网掩码的作用是什么？A/B/C 类的默认掩码分别是？</li>
+  </ol>
+  <h3>参考答案</h3>
+  <ol>
+    <li>普通程序在本机独立运行；网络程序由<strong>服务器 + 客户端</strong>两部分组成，通过<strong>协议和端口</strong>跨机器通信，且必须先启动服务器。</li>
+    <li>协议是通信双方共同遵守的规则，没有它无法解析对方的 0/1。TCP/IP 是<strong>协议族</strong>（TCP、UDP、IP、ICMP、ARP 等），不是单个协议。</li>
+    <li>应用层、表示层、会话层、传输层、网络层、数据链路层、物理层。</li>
+    <li>上三层合并为"应用层"，下两层合并为"网络接口层"，中间两层不变 → 四层；五层则只合并上三层，链路层与物理层保持独立。</li>
+    <li>发送：用户数据 → +APP 头 → +TCP 头 → +IP 头 → +以太网头 → 比特流；接收：逐层剥掉以太网头、IP 头、TCP 头、APP 头 → 用户数据。</li>
+    <li>IPv4 是 <strong>32 位</strong>（4 段点分十进制）；IPv6 是 <strong>128 位</strong>（8 组十六进制，冒号分隔）。</li>
+    <li>1–126 → A 类；128–191 → B 类；192–223 → C 类；224–239 → D 类；240–255 → E 类（127 为回环）。</li>
+    <li>用于区分 IP 地址中的<strong>网络号</strong>与<strong>主机号</strong>（网络位为 1、主机位为 0）。A 类 <code>255.0.0.0</code>、B 类 <code>255.255.0.0</code>、C 类 <code>255.255.255.0</code>。</li>
+  </ol>
+  <h3>扩展题</h3>
+  <ol>
+    <li><code>192.168.1.10</code> 与 <code>192.168.2.10</code> 在同一网段吗（掩码 255.255.255.0）？为什么？</li>
+    <li>私有地址有哪三段？为什么需要私有地址？</li>
+    <li>端口分哪三类？80、8080、445 分别是什么服务？</li>
+    <li>服务器端 socket 编程的四个核心步骤是什么？</li>
+  </ol>
+  <h3>扩展题参考</h3>
+  <ol>
+    <li><strong>不同网段</strong>。按位与后网络号分别是 <code>192.168.1.0</code> 和 <code>192.168.2.0</code>，不同，需要网关转发。</li>
+    <li><code>10.0.0.0/8</code>、<code>172.16.0.0/12</code>、<code>192.168.0.0/16</code>。用于内网，缓解 IPv4 枯竭，配合 NAT 复用公网 IP。</li>
+    <li>公认端口（0–1023）、注册端口（1024–49151）、动态端口（49152–65535）。80=HTTP，8080=HTTP 备用/代理，445=SMB（Samba）。</li>
+    <li><code>socket()</code> → <code>bind()</code> → <code>listen()</code> → <code>accept()</code>，之后用 accept 返回的新 socket 收发。</li>
+  </ol>
+</div>
+
+<div class="card" id="l13-appendix">
+  <h2>二十、网络知识速查表</h2>
+  <div class="table-wrap">
+  <table>
+      <tr><th>概念</th><th>数值 / 说明</th></tr>
+      <tr><td>IPv4</td><td>32 位，4 段点分十进制</td></tr>
+      <tr><td>IPv6</td><td>128 位，8 组十六进制</td></tr>
+      <tr><td>A 类范围</td><td>1.0.0.0 – 126.255.255.255（私有 10.x）</td></tr>
+      <tr><td>B 类范围</td><td>128.0.0.0 – 191.255.255.255（私有 172.16–31.x）</td></tr>
+      <tr><td>C 类范围</td><td>192.0.0.0 – 223.255.255.255（私有 192.168.x）</td></tr>
+      <tr><td>D 类</td><td>224–239，组播</td></tr>
+      <tr><td>E 类</td><td>240–255，保留</td></tr>
+      <tr><td>回环地址</td><td>127.0.0.1</td></tr>
+      <tr><td>子网掩码</td><td>A <code>255.0.0.0</code> / B <code>255.255.0.0</code> / C <code>255.255.255.0</code></td></tr>
+      <tr><td>广播地址</td><td>主机号全 1（如 192.168.1.255）</td></tr>
+      <tr><td>MAC 地址</td><td>48 位，12 个十六进制字符</td></tr>
+      <tr><td>端口范围</td><td>0–65535（公认/注册/动态）</td></tr>
+  </table>
+  </div>
+  <div class="table-wrap">
+  <table>
+      <tr><th>命令</th><th>作用</th></tr>
+      <tr><td><code>netstat -ta</code></td><td>所有 TCP 连接</td></tr>
+      <tr><td><code>netstat -i</code></td><td>网络接口</td></tr>
+      <tr><td><code>netstat -r</code></td><td>路由表</td></tr>
+      <tr><td><code>netstat -s</code></td><td>协议统计</td></tr>
+      <tr><td><code>ip addr</code> / <code>ip link</code> / <code>ip route</code></td><td>地址 / 网卡 / 路由</td></tr>
+      <tr><td><code>ping</code></td><td>连通性测试（ICMP）</td></tr>
+      <tr><td><code>who</code></td><td>当前登录用户</td></tr>
+      <tr><td><code>telnet IP 端口</code></td><td>端口可达性测试</td></tr>
+  </table>
+  </div>
+  <div class="note"><p>本笔记依据课堂录音转写整理，并按第 16 次课课件（第 9 章网络编程）校对术语与协议层次：课件中对 <code>socket/bind/listen/accept/connect/send/recv</code> 有完整说明与示例，本课老师只讲了基础概念与调用流程，故 socket 部分作为"扩展"收录。转写存在口语化与同音字误差（如 <code>netstat</code> → "net state"、<code>net</code> 被听成"max/卖"、<code>socket</code> → "socked"、<code>TCP</code> → "tcp/TCB/tep"），内容以规范表述为准。</p></div>
+</div>
+
 <div class="note">
   <strong>说明：</strong>本页依据课堂录音转写整理并扩充解析。原始转写存在口语化、同音字识别误差，内容以规范表述为准；标注 ★ 的为课堂重点，其余为扩展知识，供复习参考。
 </div>
 
 <footer>
-  <p>第 1–11 课 · 由课堂录音转写自动整理 · 更新日期 2026-10-28</p>
+  <p>第 1–13 课 · 由课堂录音转写自动整理 · 更新日期 2026-11-02</p>
   <p>仓库：<a href="https://github.com/yuyu4568/Principles-and-Applications-of-Embedded-System-Design" target="_blank">yuyu4568/Principles-and-Applications-of-Embedded-System-Design</a></p>
 </footer>
 
